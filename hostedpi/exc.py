@@ -1,0 +1,2 @@
+class HostedPiException(Exception):
+    pass
