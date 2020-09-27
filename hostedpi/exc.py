@@ -1,2 +1,2 @@
 class HostedPiException(Exception):
-    pass
+    "Base class for all exceptions in the hostedpi module"
