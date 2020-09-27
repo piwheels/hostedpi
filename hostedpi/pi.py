@@ -193,12 +193,25 @@ class Pi:
 
     @property
     def url(self):
-        "The http version of the hopstedpi.com URL of the Pi."
+        """
+        The http version of the hopstedpi.com URL of the Pi.
+
+        .. note::
+            Note that a web server must be installed on the Pi for the URL to
+            resolve in a web browser.
+        """
         return 'http://www.{}.hostedpi.com/'.format(self.name)
 
     @property
     def url_ssl(self):
-        "The https version of the  hopstedpi.com URL of the Pi."
+        """
+        The https version of the hopstedpi.com URL of the Pi.
+
+        .. note::
+            Note that a web server must be installed on the Pi for the URL to
+            resolve in a web browser, and an SSL certificate must be created.
+            See https://letsencrypt.org/
+        """
         return 'https://www.{}.hostedpi.com/'.format(self.name)
 
     def reboot(self):
@@ -229,14 +242,21 @@ class Pi:
         """
         Open the Pi's web address in the default browser. Use https if *ssl* is
         True.
+
+        .. note::
+            Note that a web server must be installed on the Pi for the URL to
+            resolve in a web browser, and an SSL certificate must be created for
+            the https URL to resolve. See https://letsencrypt.org/
         """
         url = self.url_ssl if ssl else self.url
         webbrowser.open(url)
 
     def ping_ipv6(self):
         """
-        Ping the Pi's IPv6 address and return True if successful. Note this only
-        works if you have IPv6 connectivity.
+        Ping the Pi's IPv6 address and return True if successful.
+
+        ..note::
+            Note this requires IPv6 connectivity
         """
         # note this only works if you have IPv6
         with io.open(os.devnull, 'wb') as devnull:
@@ -253,6 +273,11 @@ class Pi:
         """
         Send a GET request to the Pi's web address, and return True if a
         successful request was made. Use https if *ssl* is True.
+
+        .. note::
+            Note that a web server must be installed on the Pi for the URL to
+            resolve in a web browser, and an SSL certificate must be created for
+            the https URL to resolve. See https://letsencrypt.org/
         """
         url = self.url_ssl if ssl else self.url
         r = requests.get(url)
@@ -262,6 +287,11 @@ class Pi:
         """
         Send a GET request to the Pi's web address, and return True if a
         successful request was made. Use https if *ssl* is True.
+
+        .. note::
+            Note that a web server must be installed on the Pi for the URL to
+            resolve in a web browser, and an SSL certificate must be created for
+            the https URL to resolve. See https://letsencrypt.org/
         """
         url = self.url_ssl if ssl else self.url
         r = requests.get(url)

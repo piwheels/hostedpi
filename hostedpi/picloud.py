@@ -38,6 +38,11 @@ class PiCloud:
     :param ssh_key_path:
         The path to your SSH public key to add to any Pis created (keyword-only
         argument)
+
+    .. note::
+        If any SSH keys are provided on class initialisation, they will be used
+        here but are overriden by any passed to the
+        :meth:`~hostedpi.picloud.PiCloud.create_pi` method.
     """
     _API_URL = 'https://api.mythic-beasts.com/beta/servers/pi'
 
@@ -90,7 +95,7 @@ class PiCloud:
         with open(ssh_key_path) as f:
             return f.read()
 
-    def create_pi(self, name, *, model=3, disk=10, ssh_key=None, ssh_keys=None, ssh_key_path=None):
+    def create_pi(self, name, *, model=3, disk_size=10, ssh_key=None, ssh_keys=None, ssh_key_path=None):
         """
         Provision a new cloud Pi with the specified name, model, disk size and
         SSH keys. Return a new :class:`~hostedpi.pi.Pi` instance.
@@ -99,17 +104,37 @@ class PiCloud:
         :param name:
             The name of the Pi service to create (must be unique)
 
-        :type model: str
+        :type model: int
         :param model:
-            The Raspberry Pi model to provision (3 or 4) (keyword-only argument)
+            The Raspberry Pi model to provision (3 or 4) - defaults to 3
+            (keyword-only argument)
 
-        :type ssh_key: str
+        :type disk_size: int
+        :param disk_size:
+            The amount of disk space (in GB) attached to the Pi - must be a
+            multiple of 10 - defaults to 10 (keyword-only argument)
+
+        :type ssh_key: str or None
         :param ssh_key:
-            A single SSH key to add to the Pi
+            A single SSH key string to add to the Pi - (keyword-only argument)
+
+        :type ssh_keys: list or None
+        :param ssh_keys:
+            A list of SSH key strings to add to the Pi (keyword-only argument)
+
+        :type ssh_key_path: str or None
+        :param ssh_key_path:
+            The path to your SSH public key to add to the Pi (keyword-only
+            argument)
 
         .. note::
-            If SSH keys are provided on class initialisation, they will be used
-            here but are overriden by any passed to this method.
+            If any SSH keys are provided on class initialisation, they will be
+            used here but are overriden by any passed to this method.
+
+        .. note::
+            When requesting a Pi 3, you will either get a model 3B or 3B+. It is
+            not possible to request a particular model beyond 3 or 4. The Pi 4
+            is the 4GB RAM model.
         """
         if ssh_key:
             ssh_keys = ssh_key
@@ -121,6 +146,12 @@ class PiCloud:
             ssh_keys = '\r\n'.join(self.ssh_keys)
         else:
             ssh_keys = None
+
+        if model not in (3, 4):
+            raise HostedPiException('model must be 3 or 4')
+
+        if disk_size < 10 or disk_size % 10 > 0:
+            raise HostedPiException('disk size must be a multiple of 10')
 
         url = '{}/{}'.format(self._API_URL, name)
         data = {
