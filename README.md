@@ -1,3 +1,3 @@
 # hostedpi
 
-Pythonic interface to the Mythic Beasts Hosted Pi API
+Python interface to the Mythic Beasts Hosted Pi API
