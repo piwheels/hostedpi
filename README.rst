@@ -29,7 +29,7 @@ Provision a new Pi and view its SSH command::
     >>> print(pi.ssh_command)
     ssh -p 5123 root@ssh.somepi.hostedpi.com
 
-See the `getting_started`_ page for information on how to authenticate.
+See the `getting started`_ page for information on how to authenticate.
 
 .. _getting started: https://hostedpi.readthedocs.io/en/latest/getting_started.html
 
