@@ -13,6 +13,9 @@ Python interface to the `Mythic Beasts Hosted Pi`_ API, developed by the
 This module provides a Pythonic interface to the API, as well as some command
 line utilities.
 
+The authors of this library are not affiliated with Mythic Beasts, but we use
+their Pi cloud to power the piwheels project.
+
 Documentation of the API itself can be found at
 https://www.mythic-beasts.com/support/api/raspberry-pi
 
@@ -56,6 +59,6 @@ Contributing
 
 * Source code can be found on GitHub at https://github.com/piwheels/hostedpi
 * Code and documentation contributions welcome
-* The issue tracker can be found at https://github.com/piwheels/hostedpi
+* The issue tracker can be found at https://github.com/piwheels/hostedpi/issues
 * For issues with the API itself, please contact Mythic Beasts support
   https://www.mythic-beasts.com/support

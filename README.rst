@@ -13,6 +13,11 @@ Python interface to the `Mythic Beasts Hosted Pi`_ API, developed by the
 This module provides a Pythonic interface to the API, as well as some command
 line utilities.
 
+Documentation
+=============
+
+Documentation for this module can be found at https://hostedpi.readthedocs.io/
+
 Documentation of the API itself can be found at
 https://www.mythic-beasts.com/support/api/raspberry-pi
 

@@ -27,8 +27,23 @@ Create an API key
 6. Make a note of the API ID and Secret. You'll need them to use this Python
 module, and you can't retrieve them after this screen is gone.
 
-.. note::
+.. note:
     If you lose your keys, you can simply reset them or create a new API key.
+
+Install the hostedpi module
+===========================
+
+For a system-wide install:
+
+.. code-block:: console
+
+    $ sudo pip3 install hostedpi
+
+Or in a virtual environment:
+
+.. code-block:: console
+
+    $ pip install hostedpi
 
 Test your API keys
 ==================
@@ -74,7 +89,7 @@ a Pi 3 or Pi 4 and specify the disk size (which must be a multiple of 10)::
 
     pi = cloud.create_pi('mypi4', model=4, disk_size=20)
 
-.. note::
+.. note:
     When requesting a Pi 3, you will either get a model 3B or 3B+. It is not
     possible to request a particular model beyond 3 or 4. The Pi 4 is the 4GB
     RAM model.

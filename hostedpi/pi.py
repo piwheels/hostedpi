@@ -200,7 +200,7 @@ class Pi:
             Note that a web server must be installed on the Pi for the URL to
             resolve in a web browser.
         """
-        return 'http://www.{}.hostedpi.com/'.format(self.name)
+        return 'http://www.{}.hostedpi.com'.format(self.name)
 
     @property
     def url_ssl(self):
@@ -212,7 +212,7 @@ class Pi:
             resolve in a web browser, and an SSL certificate must be created.
             See https://letsencrypt.org/
         """
-        return 'https://www.{}.hostedpi.com/'.format(self.name)
+        return 'https://www.{}.hostedpi.com'.format(self.name)
 
     def reboot(self):
         "Reboot the Pi."
