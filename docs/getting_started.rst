@@ -25,7 +25,7 @@ Create an API key
 5. Click the *Create API key* button
 
 6. Make a note of the API ID and Secret. You'll need them to use this Python
-module, and you can't retrieve them after this screen is gone.
+   module, and you can't retrieve them after this screen is gone.
 
 .. note:
     If you lose your keys, you can simply reset them or create a new API key.
