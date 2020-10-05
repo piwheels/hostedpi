@@ -19,6 +19,8 @@ Test a connection to the API:
 .. code-block:: console
 
     $ hostedpi test
+
+    $ hostedpi test
     Connected to Mythic Beasts API
 
 hostedpi list
@@ -133,12 +135,15 @@ Reboot a Pi:
 .. code-block:: console
 
     $ hostedpi reboot mypi
+    mypi rebooted
 
 Reboot all the Pis in the account:
 
 .. code-block:: console
 
     $ hostedpi reboot all
+    mypi rebooted
+    mypi2 rebooted
 
 hostedpi keys
 -------------
