@@ -13,7 +13,7 @@ hostedpi test
 
 Test a connection to the API. On success outputs:
 
-.. console::
+.. code-block:: console
 
     $ hostedpi test
     Connected to Mythic Beasts API
@@ -23,7 +23,7 @@ hostedpi list
 
 List all the Pis in the account
 
-.. console::
+.. code-block:: console
 
     $ hostedpi list
     mypi
@@ -34,7 +34,7 @@ hostedpi show
 
 Show all information for a Pi:
 
-.. console::
+.. code-block:: console
 
     $ hostedpi show mypi
     Name: mypi
@@ -55,7 +55,7 @@ Show all information for a Pi:
 
 Show all information for all Pis in the account:
 
-.. console::
+.. code-block:: console
 
     $ hostedpi show
     Name: mypi
@@ -95,7 +95,7 @@ hostedpi create
 
 Provision a new Pi:
 
-.. console::
+.. code-block:: console
 
     $ hostedpi create mypi3
     Name: mypi3
@@ -118,7 +118,7 @@ Positional arguments:
 2. MODEL (optional)
 3. SSH_KEY_PATH (optional)
 
-.. console::
+.. code-block:: console
 
     $ hostedpi create mypi 3 .ssh/id_rsa.pub
 
@@ -127,13 +127,13 @@ hostedpi reboot
 
 Reboot a Pi:
 
-.. console::
+.. code-block:: console
 
     $ hostedpi reboot mypi
 
 Reboot all the Pis in the account:
 
-.. console::
+.. code-block:: console
 
     $ hostedpi reboot all
 
@@ -147,14 +147,14 @@ hostedpi cancel
 
 Cancel a Pi service:
 
-.. console::
+.. code-block:: console
 
     $ hostedpi cancel mypi
     Pi service mypi cancelled
 
 Cancel all the Pi services in the account:
 
-.. console::
+.. code-block:: console
 
     $ hostedpi cancel all
     Pi service mypi cancelled
