@@ -7,14 +7,6 @@ from .picloud import PiCloud
 from .exc import HostedPiException
 
 
-HOSTEDPI_ID = os.environ.get('HOSTEDPI_ID')
-HOSTEDPI_SECRET = os.environ.get('HOSTEDPI_SECRET')
-
-if HOSTEDPI_ID is None or HOSTEDPI_SECRET is None:
-    raise HostedPiException(
-        'Environment variables HOSTEDPI_ID and HOSTEDPI_SECRET must be set'
-    )
-
 class CLI:
     def __init__(self):
         self.commands = {
@@ -28,14 +20,23 @@ class CLI:
         }
         self.help = __doc__
 
+    def _connect(self):
+        API_ID = os.environ.get('HOSTEDPI_ID')
+        API_SECRET = os.environ.get('HOSTEDPI_SECRET')
+        self.cloud = PiCloud(API_ID, API_SECRET)
+        self.pis = self.cloud.pis
+
     def __call__(self):
+        try:
+            self._connect()
+        except HostedPiException as e:
+            print(str(e).replace(' or passed as arguments', ''))
+            return 2
+
         args = sys.argv
         if len(args) == 1:
             print(self.help)
             return 2
-
-        self.cloud = PiCloud(HOSTEDPI_ID, HOSTEDPI_SECRET)
-        self.pis = self.cloud.pis
 
         cmd = args[1]
         fn = self.commands.get(cmd)

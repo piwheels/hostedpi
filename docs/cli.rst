@@ -14,7 +14,7 @@ This program requires API keys to be provided using environment variables
 hostedpi test
 -------------
 
-Test a connection to the API. On success outputs:
+Test a connection to the API:
 
 .. code-block:: console
 
@@ -60,7 +60,7 @@ Show all information for all Pis in the account:
 
 .. code-block:: console
 
-    $ hostedpi show
+    $ hostedpi show all
     Name: mypi
     Status: live
     Model: Raspberry Pi 3
