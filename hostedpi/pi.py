@@ -6,6 +6,7 @@ import subprocess
 import json
 
 import requests
+from requests.exceptions import RequestException
 
 from .exc import HostedPiException
 
@@ -27,8 +28,8 @@ class Pi:
         The ``Pi`` class should not be initialised by the user, only internally
         within the module.
     """
-    def __init__(self, *, parent, name, model):
-        self._parent = parent
+    def __init__(self, *, cloud, name, model):
+        self._cloud = cloud
         self._name = name
         self._model = model
         self._cancelled = False
@@ -53,9 +54,9 @@ class Pi:
     @property
     def data(self):
         "A dictionary of the Pi's data."
-        url = '{}/{}'.format(self._parent._API_URL, self.name)
+        url = '{}/{}'.format(self._cloud._API_URL, self.name)
         try:
-            r = requests.get(url, headers=self._parent._headers)
+            r = requests.get(url, headers=self._cloud.headers)
         except RequestException as e:
             raise HostedPiException(str(e))
 
@@ -85,7 +86,7 @@ class Pi:
         The Pi's disk size (this value will not change so the result is
         cached).
         """
-        return self.cached_data['disk_size']
+        return '{:,}'.format(int(float(self.cached_data['disk_size'])))
 
     @property
     def ssh_port(self):
@@ -122,8 +123,8 @@ class Pi:
     @property
     def status(self):
         """
-        A string representing the provision status of the Pi. Can be either
-        "initialising" or "live".
+        A string representing the provision status of the Pi. Can be
+        "provisioning", "initialising" or "live".
         """
         return self.data['status']
 
@@ -166,8 +167,8 @@ class Pi:
         them. Property value is a list of strings. Assigned value should also be
         a list of strings.
         """
-        url = '{}/{}/ssh-key'.format(self._parent._API_URL, self.name)
-        r = requests.get(url, headers=self._parent._headers)
+        url = '{}/{}/ssh-key'.format(self._cloud._API_URL, self.name)
+        r = requests.get(url, headers=self._cloud.headers)
 
         if r.ok:
             body = r.json()
@@ -179,8 +180,8 @@ class Pi:
 
     @ssh_keys.setter
     def ssh_keys(self, ssh_keys):
-        url = '{}/{}/ssh-key'.format(self._parent._API_URL, self.name)
-        headers = self._parent._headers.copy()
+        url = '{}/{}/ssh-key'.format(self._cloud._API_URL, self.name)
+        headers = self._cloud.headers.copy()
         headers['Content-Type'] = 'application/json'
         ssh_keys_str = '\r\n'.join(ssh_keys)
         data = {
@@ -194,7 +195,7 @@ class Pi:
     @property
     def url(self):
         """
-        The http version of the hopstedpi.com URL of the Pi.
+        The http version of the hostedpi.com URL of the Pi.
 
         .. note::
             Note that a web server must be installed on the Pi for the URL to
@@ -205,7 +206,7 @@ class Pi:
     @property
     def url_ssl(self):
         """
-        The https version of the hopstedpi.com URL of the Pi.
+        The https version of the hostedpi.com URL of the Pi.
 
         .. note::
             Note that a web server must be installed on the Pi for the URL to
@@ -216,8 +217,8 @@ class Pi:
 
     def reboot(self):
         "Reboot the Pi."
-        url = '{}/{}/reboot'.format(self._parent._API_URL, self.name)
-        r = requests.post(url, headers=self._parent._headers)
+        url = '{}/{}/reboot'.format(self._cloud._API_URL, self.name)
+        r = requests.post(url, headers=self._cloud.headers)
         if r.ok:
             body = r.json()
         elif 'error' in body:
@@ -227,8 +228,8 @@ class Pi:
 
     def cancel(self):
         "Cancel the Pi service."
-        url = '{}/{}'.format(self._parent._API_URL, self.name)
-        r = requests.delete(url, headers=self._parent._headers)
+        url = '{}/{}'.format(self._cloud._API_URL, self.name)
+        r = requests.delete(url, headers=self._cloud.headers)
         if r.ok:
             body = r.json()
             if 'error' in body:
@@ -255,7 +256,7 @@ class Pi:
         """
         Ping the Pi's IPv6 address and return True if successful.
 
-        ..note::
+        ..note ::
             Note this requires IPv6 connectivity
         """
         # note this only works if you have IPv6
@@ -296,3 +297,43 @@ class Pi:
         url = self.url_ssl if ssl else self.url
         r = requests.get(url)
         return r.text
+
+    def pprint(self):
+        "Pretty print the information about the Pi"
+        data = self.data
+        if data['status'] == 'live':
+            print(
+                'Name: ' + self.name,
+                'Status: live',
+                'Model: Raspberry Pi ' + str(self.model),
+                'Disk size: ' + str(self.disk_size) + ' GB',
+                'Power: ' + ('Yes' if self.power else 'No'),
+                'Initialised keys: ' + ('Yes' if self.initialised_keys else 'No'),
+                'IPv6 address: ' + self.ip,
+                'IPv6 address (routed): ' + self.ip_routed,
+                'Location: ' + self.location,
+                'SSH keys: ' + str(len(self.ssh_keys)),
+                'SSH port: ' + str(self.ssh_port),
+                'URLs:',
+                '  ' + self.url,
+                '  ' + self.url_ssl,
+                'SSH command: ' + self.ssh_command,
+                sep='\n',
+            )
+        else:
+            print(
+                'Name: ' + self.name,
+                'Status: ' + self.status,
+                'Model: Raspberry Pi ' + str(self.model),
+                'Disk size: ' + str(self.disk_size) + ' GB',
+                'Power: ' + ('Yes' if self.power else 'No'),
+                'IPv6 address: ' + self.ip,
+                'IPv6 address (routed): ' + self.ip_routed,
+                'Location: ' + self.location,
+                'SSH port: ' + str(self.ssh_port),
+                'URLs:',
+                '  ' + self.url,
+                '  ' + self.url_ssl,
+                'SSH command: ' + self.ssh_command,
+                sep='\n',
+            )

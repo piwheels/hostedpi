@@ -3,17 +3,18 @@
 import sys
 from setuptools import setup, find_packages
 
+from hostedpi import __version__
+
 if not sys.version_info >= (3, 5):
     raise RuntimeError('This application requires Python 3.5 or later')
 
 __project__ = 'hostedpi'
-__version__ = '0.1'
 __description__ = "Python interface to the Mythic Beasts Hosted Pi API"
 __python_requires__ = '>=3.5'
 __author__ = 'The piwheels team'
 __author_email__ = 'ben@bennuttall.com'
 __url__ = 'https://www.piwheels.org/'
-__keywords__ = ['raspberrypi', 'mythic beasts', 'picloud', 'piwheels']
+__keywords__ = ['raspberrypi', 'mythicbeasts', 'picloud', 'piwheels']
 __platforms__ = 'ALL'
 
 __requires__ = ['requests']

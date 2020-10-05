@@ -2,9 +2,11 @@
 Recipes
 =======
 
-.. note:
+.. note::
     You'll need to create an API key to be able to use these recipes. See the
-    :doc:`getting_started` page to begin.
+    :doc:`getting_started` page to begin. The following examples assume the API
+    keys are set using environment variables, but they can be provided as
+    arguments to the :class:`~hostedpi.picloud.PiCloud` class constructor.
 
 Provisioning Pis
 ================
@@ -16,7 +18,7 @@ Provision a Pi
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     pi = cloud.create_pi('', model=3, disk=10)
 
@@ -27,7 +29,7 @@ Provision some Pis
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     pis = [
         cloud.create_pi('mypi{}'.format(n), model=3, disk=10)
@@ -42,7 +44,7 @@ Push button to provision a Pi
     from hostedpi import PiCloud
     from gpiozero import Button, LED
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
     btn = Button(2)
     led = LED(3)
 
@@ -55,7 +57,7 @@ Push button to provision a Pi
 
 See a live demo at https://twitter.com/ben_nuttall/status/1300442981779025921
 
-.. note:
+.. note::
     This requires the `gpiozero`_ library.
 
 .. _gpiozero: https://gpiozero.readthedocs.io/
@@ -70,7 +72,7 @@ List all Pis
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     for name in cloud.pis:
         print(name)
@@ -82,7 +84,7 @@ List all Pis and their IPv6 address
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     for name, pi in cloud.pis.items():
         print(name, pi.ip)
@@ -97,7 +99,7 @@ Reboot all Pis
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     for pi in cloud.pis.values():
         pi.reboot()
@@ -109,7 +111,7 @@ Reboot all Pis powered off
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     for pi in cloud.pis.values():
         if not pi.powered:
@@ -118,7 +120,7 @@ Reboot all Pis powered off
 Reboot all Pis not responding to ping
 -------------------------------------
 
-.. note:
+.. note::
     :meth:`~hostedpi.pi.Pi.ping_ipv6` requires an IPv6 internet connection, and no IPv4 equivalent is
     available
 
@@ -126,7 +128,7 @@ Reboot all Pis not responding to ping
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     for pi in cloud.pis.values():
         if not pi.ping_ipv6():
@@ -142,7 +144,7 @@ List SSH commands for all Pis
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     for pi in cloud.pis.values():
         print(pi.ssh_command)
@@ -154,7 +156,7 @@ Write SSH config to a file
 
     from hostedpi import PiCloud
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
 
     with open('config', 'w') as f:
         f.write(cloud.ssh_config)
@@ -162,7 +164,7 @@ Write SSH config to a file
 Ping
 ====
 
-.. note:
+.. note::
     :meth:`~hostedpi.pi.Pi.ping_ipv6` requires an IPv6 internet connection, and
     no IPv4 equivalent is available
 
@@ -176,7 +178,7 @@ List style:
     from hostedpi import PiCloud
     from time import sleep
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
     pi = cloud.pis['somepi']
 
     while True:
@@ -194,7 +196,7 @@ Unit test style:
     from hostedpi import PiCloud
     from time import sleep
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
     pi = cloud.pis['somepi']
 
     while True:
@@ -211,7 +213,7 @@ Ping status LED
     from gpiozero import LED
     from time import sleep
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
     pi = cloud.pis['somepi']
     led = LED(2)
 
@@ -222,7 +224,7 @@ Ping status LED
             led.off()
         sleep(60)
 
-.. note:
+.. note::
     This requires the `gpiozero`_ library.
 
 .. _gpiozero: https://gpiozero.readthedocs.io/
@@ -233,7 +235,7 @@ Web
 Retrieve the contents of the homepage
 -------------------------------------
 
-..note:
+.. note::
     Note that a web server must be installed on the Pi for the URL to resolve in
     a web browser, and an SSL certificate must be created for the https URL to
     resolve.
@@ -245,7 +247,7 @@ Print them out:
     from hostedpi import PiCloud
     import requests
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
     pi = cloud.pis['somepi']
 
     print(pi.get_web_contents(ssl=True))
@@ -257,7 +259,7 @@ Save to a file:
     from hostedpi import PiCloud
     import requests
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
     pi = cloud.pis['somepi']
 
     with open('pi.html', 'w') as f:
@@ -273,7 +275,7 @@ Access ``data.json`` from the web server, and print out the ``message`` value:
     from hostedpi import PiCloud
     import requests
 
-    cloud = PiCloud(api_id='', secret='')
+    cloud = PiCloud()
     pi = cloud.pis['somepi']
 
     url = pi.url_ssl + '/data.json'

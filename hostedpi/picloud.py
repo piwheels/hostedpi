@@ -16,13 +16,15 @@ class PiCloud:
 
     Set up API keys at https://www.mythic-beasts.com/customer/api-users
 
-    :type api_id: str
+    :type api_id: str or None
     :param api_id:
-        Your Mythic Beasts API ID
+        Your Mythic Beasts API ID (alternatively, the environment variable
+        ``HOSTEDPI_ID`` can be used)
 
-    :type secret: str
+    :type secret: str or None
     :param secret:
-        Your Mythic Beasts API secret
+        Your Mythic Beasts API secret (alternatively, the environment variable
+        ``HOSTEDPI_SECRET`` can be used)
 
     :type ssh_key: str or None
     :param ssh_key:
@@ -46,8 +48,20 @@ class PiCloud:
     """
     _API_URL = 'https://api.mythic-beasts.com/beta/servers/pi'
 
-    def __init__(self, api_id, secret, *, ssh_key=None, ssh_keys=None, ssh_key_path=None):
-        self._auth = MythicAuth(api_id, secret)
+    def __init__(self, api_id=None, api_secret=None, *, ssh_key=None, ssh_keys=None, ssh_key_path=None):
+        if api_id is None:
+            api_id = os.environ.get('HOSTEDPI_ID')
+
+        if api_secret is None:
+            api_secret = os.environ.get('HOSTEDPI_SECRET')
+
+        if api_id is None or api_secret is None:
+            raise HostedPiException(
+                'Environment variables HOSTEDPI_ID and HOSTEDPI_SECRET must be '
+                'set or passed as arguments'
+            )
+
+        self._auth = MythicAuth(api_id, api_secret)
 
         if ssh_key:
             self.ssh_keys = [ssh_key]
@@ -62,23 +76,21 @@ class PiCloud:
         return '<PiCloud>'
 
     @property
-    def _headers(self):
-        return {
-            'Authorization': 'Bearer {}'.format(self._auth.token),
-        }
+    def headers(self):
+        return self._auth.headers
 
     @property
     def pis(self):
         "A dictionary of :class:`~hostedpi.pi.Pi` objects keyed by their names."
         try:
-            r = requests.get(self._API_URL, headers=self._headers)
+            r = requests.get(self._API_URL, headers=self.headers)
         except RequestException as e:
             raise HostedPiException(str(e))
 
         pis = r.json()['servers']
 
         return {
-            name: Pi(parent=self, name=name, model=data['model'])
+            name: Pi(cloud=self, name=name, model=data['model'])
             for name, data in pis.items()
         }
 
@@ -155,7 +167,7 @@ class PiCloud:
 
         url = '{}/{}'.format(self._API_URL, name)
         data = {
-            'disk': disk,
+            'disk': disk_size,
             'model': model,
         }
 
@@ -163,7 +175,7 @@ class PiCloud:
             data['ssh_key'] = ssh_keys
 
         try:
-            r = requests.post(url, headers=self._headers, json=data)
+            r = requests.post(url, headers=self.headers, json=data)
         except RequestException as e:
             raise HostedPiException(str(e))
 
@@ -172,4 +184,4 @@ class PiCloud:
         if 'error' in body:
             raise HostedPiException(body['error'])
 
-        return Pi(parent=self, name=name, model=model)
+        return Pi(cloud=self, name=name, model=model)

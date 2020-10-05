@@ -9,7 +9,7 @@ Python module.
 Create a Mythic Beasts account
 ==============================
 
-1. Sign up: https://www.mythic-beasts.com/user/login
+Sign up: https://www.mythic-beasts.com/user/login
 
 Create an API key
 =================
@@ -33,7 +33,7 @@ Create an API key
 Install the hostedpi module
 ===========================
 
-For a system-wide install:
+For a system-wide installation:
 
 .. code-block:: console
 
@@ -48,7 +48,7 @@ Or in a virtual environment:
 Test your API keys
 ==================
 
-1. To test your API connection, try running the following commands in a terminal
+To test your API connection, try running the following commands in a terminal
 window, with your API ID and secret:
 
 .. code-block:: console
@@ -56,7 +56,7 @@ window, with your API ID and secret:
     $ HOSTEDPI_ID='YOUR ID' HOSTEDPI_SECRET='YOUR SECRET' hostedpi test
 
 If your API ID and secret are correct, you should see the response "Connected
-to Mythic Beasts API".
+to the Mythic Beasts API".
 
 Start using the Python module
 =============================
@@ -139,3 +139,5 @@ More
   on available properties and methods.
 * See the :doc:`recipes` page for more ideas showing what you can do with this
   module.
+* See the :doc:`cli` page for details of the possibilities provided by
+  ready-made scripts
