@@ -8,6 +8,9 @@ hostedpi
 The ``hostedpi`` command is a multi-purpose utility for common actions
 interacting with the API.
 
+This program requires API keys to be provided using environment variables
+``HOSTEDPI_ID`` and ``HOSTEDPI_SECRET``.
+
 hostedpi test
 -------------
 
