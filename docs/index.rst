@@ -22,17 +22,41 @@ https://www.mythic-beasts.com/support/api/raspberry-pi
 Usage
 =====
 
-Provision a new Pi and view its SSH command::
+Provision a new Pi and view its SSH command (using Python):
+
+.. code-block:: pycon
 
     >>> from hostedpi import PiCloud
     >>> api_id = '8t29hvcux5g9vud8'
     >>> secret = 'QNwsvxZY8SxT3OiLt:Vmz-D1mWQuoZ'
     >>> cloud = PiCloud(api_id, secret, ssh_key_path='/home/ben/.ssh/id_rsa.pub')
-    >>> pi = cloud.create_pi('somepi')
+    >>> pi = cloud.create_pi('mypi')
     >>> print(pi.ssh_command)
     ssh -p 5123 root@ssh.somepi.hostedpi.com
 
-See the :doc:`getting_started` page for information on how to authenticate.
+View the information about a Pi from the command line:
+
+.. code-block:: console
+
+    $ hostedpi show mypi
+    Name: mypi
+    Status: live
+    Model: Raspberry Pi 3
+    Disk size: 30 GB
+    Power: No
+    Initialised keys: No
+    IPv6 address: 2a00:1098:0008:0088:0000:0000:0000:0001
+    IPv6 address (routed): 2a00:1098:0008:8800:0000:0000:0000:0000/56
+    Location: MER
+    SSH keys: 1
+    SSH port: 5123
+    URLs:
+      http://www.mypi.hostedpi.com
+      https://www.mypi.hostedpi.com
+    SSH command: ssh -p 5123 root@ssh.mypi.hostedpi.com
+
+See the :doc:`getting_started` page for information on how to authenticate, and
+see the :doc:`cli` page for information on using the command line interface.
 
 Table of Contents
 =================

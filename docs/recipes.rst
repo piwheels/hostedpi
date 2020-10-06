@@ -114,7 +114,7 @@ Reboot all Pis powered off
     cloud = PiCloud()
 
     for pi in cloud.pis.values():
-        if not pi.powered:
+        if not pi.power:
             pi.reboot()
 
 Reboot all Pis not responding to ping

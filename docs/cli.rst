@@ -19,8 +19,6 @@ Test a connection to the API:
 .. code-block:: console
 
     $ hostedpi test
-
-    $ hostedpi test
     Connected to Mythic Beasts API
 
 hostedpi list

@@ -71,6 +71,10 @@ credentials, and print out a list of Pi services in your account::
     for name in cloud.pis:
         print(name)
 
+.. note::
+    You can either initialise :class:`~hostedpi.picloud.PiCloud` with your API
+    ID and secret, or set them in environment variables like above.
+
 You can provision a new Pi with the :meth:`~hostedpi.picloud.PiCloud.create_pi`
 method::
 

@@ -20,6 +20,26 @@ to newly or previously created :class:`~hostedpi.pi.Pi` instances, the following
 API documentation should prove useful to show what you can do with the API via
 the *hostedpi* module.
 
+You can authenticate by passing your API ID and secret as arguments to the
+:class:`~hostedpi.picloud.PiCloud` constructor:
+
+.. code-block:: pycon
+
+    >>> from hostedpi import PiCloud
+    >>> cloud = PiCloud('YOUR ID', 'YOUR SECRET')
+
+or set them in environment variables instead:
+
+.. code-block:: console
+
+    $ export HOSTEDPI_ID='YOUR ID'
+    $ export HOSTEDPI_SECRET='YOUR SECRET'
+
+.. code-block:: pycon
+
+    >>> from hostedpi import PiCloud
+    >>> cloud = PiCloud()
+
 PiCloud
 =======
 

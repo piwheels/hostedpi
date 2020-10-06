@@ -8,6 +8,7 @@ import json
 import requests
 from requests.exceptions import RequestException
 
+from .utils import ssh_import_id
 from .exc import HostedPiException
 
 
@@ -163,9 +164,9 @@ class Pi:
     @property
     def ssh_keys(self):
         """
-        Retrieve the list of SSH keys on the Pi, or use assignment to update
-        them. Property value is a list of strings. Assigned value should also be
-        a list of strings.
+        Retrieve the SSH keys on the Pi, or use assignment to update them.
+        Property value is a set of strings. Assigned value should also be a set
+        of strings.
         """
         url = '{}/{}/ssh-key'.format(self._cloud._API_URL, self.name)
         r = requests.get(url, headers=self._cloud.headers)
@@ -176,14 +177,17 @@ class Pi:
             raise HostedPiException('{}: {}'.format(r.status_code, r.reason))
 
         keys = body['ssh_key']
-        return keys.split('\r\n')
+        return {key.strip() for key in keys.split('\n') if key.strip()}
 
     @ssh_keys.setter
     def ssh_keys(self, ssh_keys):
         url = '{}/{}/ssh-key'.format(self._cloud._API_URL, self.name)
         headers = self._cloud.headers.copy()
         headers['Content-Type'] = 'application/json'
-        ssh_keys_str = '\r\n'.join(ssh_keys)
+        if ssh_keys:
+            ssh_keys_str = '\r\n'.join(ssh_keys)
+        else:
+            ssh_keys_str = '\r\n'  # hack: server doesn't allow empty string
         data = {
             'ssh_key': ssh_keys_str,
         }
@@ -256,7 +260,7 @@ class Pi:
         """
         Ping the Pi's IPv6 address and return True if successful.
 
-        ..note ::
+        .. note::
             Note this requires IPv6 connectivity
         """
         # note this only works if you have IPv6
@@ -297,6 +301,21 @@ class Pi:
         url = self.url_ssl if ssl else self.url
         r = requests.get(url)
         return r.text
+
+    def ssh_import_id(self, *, github=None, launchpad=None):
+        """
+        Import SSH keys from GitHub or Launchpad, and add them to the Pi.
+
+        :type github: str or None
+        :param github:
+            The GitHub username to import keys from (keyword-only argument)
+
+        :type launchpad: str or None
+        :param launchpad:
+            The Launchpad username to import keys from (keyword-only argument)
+        """
+        ssh_keys = ssh_import_id(github=github, launchpad=launchpad)
+        self.ssh_keys += ssh_keys
 
     def pprint(self):
         "Pretty print the information about the Pi"
