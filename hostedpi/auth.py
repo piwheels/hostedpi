@@ -8,7 +8,7 @@ from .__version__ import __version__
 
 
 class MythicAuth:
-    _LOGIN_URL = 'https://auth.mythic-beasts.com/login'
+    _LOGIN_URL = "https://auth.mythic-beasts.com/login"
 
     def __init__(self, api_id, api_secret):
         self._creds = (api_id, api_secret)
@@ -19,7 +19,7 @@ class MythicAuth:
         self._authenticate()
 
     def __repr__(self):
-        return '<MythicAuth>'
+        return "<MythicAuth>"
 
     @property
     def headers(self):
@@ -50,4 +50,4 @@ class MythicAuth:
         elif 'error_description' in body:
             raise HostedPiException(body['error_description'])
         else:
-            raise HostedPiException('status code: {}'.format(r.status_code))
+            raise HostedPiException("status code: {}".format(r.status_code))

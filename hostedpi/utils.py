@@ -19,7 +19,27 @@ def ssh_import_id(*, github=None, launchpad=None):
         )
     return r.text.strip().split(sep)
 
+
 def read_ssh_key(ssh_key_path):
     "Read the SSH key from the given path and return the file contents"
     with open(ssh_key_path) as f:
         return f.read()
+
+def parse_ssh_keys(self, ssh_keys=None, ssh_key_path=None,
+                   ssh_import_github=None, ssh_import_launchpad=None):
+    ssh_keys_set = set()
+    if ssh_keys:
+        ssh_keys_set |= set(ssh_keys)
+    if ssh_key_path:
+        ssh_keys_set |= {read_ssh_key(ssh_key_path)}
+    if ssh_import_github:
+        ssh_keys_set |= {
+            ssh_import_id(github=username)
+            for username in ssh_import_github
+        }
+    if ssh_import_launchpad:
+        ssh_keys_set |= {
+            ssh_import_id(launchpad=username)
+            for username in ssh_import_launchpad
+        }
+    return ssh_keys_set

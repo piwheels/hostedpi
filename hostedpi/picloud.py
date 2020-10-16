@@ -7,7 +7,7 @@ from requests.exceptions import RequestException
 
 from .auth import MythicAuth
 from .pi import Pi
-from .utils import ssh_import_id
+from .utils import ssh_import_id, parse_ssh_keys
 from .exc import HostedPiException
 
 
@@ -28,40 +28,35 @@ class PiCloud:
         Your Mythic Beasts API secret (alternatively, the environment variable
         ``HOSTEDPI_SECRET`` can be used)
 
-    :type ssh_key: str or None
-    :param ssh_key:
-        A single SSH key string to add to any Pis created (keyword-only
-        argument)
-
-    :type ssh_keys: set or None
+    :type ssh_keys: list or set or None
     :param ssh_keys:
-        A set of SSH key strings to add to any Pis created (keyword-only
-        argument)
+        A list/set of SSH key strings (keyword-only argument)
 
     :type ssh_key_path: str or None
     :param ssh_key_path:
-        The path to your SSH public key to add to any Pis created (keyword-only
+        The path to your SSH public key (keyword-only argument)
+
+    :type ssh_import_github: list or set or None
+    :param ssh_import_github:
+        A list/set of GitHub usernames to import SSH keys from (keyword-only
         argument)
 
-    :type ssh_import_github: str or None
-    :param ssh_import_github:
-        The GitHub username to import SSH keys from (keyword-only argument)
-
-    :type ssh_import_launchpad: str or None
+    :type ssh_import_launchpad: list or set or None
     :param ssh_import_launchpad:
-        The Launchpad username to import SSH keys from (keyword-only argument)
+        A list/set of Launchpad usernames to import SSH keys from (keyword-only
+        argument)
 
     .. note::
         If any SSH keys are provided on class initialisation, they will be used
-        here but are overriden by any passed to the
+        when creating Pis but are overriden by any passed to the
         :meth:`~hostedpi.picloud.PiCloud.create_pi` method.
 
-        Only one method of supplying SSH keys will be used.
+        All SSH arguments provided will be used in combination
     """
     _API_URL = 'https://api.mythic-beasts.com/beta/servers/pi'
 
-    def __init__(self, api_id=None, api_secret=None, *, ssh_key=None,
-                 ssh_keys=None, ssh_key_path=None, ssh_import_github=None,
+    def __init__(self, api_id=None, api_secret=None, *, ssh_keys=None,
+                 ssh_key_path=None, ssh_import_github=None,
                  ssh_import_launchpad=None):
         if api_id is None:
             api_id = os.environ.get('HOSTEDPI_ID')
@@ -71,27 +66,17 @@ class PiCloud:
 
         if api_id is None or api_secret is None:
             raise HostedPiException(
-                'Environment variables HOSTEDPI_ID and HOSTEDPI_SECRET must be '
-                'set or passed as arguments'
+                "Environment variables HOSTEDPI_ID and HOSTEDPI_SECRET must be "
+                "set or api_id and api_secret passed as arguments"
             )
+
+        self.ssh_keys = parse_ssh_keys(ssh_keys, ssh_key_path,
+                                       ssh_import_github, ssh_import_launchpad)
 
         self._auth = MythicAuth(api_id, api_secret)
 
-        if ssh_key:
-            self.ssh_keys = [ssh_key]
-        elif ssh_keys:
-            self.ssh_keys = ssh_keys
-        elif ssh_key_path:
-            self.ssh_keys = read_ssh_key(ssh_key_path)
-        elif ssh_import_github:
-            self.ssh_keys = ssh_import_id(github=ssh_import_github)
-        elif ssh_import_launchpad:
-            self.ssh_keys = ssh_import_id(launchpad=ssh_import_launchpad)
-        else:
-            self.ssh_keys = None
-
     def __repr__(self):
-        return '<PiCloud>'
+        return "<PiCloud>"
 
     @property
     def headers(self):
@@ -113,16 +98,25 @@ class PiCloud:
         }
 
     @property
-    def ssh_config(self):
+    def ipv4_ssh_config(self):
         """
-        A string containing the SSH config for all Pis within the account. The
-        contents could be added to an SSH config file for easy access to the Pis
-        in the account.
+        A string containing the IPv4 SSH config for all Pis within the account.
+        The contents could be added to an SSH config file for easy access to the
+        Pis in the account.
         """
-        return '\n'.join(pi.ssh_config for pi in self.pis.values())
+        return "\n".join(pi.ipv4_ssh_config for pi in self.pis.values())
 
-    def create_pi(self, name, *, model=3, disk_size=10, ssh_key=None,
-                  ssh_keys=None, ssh_key_path=None, ssh_import_github=None,
+    @property
+    def ipv6_ssh_config(self):
+        """
+        A string containing the IPv6 SSH config for all Pis within the account.
+        The contents could be added to an SSH config file for easy access to the
+        Pis in the account.
+        """
+        return "\n".join(pi.ipv6_ssh_config for pi in self.pis.values())
+
+    def create_pi(self, name, *, model=3, disk_size=10, ssh_keys=None,
+                  ssh_key_path=None, ssh_import_github=None,
                   ssh_import_launchpad=None):
         """
         Provision a new cloud Pi with the specified name, model, disk size and
@@ -142,28 +136,23 @@ class PiCloud:
             The amount of disk space (in GB) attached to the Pi - must be a
             multiple of 10 - defaults to 10 (keyword-only argument)
 
-        :type ssh_key: str or None
-        :param ssh_key:
-            A single SSH key string to add to the Pi - (keyword-only argument)
-
-        :type ssh_keys: list or None
+        :type ssh_keys: list or set or None
         :param ssh_keys:
-            A list of SSH key strings to add to the Pi (keyword-only argument)
+            A list/set of SSH key strings (keyword-only argument)
 
         :type ssh_key_path: str or None
         :param ssh_key_path:
-            The path to your SSH public key to add to the Pi (keyword-only
-            argument)
+            The path to your SSH public key (keyword-only argument)
 
-        :type ssh_import_github: str or None
+        :type ssh_import_github: list or set or None
         :param ssh_import_github:
-            The username of a GitHub username to import SSH keys from (keyword-only
+            A list/set of GitHub usernames to import SSH keys from (keyword-only
             argument)
 
-        :type ssh_import_launchpad: str or None
+        :type ssh_import_launchpad: list or set or None
         :param ssh_import_launchpad:
-            The username of a Launchpad ID to import SSH keys from (keyword-only
-            argument)
+            A list/set of Launchpad usernames to import SSH keys from
+            (keyword-only argument)
 
         .. note::
             If any SSH keys are provided on class initialisation, they will be
@@ -174,26 +163,16 @@ class PiCloud:
             not possible to request a particular model beyond 3 or 4. The Pi 4
             is the 4GB RAM model.
         """
-        if ssh_key:
-            ssh_keys = ssh_key
-        elif ssh_keys:
-            ssh_keys = '\r\n'.join(ssh_keys)
-        elif ssh_key_path:
-            ssh_keys = read_ssh_key(ssh_key_path)
-        elif ssh_import_github:
-            ssh_keys = '\r\n'.join(ssh_import_id(github=ssh_import_github))
-        elif ssh_import_launchpad:
-            ssh_keys = '\r\n'.join(ssh_import_id(launchpad=ssh_import_launchpad))
-        elif self.ssh_keys:
-            ssh_keys = '\r\n'.join(self.ssh_keys)
-        else:
-            ssh_keys = None
+        ssh_keys_set = parse_ssh_keys(ssh_keys, ssh_key_path, ssh_import_github,
+                                      ssh_import_launchpad)
+        ssh_keys_str = "\r\n".join(ssh_keys_set)
 
-        if model not in (3, 4):
-            raise HostedPiException('model must be 3 or 4')
+        model = str(model)
+        if model not in ('3', '4'):
+            raise HostedPiException("model must be 3 or 4")
 
         if disk_size < 10 or disk_size % 10 > 0:
-            raise HostedPiException('disk size must be a multiple of 10')
+            raise HostedPiException("disk size must be a multiple of 10")
 
         url = '{}/{}'.format(self._API_URL, name)
         data = {
@@ -202,7 +181,7 @@ class PiCloud:
         }
 
         if ssh_keys:
-            data['ssh_key'] = ssh_keys
+            data['ssh_key'] = ssh_keys_str
 
         try:
             r = requests.post(url, headers=self.headers, json=data)
@@ -215,3 +194,8 @@ class PiCloud:
             raise HostedPiException(body['error'])
 
         return Pi(cloud=self, name=name, model=model)
+
+    def pprint(self):
+        for pi in self.pis.values():
+            pi.pprint()
+            print()

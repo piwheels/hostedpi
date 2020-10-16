@@ -258,7 +258,7 @@ class CLI:
         src, dest = args
         src_pi = self.pis.get(src)
         dest_pi = self.pis.get(dest)
-        dest_pi.ssh_keys += src_pi.ssh_keys
+        dest_pi.ssh_keys |= src_pi.ssh_keys
 
     def do_import_keys_gh(self, *args):
         if len(args) != 2:
