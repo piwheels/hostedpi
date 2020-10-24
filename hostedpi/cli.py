@@ -90,8 +90,8 @@ class CLI:
                 "default value for that setting."),
             help=("Displays help about the specified command or setting"))
         help_cmd.add_argument(
-            "cmd", metavar="command-or-setting", nargs='?',
-            help=("The name of the command or setting to output help for")
+            "cmd", metavar="cmd", nargs='?',
+            help=("The name of the command to output help for")
         )
         help_cmd.set_defaults(func=self.do_help)
 
@@ -101,11 +101,19 @@ class CLI:
                 "Test a connection to the Mythic Beasts API using API ID and "
                 "secret in environment variables."),
             help=("Test a connection to the Mythic Beasts API"))
-        test_cmd.add_argument(
-            "cmd", metavar="command-or-setting", nargs='?',
-            help=("The name of the command or setting to output help for")
-        )
         test_cmd.set_defaults(func=self.do_test)
+
+        get_images_cmd = commands.add_parser(
+            "images", aliases=["get-images"],
+            description=(
+                "Test a connection to the Mythic Beasts API using API ID and "
+                "secret in environment variables."),
+            help=("Test a connection to the Mythic Beasts API"))
+        get_images_cmd.add_argument(
+            "model", metavar="model", nargs='?',
+            help=("The Pi model number (3 or 4) to get operating systems for")
+        )
+        get_images_cmd.set_defaults(func=self.do_get_images)
 
         list_cmd = commands.add_parser(
             "list", aliases=["ls"],
@@ -259,20 +267,28 @@ class CLI:
 
         return parser, commands.choices
 
+    def get_pi(self, name):
+        try:
+            return self.pis[name]
+        except KeyError:
+            print("Pi {} not found".format(self._args.name))
+
     def do_help(self):
         print("help")
-        return 0
 
     def do_test(self):
         if self.cloud:
             print("Connected to Mythic Beasts API")
-            return 0
         return 2
+
+    def do_get_images(self):
+        images = self.cloud.get_operating_systems(model=self._args.model)
+        for name, label in images.items():
+            print('{} ({})'.format(name, label))
 
     def do_list(self):
         for name in self.pis:
             print(name)
-        return 0
 
     def do_show(self):
         if self._args.name:
@@ -281,19 +297,15 @@ class CLI:
             return self.do_show_all()
 
     def do_show_one(self, name):
-        pi = self.pis.get(name)
-        if pi:
-            pi.pprint()
-            return 0
-        else:
-            print("No Pi found by the name", name)
+        pi = self.get_pi(self._args.name)
+        if not pi:
             return 2
+        pi.pprint()
 
     def do_show_all(self):
         for pi in self.pis.values():
             pi.pprint()
             print()
-        return 0
 
     def do_create(self):
         name = self._args.name
@@ -314,7 +326,6 @@ class CLI:
         print("Pi {} provisioned successfully".format(name))
         print()
         pi.pprint()
-        return 0
 
     def do_reboot(self):
         if self._args.name:
@@ -323,18 +334,15 @@ class CLI:
             return self.do_reboot_all()
 
     def do_reboot_one(self, name):
-        pi = self.pis.get(name)
-        if pi:
-            pi.reboot()
-            print("Pi", name, "rebooted")
-        else:
-            print("No Pi found by the name:", name)
+        pi = self.get_pi(self._args.name)
+        if not pi:
             return 2
+        pi.reboot()
+        print("Pi", name, "rebooted")
 
     def do_reboot_all(self):
         for pi in self.pis.values():
             pi.reboot()
-        return 0
 
     def do_power_on(self):
         if self._args.name:
@@ -343,19 +351,16 @@ class CLI:
             return self.do_power_on_all()
 
     def do_power_on_one(self, name):
-        pi = self.pis.get(name)
-        if pi:
-            pi.on()
-            print("Pi", name, "powered on")
-        else:
-            print("No Pi found by the name:", name)
+        pi = self.get_pi(self._args.name)
+        if not pi:
             return 2
+        pi.on()
+        print("Pi", name, "powered on")
 
     def do_power_on_all(self):
         for name, pi in self.pis.items():
             pi.on()
             print("Pi", name, "powered on")
-        return 0
 
     def do_power_off(self):
         if self._args.name:
@@ -364,19 +369,16 @@ class CLI:
             return self.do_power_off_all()
 
     def do_power_off_one(self, name):
-        pi = self.pis.get(name)
-        if pi:
-            pi.off()
-            print("Pi", name, "powered off")
-        else:
-            print("No Pi found by the name:", name)
+        pi = self.get_pi(self._args.name)
+        if not pi:
             return 2
+        pi.off()
+        print("Pi", name, "powered off")
 
     def do_power_off_all(self):
         for name, pi in self.pis.items():
             pi.off()
             print("Pi", name, "powered off")
-        return 0
 
     def do_cancel(self):
         if self._args.name:
@@ -385,20 +387,16 @@ class CLI:
             return self.do_cancel_all()
 
     def do_cancel_one(self, name):
-        pi = self.pis.get(name)
-        if pi:
-            pi.cancel()
-            print("Pi service", name, "cancelled")
-            return 0
-        else:
-            print("No Pi found by the name", name)
+        pi = self.get_pi(self._args.name)
+        if not pi:
             return 2
+        pi.cancel()
+        print("Pi service", name, "cancelled")
 
     def do_cancel_all(self):
         for pi in self.pis.values():
             pi.cancel()
             print("Pi service", name, "cancelled")
-        return 0
 
     def do_get_keys(self):
         if self._args.name:
@@ -407,15 +405,15 @@ class CLI:
             return self.do_get_keys_all()
 
     def do_get_keys_one(self, name):
-        pi = self.pis.get(name)
+        pi = self.get_pi(self._args.name)
+        if not pi:
+            return 2
         print(*pi.ssh_keys, sep='\n')
-        return 0
 
     def do_get_keys_all(self):
         for name, pi in self.pis.items():
             num_keys = len(pi.ssh_keys)
             print(name + ':', num_keys, 'key' if num_keys == 1 else 'keys')
-        return 0
 
     def do_add_key(self):
         name = self._args.name
@@ -427,52 +425,40 @@ class CLI:
             return self.do_add_key_all(ssh_key)
 
     def do_add_key_one(self, name, ssh_key):
-        pi = self.pis.get(name)
+        pi = self.get_pi(self._args.name)
+        if not pi:
+            return 2
         pi.ssh_keys |= {ssh_key}
-        return 0
 
     def do_add_key_all(self, ssh_key):
         for name, pi in self.pis.items():
             pi.ssh_keys |= {ssh_key}
-        return 0
 
     def do_copy_keys(self):
-        try:
-            src_pi = self.pis[self._args.name_src]
-        except KeyError:
-            print('Pi {} not found'.format(self._args.name_src))
-            return 2
-        try:
-            dest_pi = self.pis[self._args.name_dest]
-        except KeyError:
-            print('Pi {} not found'.format(self._args.name_dest))
+        src_pi = self.get_pi(self._args.name_src)
+        dest_pi = self.get_pi(self._args.name_dest)
+        if not (src_pi and dest_pi):
             return 2
 
         dest_pi.ssh_keys |= src_pi.ssh_keys
 
     def do_remove_keys(self):
-        try:
-            pi = self.pis[self._args.name]
-        except KeyError:
-            print('Pi {} not found'.format(self._args.name))
+        pi = self.get_pi(self._args.name)
+        if not pi:
             return 2
 
         pi.ssh_keys = set()
 
     def do_import_keys_gh(self):
-        try:
-            pi = self.pis[self._args.name]
-        except KeyError:
-            print('Pi {} not found'.format(self._args.name))
+        pi = self.get_pi(self._args.name)
+        if not pi:
             return 2
         new_keys = pi.ssh_import_id(github={self._args.username})
         print("{} keys added".format(len(new_keys)))
 
     def do_import_keys_lp(self):
-        try:
-            pi = self.pis[self._args.name]
-        except KeyError:
-            print('Pi {} not found'.format(self._args.name))
+        pi = self.get_pi(self._args.name)
+        if not pi:
             return 2
         new_keys = pi.ssh_import_id(launchpad={self._args.username})
         print("{} keys added".format(len(new_keys)))
