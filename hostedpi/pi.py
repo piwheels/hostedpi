@@ -5,10 +5,10 @@ import os
 import subprocess
 import json
 from ipaddress import IPv6Address, IPv6Network
-from threading import Thread
+from time import sleep
 
 import requests
-from requests.exceptions import RequestException
+from requests.exceptions import HTTPError
 
 from .utils import ssh_import_id, parse_ssh_keys
 from .exc import HostedPiException
@@ -58,19 +58,19 @@ class Pi:
             return "<Pi model {} {}>".format(model, self.name)
 
     def _get_data(self):
-        url = "{}/{}".format(self._cloud._API_URL, self.name)
+        url = "{}/{}".format(self._API_URL, self.name)
+        r = requests.get(url, headers=self._cloud.headers)
+
         try:
-            r = requests.get(url, headers=self._cloud.headers)
-        except RequestException as e:
-            raise HostedPiException(str(e))
+            r.raise_for_status()
+        except HTTPError as e:
+            raise HostedPiException(e)
 
-        if r.ok:
-            data = r.json()
-        else:
-            raise HostedPiException("{}: {}".format(r.status_code, r.reason))
-
+        data = r.json()
         self._boot_progress = data['boot_progress']
-        self._disk_size = int(float(data['disk_size']))
+        disk_size = data.get('disk_size')
+        if disk_size:
+            self._disk_size = int(float(disk_size))
         self._initialised_keys = data['initialised_keys']
         self._ipv4_ssh_port = int(data['ssh_port'])
         self._ipv6_address = IPv6Address(data['ip'])
@@ -83,6 +83,10 @@ class Pi:
         self._status = data['status']
 
     @property
+    def _API_URL(self):
+        return self._cloud._API_URL + '/pi'
+
+    @property
     def name(self):
         "The name of the Pi service."
         return self._name
@@ -90,11 +94,14 @@ class Pi:
     @property
     def boot_progress(self):
         """
-        The Pi's boot progress. ``None`` if booted successfully, otherwise will
-        be a string.
+        A string representing the Pi's boot progress. Can be ``booted``,
+        ``powered off`` or a particular stage of the boot process if currently
+        booting.
         """
         self._get_data()
-        return self._boot_progress
+        if self._boot_progress:
+            return self._boot_progress
+        return "booted" if self.power else "powered off"
 
     @property
     def disk_size(self):
@@ -222,20 +229,22 @@ class Pi:
         Property value is a set of strings. Assigned value should also be a set
         of strings.
         """
-        url = "{}/{}/ssh-key".format(self._cloud._API_URL, self.name)
+        url = "{}/{}/ssh-key".format(self._API_URL, self.name)
         r = requests.get(url, headers=self._cloud.headers)
 
-        if r.ok:
-            body = r.json()
-        else:
-            raise HostedPiException("{}: {}".format(r.status_code, r.reason))
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            raise HostedPiException(e)
+
+        body = r.json()
 
         keys = body['ssh_key']
         return {key.strip() for key in keys.split("\n") if key.strip()}
 
     @ssh_keys.setter
     def ssh_keys(self, ssh_keys):
-        url = "{}/{}/ssh-key".format(self._cloud._API_URL, self.name)
+        url = "{}/{}/ssh-key".format(self._API_URL, self.name)
         headers = self._cloud.headers.copy()
         headers['Content-Type'] = 'application/json'
         if ssh_keys:
@@ -247,8 +256,11 @@ class Pi:
         }
 
         r = requests.put(url, headers=headers, json=data)
-        if not r.ok:
-            raise HostedPiException("{}: {}".format(r.status_code, r.reason))
+
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            raise HostedPiException(e)
 
     @property
     def url(self):
@@ -273,10 +285,40 @@ class Pi:
         """
         return "https://www.{}.hostedpi.com".format(self.name)
 
+    def _power_on_off(self, *, on=False):
+        url = "{}/{}/power".format(self._API_URL, self.name)
+        data = {
+            'power': on,
+        }
+        r = requests.put(url, headers=self._cloud.headers, json=data)
+
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            raise HostedPiException(e)
+
+    def on(self, *, wait=False):
+        """
+        Power the Pi on. If *wait* is ``False`` (the default), return
+        immediately. If *wait* is ``True``, wait until the power on request is
+        completed, and return ``True`` on success, and ``False`` on failure.
+        """
+        self._power_on_off(on=True)
+        if wait:
+            while self.is_booting:
+                sleep(2)
+            return self.power
+
+    def off(self):
+        """
+        Power the Pi off and return immediately.
+        """
+        self._power_on_off(on=False)
+
     def reboot(self, *, wait=False):
         """
         Reboot the Pi. If *wait* is ``False`` (the default), return ``None``
-        immediately. If *wait* is ``False``, wait until the reboot request is
+        immediately. If *wait* is ``True``, wait until the reboot request is
         completed, and return ``True`` on success, and ``False`` on failure.
 
         .. note::
@@ -285,36 +327,36 @@ class Pi:
             :attr:`~hostedpi.pi.Pi.is_booting` and
             :attr:`~hostedpi.pi.Pi.boot_progress`.
         """
-        def request_reboot():
-            url = "{}/{}/reboot".format(self._cloud._API_URL, self.name)
-            r = requests.post(url, headers=self._cloud.headers)
-            return r
-            if r.ok:
-                return True
-            else:
-                return False
+        url = "{}/{}/reboot".format(self._API_URL, self.name)
+        r = requests.post(url, headers=self._cloud.headers)
+
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            raise HostedPiException(e)
+
         if wait:
-            return request_reboot()
-        else:
-            self._reboot_thread = Thread(target=request_reboot, daemon=True)
-            self._reboot_thread.start()
+            while self.is_booting:
+                sleep(2)
+            return self.power
 
     def cancel(self):
         "Cancel the Pi service."
-        url = "{}/{}".format(self._cloud._API_URL, self.name)
+        url = "{}/{}".format(self._API_URL, self.name)
         r = requests.delete(url, headers=self._cloud.headers)
-        if r.ok:
-            body = r.json()
-            if 'error' in body:
-                raise HostedPiException(body['error'])
-            else:
-                self._cancelled = True
-        else:
-            raise HostedPiException("{}: {}".format(r.status_code, r.reason))
+
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            raise HostedPiException(e)
+
+        body = r.json()
+        self._cancelled = True
 
     def ssh_import_id(self, *, github=None, launchpad=None):
         """
-        Import SSH keys from GitHub or Launchpad, and add them to the Pi.
+        Import SSH keys from GitHub or Launchpad, and add them to the Pi. Return
+        the set of keys added.
 
         :type ssh_import_github: list or set or None
         :param ssh_import_github:
@@ -326,14 +368,14 @@ class Pi:
             A list/set of Launchpad usernames to import SSH keys from
             (keyword-only argument)
         """
-        ssh_keys_set = parse_ssh_keys(ssh_import_github=ssh_import_github,
-                                      ssh_import_launchpad=ssh_import_launchpad)
+        ssh_keys_set = parse_ssh_keys(ssh_import_github=github,
+                                      ssh_import_launchpad=launchpad)
         self.ssh_keys |= ssh_keys_set
+        return ssh_keys_set
 
     def pprint(self):
         "Pretty print the information about the Pi"
         self._get_data()
-        num_keys = len(self.ssh_keys)
         if self._status == "live":
             if self._is_booting:
                 boot_progress = "booting: {}".format(self._boot_progress)
@@ -341,6 +383,7 @@ class Pi:
                 boot_progress = self._boot_progress
             else:
                 boot_progress = "live"
+            num_keys = len(self.ssh_keys)
             print("Name:", self.name)
             print("Status:", boot_progress)
             print("Model: Raspberry Pi", self._model_full)
@@ -350,7 +393,7 @@ class Pi:
             print("IPv6 network:", self._ipv6_network)
             print("Initialised keys:", "Yes" if self._initialised_keys else "No")
             print("SSH keys:", num_keys)
-            print("SSH port:", self.ipv4_ssh_port)
+            print("IPv4 SSH port:", self.ipv4_ssh_port)
             print("Location:", self.location)
             print("URLs:")
             print(" ", self.url)

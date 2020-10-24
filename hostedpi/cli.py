@@ -1,132 +1,284 @@
-"""
-hostedpi command line interface
-
-Usage: hostedpi [cmd] [args]
-
-$ hostedpi test
-  Test your connection to the API
-
-$ hostedpi list
-  List all Pis in the account
-
-$ hostedpi show [name]
-  Show info about the Pi called *name*
-$ hostedpi show all
-  Show info about the all Pis within the account
-
-$ hostedpi create [name] [model] [ssh_key_path]
-  Provision a new Pi service with name *name*, optionally specify model number
-  and SSH key path
-
-$ hostedpi reboot [name]
-  Reboot the Pi called *name*
-$ hostedpi reboot all
-  Reboot all Pis in the account
-
-$ hostedpi cancel [name]
-  Cancel the Pi called *name*
-$ hostedpi cancel all
-  Cancel all Pis in the account
-
-$ hostedpi get-keys [name]
-  Retrieve the SSH keys from the Pi called *name*
-$ hostedpi get-keys all
-  Show the number of SSH keys on each Pi in the account
-
-$ hostedpi add-key [name] [ssh_key_path]
-  Add the SSH key in *ssh_key_path* to the Pi called *name*
-$ hostedpi add-key all [ssh_key_path]
-  Add the SSH key in *ssh_key_path* to all Pis in the account
-
-$ hostedpi copy-keys [name_src] [name_dest]
-  Copy the keys from the Pi *name_src* to the Pi called *name_dest*
-$ hostedpi copy-keys [name_src] all
-  Copy the keys from the Pi *name_src* to all Pis in the account
-
-$ hostedpi import-keys-gh [name] [username]
-  Add the keys from GitHub user *username* to the Pi called *name*
-$ hostedpi import-keys-gh all [username]
-  Add the keys from GitHub user *username* to all Pis in the account
-
-$ hostedpi import-keys-lp [name] [username]
-  Add the keys from Launchpad user *username* to the Pi called *name*
-$ hostedpi import-keys-lp all [username]
-  Add the keys from Launchpad user *username* to all Pis in the account
-
-$ hostedpi help
-  show this help
-"""
-
 import os
 import sys
+import argparse
 
 import requests
 
 from .picloud import PiCloud
 from .utils import read_ssh_key, ssh_import_id
-from .exc import HostedPiException
+from .exc import HostedPiException, MythicAuthenticationError
+from .__version__ import __version__
 
 
 class CLI:
     def __init__(self):
-        self.commands = {
-            'help': self.do_help,
-            'test': self.do_test,
-            'list': self.do_list,
-            'show': self.do_show,
-            'create': self.do_create,
-            'reboot': self.do_reboot,
-            'cancel': self.do_cancel,
-            'get-keys': self.do_get_keys,
-            'add-key': self.do_add_key,
-            'copy-keys': self.do_copy_keys,
-            'import-keys-gh': self.do_import_keys_gh,
-            'import-keys-lp': self.do_import_keys_lp,
-        }
+        self._args = None
+        self._commands = None
+        self._config = None
+        self._parser = None
+        self._output = None
+        self._store = None
+        self._cloud = None
+        self._pis = None
 
-    def __call__(self):
+    def __call__(self, args=None):
+        self._args = self.parser.parse_args(args)
         try:
-            self.connect()
+            self._args.func()
         except HostedPiException as e:
-            print(str(e).replace(' or passed as arguments', ''))
+            print("Error:", str(e).replace(': ', '\n'))
             return 2
 
-        args = sys.argv
-        if len(args) == 1:
-            return self.do_help()
+    @property
+    def cloud(self):
+        if self._cloud is None:
+            API_ID = os.environ.get('HOSTEDPI_ID')
+            API_SECRET = os.environ.get('HOSTEDPI_SECRET')
+            if API_ID is None or API_SECRET is None:
+                print("HOSTEDPI_ID and HOSTEDPI_SECRET environment variables "
+                      "must be set")
+            try:
+                self._cloud = PiCloud(API_ID, API_SECRET)
+            except MythicAuthenticationError as e:
+                print("Failed to authenticate:", e)
+                return
+        return self._cloud
 
-        cmd = args[1]
-        fn = self.commands.get(cmd)
-        return fn(*args[2:])
+    @property
+    def pis(self):
+        if self._pis is None:
+            self._pis = self.cloud.pis
+        return self._pis
 
-    def connect(self):
-        API_ID = os.environ.get('HOSTEDPI_ID')
-        API_SECRET = os.environ.get('HOSTEDPI_SECRET')
-        self.cloud = PiCloud(API_ID, API_SECRET)
-        self.pis = self.cloud.pis
+    @property
+    def parser(self):
+        """
+        The parser for all the sub-commands that the script accepts. The
+        parser's defaults are derived from the configuration obtained from
+        :attr:`config`. Returns the newly constructed argument parser.
+        """
+        if self._parser is None:
+            self._parser, self._commands = self._get_parser()
+        return self._parser
 
-    def do_help(self, *args):
-        print(__doc__)
+    @property
+    def commands(self):
+        """
+        A dictionary mapping command names to their sub-parser.
+        """
+        if self._commands is None:
+            self._parser, self._commands = self._get_parser()
+        return self._commands
+
+    def _get_parser(self):
+        parser = argparse.ArgumentParser(
+            description=(
+                "hostedpi is a tool for provisioning and managing Raspberry Pis "
+                "in the Mythic Beasts Pi Cloud"))
+        parser.add_argument(
+            '--version', action='version', version=__version__)
+        parser.set_defaults(func=self.do_help)
+        commands = parser.add_subparsers(title=("commands"))
+
+        help_cmd = commands.add_parser(
+            "help", aliases=["h"],
+            description=(
+                "With no arguments, displays the list of hostedpi "
+                "commands. If a command name is given, displays the "
+                "description and options for the named command. If a "
+                "setting name is given, displays the description and "
+                "default value for that setting."),
+            help=("Displays help about the specified command or setting"))
+        help_cmd.add_argument(
+            "cmd", metavar="command-or-setting", nargs='?',
+            help=("The name of the command or setting to output help for")
+        )
+        help_cmd.set_defaults(func=self.do_help)
+
+        test_cmd = commands.add_parser(
+            "test", aliases=["connect"],
+            description=(
+                "Test a connection to the Mythic Beasts API using API ID and "
+                "secret in environment variables."),
+            help=("Test a connection to the Mythic Beasts API"))
+        test_cmd.add_argument(
+            "cmd", metavar="command-or-setting", nargs='?',
+            help=("The name of the command or setting to output help for")
+        )
+        test_cmd.set_defaults(func=self.do_test)
+
+        list_cmd = commands.add_parser(
+            "list", aliases=["ls"],
+            description=("List all Pis in the account"),
+            help=("List all Pis in the account"))
+        list_cmd.set_defaults(func=self.do_list)
+
+        show_cmd = commands.add_parser(
+            "show", aliases=["cat"],
+            description=("Show the information about a Pi in the account"),
+            help=("Show the information about a Pi in the account"))
+        show_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi to show information for")
+        )
+        show_cmd.set_defaults(func=self.do_show)
+
+        create_cmd = commands.add_parser(
+            "create", aliases=["new", "provision"],
+            description=("Provision a new Pi server in the account"),
+            help=("Provision a new Pi server in the account"))
+        create_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the new Pi to provision")
+        )
+        create_cmd.add_argument(
+            "model", metavar="model", nargs='?',
+            help=("The model of the new Pi to provision (3 or 4)")
+        )
+        create_cmd.add_argument(
+            "ssh_key_path", metavar="ssh_key_path", nargs='?',
+            help=("The path to an SSH public key file to add to the Pi")
+        )
+        create_cmd.set_defaults(func=self.do_create)
+
+        reboot_cmd = commands.add_parser(
+            "reboot", aliases=["cycle"],
+            description=("Reboot a Pi in the account"),
+            help=("Reboot a Pi in the account"))
+        reboot_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi to reboot")
+        )
+        reboot_cmd.set_defaults(func=self.do_reboot)
+
+        power_on_cmd = commands.add_parser(
+            "power-on", aliases=["power", "on"],
+            description=("Power on a Pi in the account"),
+            help=("Power on a Pi in the account"))
+        power_on_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi to power on")
+        )
+        power_on_cmd.set_defaults(func=self.do_power_on)
+
+        power_off_cmd = commands.add_parser(
+            "power-off", aliases=["power", "off"],
+            description=("Power off a Pi in the account"),
+            help=("Power off a Pi in the account"))
+        power_off_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi to power off")
+        )
+        power_off_cmd.set_defaults(func=self.do_power_off)
+
+        cancel_cmd = commands.add_parser(
+            "cancel", aliases=["rm", "unprovision"],
+            description=("Cancel a Pi server in the account"),
+            help=("Cancel a Pi server in the account"))
+        cancel_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi to cancel")
+        )
+        cancel_cmd.set_defaults(func=self.do_cancel)
+
+        get_keys_cmd = commands.add_parser(
+            "keys", aliases=["get-keys", "show-keys"],
+            description=("Show the SSH keys currently on the Pi"),
+            help=("Show the SSH keys currently on the Pi"))
+        get_keys_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi to get keys for")
+        )
+        get_keys_cmd.set_defaults(func=self.do_get_keys)
+
+        add_key_cmd = commands.add_parser(
+            "add-key", aliases=["add-ssh-key"],
+            description=("Add an SSH key to the Pi from a public key file"),
+            help=("Add an SSH key to the Pi"))
+        add_key_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi to get keys for")
+        )
+        add_key_cmd.add_argument(
+            "ssh_key_path", metavar="ssh_key_path", nargs='?',
+            help=("The path to an SSH public key file to add to the Pi")
+        )
+        add_key_cmd.set_defaults(func=self.do_add_key)
+
+        copy_keys_cmd = commands.add_parser(
+            "copy-keys", aliases=["cp"],
+            description=("Copy all SSH keys from one Pi to another"),
+            help=("Copy all SSH keys from one Pi to another"))
+        copy_keys_cmd.add_argument(
+            "name_src", metavar="name_src", nargs='?',
+            help=("The name of the Pi to copy keys from")
+        )
+        copy_keys_cmd.add_argument(
+            "name_dest", metavar="name_dest", nargs='?',
+            help=("The name of the Pi to copy keys to")
+        )
+        copy_keys_cmd.set_defaults(func=self.do_copy_keys)
+
+        remove_keys_cmd = commands.add_parser(
+            "remove-keys", aliases=["remove-ssh-keys"],
+            description=("Remove all SSH keys from the Pi"),
+            help=("Remove all SSH keys from the Pi"))
+        remove_keys_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi import keys onto")
+        )
+        remove_keys_cmd.set_defaults(func=self.do_remove_keys)
+
+        import_keys_gh_cmd = commands.add_parser(
+            "import-keys-gh", aliases=["import-ssh-keys-gh"],
+            description=("Import SSH keys from GitHub and add them to the Pi"),
+            help=("Import SSH keys from GitHub and add them to the Pi"))
+        import_keys_gh_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi import keys onto")
+        )
+        import_keys_gh_cmd.add_argument(
+            "username", metavar="username", nargs='?',
+            help=("The GitHub username to import keys from")
+        )
+        import_keys_gh_cmd.set_defaults(func=self.do_import_keys_gh)
+
+        import_keys_lp_cmd = commands.add_parser(
+            "import-keys-lp", aliases=["import-ssh-keys-lp"],
+            description=("Import SSH keys from Launchpad and add them to the Pi"),
+            help=("Import SSH keys from Launchpad and add them to the Pi"))
+        import_keys_lp_cmd.add_argument(
+            "name", metavar="name", nargs='?',
+            help=("The name of the Pi import keys onto")
+        )
+        import_keys_lp_cmd.add_argument(
+            "username", metavar="username", nargs='?',
+            help=("The Launchpad username to import keys from")
+        )
+        import_keys_lp_cmd.set_defaults(func=self.do_import_keys_lp)
+
+        return parser, commands.choices
+
+    def do_help(self):
+        print("help")
         return 0
 
-    def do_test(self, *args):
-        print("Connected to Mythic Beasts API")
-        return 0
+    def do_test(self):
+        if self.cloud:
+            print("Connected to Mythic Beasts API")
+            return 0
+        return 2
 
-    def do_list(self, *args):
+    def do_list(self):
         for name in self.pis:
             print(name)
         return 0
 
-    def do_show(self, *args):
-        if len(args) == 0:
-            print('Usage: hostedpi show NAME')
-            return 2
-        name = args[0]
-        if name == 'all':
-            return self.do_show_all()
+    def do_show(self):
+        if self._args.name:
+            return self.do_show_one(self._args.name)
         else:
-            return self.do_show_one(name)
+            return self.do_show_all()
 
     def do_show_one(self, name):
         pi = self.pis.get(name)
@@ -134,7 +286,7 @@ class CLI:
             pi.pprint()
             return 0
         else:
-            print("No pi found by the name", name)
+            print("No Pi found by the name", name)
             return 2
 
     def do_show_all(self):
@@ -143,32 +295,32 @@ class CLI:
             print()
         return 0
 
-    def do_create(self, *args):
-        if len(args) == 0:
-            print("Usage: hostedpi create NAME")
-            return 2
+    def do_create(self):
+        name = self._args.name
+        model = self._args.model
+        ssh_key_path = self._args.ssh_key_path
 
-        name = args[0]
-        if len(args) == 1:
-            pi = self.cloud.create_pi(name)
-        elif len(args) == 2:
-            pi = self.cloud.create_pi(name, model=model)
-        elif len(args) == 3:
-            pi = self.cloud.create_pi(name, model=model, ssh_key_path=ssh_key_path)
+        if model:
+            if ssh_key_path:
+                pi = self.cloud.create_pi(name, model=model,
+                                          ssh_key_path=ssh_key_path)
+            else:
+                pi = self.cloud.create_pi(name, model=model)
+        elif ssh_key_path:
+            pi = self.cloud.create_pi(name, ssh_key_path=ssh_key_path)
         else:
-            print("")
+            pi = self.cloud.create_pi(name)
+
+        print("Pi {} provisioned successfully".format(name))
+        print()
         pi.pprint()
         return 0
 
-    def do_reboot(self, *args):
-        if len(args) == 0:
-            print('Usage: hostedpi reboot NAME')
-            return 2
-        name = args[0]
-        if name == 'all':
-            return self.do_reboot_all()
+    def do_reboot(self):
+        if self._args.name:
+            return self.do_reboot_one(self._args.name)
         else:
-            return self.do_reboot_one(name)
+            return self.do_reboot_all()
 
     def do_reboot_one(self, name):
         pi = self.pis.get(name)
@@ -176,7 +328,7 @@ class CLI:
             pi.reboot()
             print("Pi", name, "rebooted")
         else:
-            print("No pi found by the name:", name)
+            print("No Pi found by the name:", name)
             return 2
 
     def do_reboot_all(self):
@@ -184,15 +336,53 @@ class CLI:
             pi.reboot()
         return 0
 
-    def do_cancel(self, *args):
-        if len(args) == 0:
-            print('Usage: hostedpi cancel NAME')
-            return 2
-        name = args[0]
-        if name == 'all':
-            return self.do_cancel_all()
+    def do_power_on(self):
+        if self._args.name:
+            return self.do_power_on_one(self._args.name)
         else:
-            return self.do_cancel_one(name)
+            return self.do_power_on_all()
+
+    def do_power_on_one(self, name):
+        pi = self.pis.get(name)
+        if pi:
+            pi.on()
+            print("Pi", name, "powered on")
+        else:
+            print("No Pi found by the name:", name)
+            return 2
+
+    def do_power_on_all(self):
+        for name, pi in self.pis.items():
+            pi.on()
+            print("Pi", name, "powered on")
+        return 0
+
+    def do_power_off(self):
+        if self._args.name:
+            return self.do_power_off_one(self._args.name)
+        else:
+            return self.do_power_off_all()
+
+    def do_power_off_one(self, name):
+        pi = self.pis.get(name)
+        if pi:
+            pi.off()
+            print("Pi", name, "powered off")
+        else:
+            print("No Pi found by the name:", name)
+            return 2
+
+    def do_power_off_all(self):
+        for name, pi in self.pis.items():
+            pi.off()
+            print("Pi", name, "powered off")
+        return 0
+
+    def do_cancel(self):
+        if self._args.name:
+            return self.do_cancel_one(self._args.name)
+        else:
+            return self.do_cancel_all()
 
     def do_cancel_one(self, name):
         pi = self.pis.get(name)
@@ -201,7 +391,7 @@ class CLI:
             print("Pi service", name, "cancelled")
             return 0
         else:
-            print("No pi found by the name", name)
+            print("No Pi found by the name", name)
             return 2
 
     def do_cancel_all(self):
@@ -210,15 +400,11 @@ class CLI:
             print("Pi service", name, "cancelled")
         return 0
 
-    def do_get_keys(self, *args):
-        if len(args) == 0:
-            print('Usage: hostedpi get-keys NAME')
-            return 2
-        name = args[0]
-        if name == 'all':
-            return self.do_get_keys_all()
+    def do_get_keys(self):
+        if self._args.name:
+            return self.do_get_keys_one(self._args.name)
         else:
-            return self.do_get_keys_one(name)
+            return self.do_get_keys_all()
 
     def do_get_keys_one(self, name):
         pi = self.pis.get(name)
@@ -231,47 +417,64 @@ class CLI:
             print(name + ':', num_keys, 'key' if num_keys == 1 else 'keys')
         return 0
 
-    def do_add_key(self, *args):
-        if len(args) != 2:
-            print('Usage: hostedpi add-key NAME PATH')
-        name, ssh_key_path = args
-        ssh_key = read_ssh_key(ssh_key_path)
+    def do_add_key(self):
+        name = self._args.name
+        ssh_key = read_ssh_key(self._args.ssh_key_path)
 
-        if name == 'all':
-            return self.do_add_key_all(ssh_key)
-        else:
+        if name:
             return self.do_add_key_one(name, ssh_key)
+        else:
+            return self.do_add_key_all(ssh_key)
 
     def do_add_key_one(self, name, ssh_key):
         pi = self.pis.get(name)
-        pi.ssh_keys += [ssh_key]
+        pi.ssh_keys |= {ssh_key}
         return 0
 
     def do_add_key_all(self, ssh_key):
         for name, pi in self.pis.items():
-            pi.ssh_keys += [ssh_key]
+            pi.ssh_keys |= {ssh_key}
         return 0
 
-    def do_copy_keys(self, *args):
-        if len(args) != 2:
-            print('Usage: hostedpi copy-keys SRC DEST')
-        src, dest = args
-        src_pi = self.pis.get(src)
-        dest_pi = self.pis.get(dest)
+    def do_copy_keys(self):
+        try:
+            src_pi = self.pis[self._args.name_src]
+        except KeyError:
+            print('Pi {} not found'.format(self._args.name_src))
+            return 2
+        try:
+            dest_pi = self.pis[self._args.name_dest]
+        except KeyError:
+            print('Pi {} not found'.format(self._args.name_dest))
+            return 2
+
         dest_pi.ssh_keys |= src_pi.ssh_keys
 
-    def do_import_keys_gh(self, *args):
-        if len(args) != 2:
-            print('Usage: hostedpi import-keys-gh NAME USERNAME')
-        name, username = args
-        pi = self.pis.get(name)
-        pi.ssh_import_id(github=username)
+    def do_remove_keys(self):
+        try:
+            pi = self.pis[self._args.name]
+        except KeyError:
+            print('Pi {} not found'.format(self._args.name))
+            return 2
 
-    def do_import_keys_lp(self, *args):
-        if len(args) != 2:
-            print('Usage: hostedpi import-keys-lp NAME USERNAME')
-        name, username = args
-        pi = self.pis.get(name)
-        pi.ssh_import_id(launchpad=username)
+        pi.ssh_keys = set()
+
+    def do_import_keys_gh(self):
+        try:
+            pi = self.pis[self._args.name]
+        except KeyError:
+            print('Pi {} not found'.format(self._args.name))
+            return 2
+        new_keys = pi.ssh_import_id(github={self._args.username})
+        print("{} keys added".format(len(new_keys)))
+
+    def do_import_keys_lp(self):
+        try:
+            pi = self.pis[self._args.name]
+        except KeyError:
+            print('Pi {} not found'.format(self._args.name))
+            return 2
+        new_keys = pi.ssh_import_id(launchpad={self._args.username})
+        print("{} keys added".format(len(new_keys)))
 
 main = CLI()

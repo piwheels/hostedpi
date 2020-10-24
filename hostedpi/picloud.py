@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
+import string
 
 import requests
-from requests.exceptions import RequestException
+from requests.exceptions import HTTPError
 
 from .auth import MythicAuth
 from .pi import Pi
@@ -53,7 +54,7 @@ class PiCloud:
 
         All SSH arguments provided will be used in combination
     """
-    _API_URL = 'https://api.mythic-beasts.com/beta/servers/pi'
+    _API_URL = 'https://api.mythic-beasts.com/beta/servers'
 
     def __init__(self, api_id=None, api_secret=None, *, ssh_keys=None,
                  ssh_key_path=None, ssh_import_github=None,
@@ -85,10 +86,13 @@ class PiCloud:
     @property
     def pis(self):
         "A dictionary of :class:`~hostedpi.pi.Pi` objects keyed by their names."
+        url = '{}/pi'.format(self._API_URL)
+        r = requests.get(url, headers=self.headers)
+
         try:
-            r = requests.get(self._API_URL, headers=self.headers)
-        except RequestException as e:
-            raise HostedPiException(str(e))
+            r.raise_for_status()
+        except HTTPError as e:
+            raise HostedPiException(e)
 
         pis = r.json()['servers']
 
@@ -115,26 +119,37 @@ class PiCloud:
         """
         return "\n".join(pi.ipv6_ssh_config for pi in self.pis.values())
 
-    def create_pi(self, name, *, model=3, disk_size=10, ssh_keys=None,
-                  ssh_key_path=None, ssh_import_github=None,
-                  ssh_import_launchpad=None):
+    def create_pi(self, name, *, model=3, disk_size=10,
+                  os_image=None, ssh_keys=None, ssh_key_path=None,
+                  ssh_import_github=None, ssh_import_launchpad=None):
         """
         Provision a new cloud Pi with the specified name, model, disk size and
         SSH keys. Return a new :class:`~hostedpi.pi.Pi` instance.
 
         :type name: str
         :param name:
-            The name of the Pi service to create (must be unique)
+            A unique identifier for the server. This will form part of the
+            hostname for the server, and must consist only of alphanumeric
+            characters and hyphens.
 
-        :type model: int
+        :type model: int or None
         :param model:
             The Raspberry Pi model to provision (3 or 4) - defaults to 3
             (keyword-only argument)
 
-        :type disk_size: int
+        :type disk_size: int or None
         :param disk_size:
             The amount of disk space (in GB) attached to the Pi - must be a
             multiple of 10 - defaults to 10 (keyword-only argument)
+
+        :type os_image: str
+        :param os_image:
+            The name of the operating system image to boot from. Defaults to
+            ``None`` which falls back to Mythic's default (Raspbian/PiOS
+            stable). If given, this must be a string which appears as a key in
+            the return value of
+            :meth:`~hostedpi.picloud.PiCloud.get_operating_systems` for the
+            relevant Pi model.
 
         :type ssh_keys: list or set or None
         :param ssh_keys:
@@ -167,35 +182,84 @@ class PiCloud:
                                       ssh_import_launchpad)
         ssh_keys_str = "\r\n".join(ssh_keys_set)
 
+        server_name = name.lower()
         model = str(model)
-        if model not in ('3', '4'):
-            raise HostedPiException("model must be 3 or 4")
+        self._validate_server_name(server_name)
+        self._validate_model(model)
+        self._validate_disk_size(disk_size)
 
-        if disk_size < 10 or disk_size % 10 > 0:
-            raise HostedPiException("disk size must be a multiple of 10")
-
-        url = '{}/{}'.format(self._API_URL, name)
+        url = '{}/pi/{}'.format(self._API_URL, name)
         data = {
             'disk': disk_size,
             'model': model,
+            'os_image': os_image,
         }
 
         if ssh_keys:
             data['ssh_key'] = ssh_keys_str
 
+        r = requests.post(url, headers=self.headers, json=data)
+
         try:
-            r = requests.post(url, headers=self.headers, json=data)
-        except RequestException as e:
-            raise HostedPiException(str(e))
+            r.raise_for_status()
+        except HTTPError as e:
+            if r.status_code == 409:
+                raise HostedPiException("Server name already exists")
+            if r.status_code == 503:
+                raise HostedPiException(
+                    "Out of stock of Pi Model {}".format(model))
+            else:
+                raise HostedPiException(e)
 
         body = r.json()
 
-        if 'error' in body:
-            raise HostedPiException(body['error'])
-
         return Pi(cloud=self, name=name, model=model)
 
+    def _validate_server_name(self, server_name):
+        valid_chars = string.ascii_lowercase + string.digits + '-_'
+        if not all(c in valid_chars for c in server_name):
+            raise HostedPiException(
+                "server name must consist of alphanumeric characters and "
+                "hyphens")
+
+    def _validate_model(self, model):
+        if model not in ('3', '4'):
+            raise HostedPiException("model must be 3 or 4")
+
+    def _validate_disk_size(self, disk_size):
+        if disk_size < 10 or disk_size % 10 > 0:
+            raise HostedPiException("disk size must be a multiple of 10")
+
+    def get_operating_systems(self, *, model=3):
+        """
+        Return a dict of operating systems supported by the given Pi *model* (3
+        or 4). Dict keys are identifiers (e.g. "raspbian-buster") which can be
+        used when provisioning a new Pi with
+        :meth:`~hostedpi.picloud.PiCloud.create_pi`; dict values are text labels
+        of the OS/distro names (e.g. "Raspbian Buster").
+
+        :type model: int or None
+        :param model:
+            The Raspberry Pi model (3 or 4) to get operating systems for -
+            defaults to 3 (keyword-only argument)
+        """
+        model = str(model)
+        if model not in ('3', '4'):
+            raise HostedPiException('model must be 3 or 4')
+        url = '{}/pi-os-images/{}'.format(self._API_URL, model)
+        r = requests.get(url, headers=self.headers)
+
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            raise HostedPiException(e)
+
+        return r.json()['images']['images']
+
     def pprint(self):
+        """
+        Pretty-print information about all the Pis in the account.
+        """
         for pi in self.pis.values():
             pi.pprint()
             print()
