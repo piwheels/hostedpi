@@ -41,19 +41,21 @@ View the information about a Pi from the command line:
     $ hostedpi show mypi
     Name: mypi
     Status: live
-    Model: Raspberry Pi 3
-    Disk size: 30 GB
-    Power: No
-    Initialised keys: No
-    IPv6 address: 2a00:1098:0008:0088:0000:0000:0000:0001
-    IPv6 address (routed): 2a00:1098:0008:8800:0000:0000:0000:0000/56
-    Location: MER
+    Model: Raspberry Pi 3B+
+    Disk size: 10 GB
+    Power: Yes
+    IPv6 address: 2a00:1098:8:94::1
+    IPv6 network: 2a00:1098:8:9400::/56
+    Initialised keys: Yes
     SSH keys: 1
-    SSH port: 5123
+    IPv4 SSH port: 5148
+    Location: MER
     URLs:
       http://www.mypi.hostedpi.com
       https://www.mypi.hostedpi.com
-    SSH command: ssh -p 5123 root@ssh.mypi.hostedpi.com
+    SSH commands:
+      IPv4: ssh -p 5148 root@ssh.mypi.hostedpi.com
+      IPv6: ssh root@[2a00:1098:8:94::1]
 
 See the :doc:`getting_started` page for information on how to authenticate, and
 see the :doc:`cli` page for information on using the command line interface.
@@ -69,6 +71,21 @@ Table of Contents
     recipes
     api
     cli
+    cli_test
+    cli_images
+    cli_list
+    cli_show
+    cli_create
+    cli_reboot
+    cli_on
+    cli_off
+    cli_cancel
+    cli_keys
+    cli_add_key
+    cli_copy_keys
+    cli_remove_keys
+    cli_import_keys_gh
+    cli_import_keys_lp
     development
 
 Indices and tables

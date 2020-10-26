@@ -1,6 +1,6 @@
-=====================
-Command line programs
-=====================
+======================
+Command line interface
+======================
 
 hostedpi
 ========
@@ -11,157 +11,50 @@ interacting with the API.
 This program requires API keys to be provided using environment variables
 ``HOSTEDPI_ID`` and ``HOSTEDPI_SECRET``.
 
-hostedpi test
--------------
+The following commands are available:
 
-Test a connection to the API:
+:doc:`cli_test`
+    Test a connection to the Mythic Beasts API
 
-.. code-block:: console
+:doc:`cli_images`
+    Retrieve the list of operating system images available for the given Pi
+    model
 
-    $ hostedpi test
-    Connected to Mythic Beasts API
+:doc:`cli_list`
+    List all Pis in the account
 
-hostedpi list
--------------
+:doc:`cli_show`
+    Show the information about a Pi in the account
 
-List all the Pis in the account
+:doc:`cli_create`
+    Provision a new Pi server in the account
 
-.. code-block:: console
+:doc:`cli_reboot`
+    Reboot a Pi in the account
 
-    $ hostedpi list
-    mypi
-    mypi2
+:doc:`cli_on`
+    Power on a Pi in the account
 
-hostedpi show
--------------
+:doc:`cli_off`
+    Power off a Pi in the account
 
-Show all information for a Pi:
+:doc:`cli_cancel`
+    Cancel a Pi server in the account
 
-.. code-block:: console
+:doc:`cli_keys`
+    Show the SSH keys currently on the Pi
 
-    $ hostedpi show mypi
-    Name: mypi
-    Status: live
-    Model: Raspberry Pi 3
-    Disk size: 30 GB
-    Power: No
-    Initialised keys: No
-    IPv6 address: 2a00:1098:0008:0088:0000:0000:0000:0001
-    IPv6 address (routed): 2a00:1098:0008:8800:0000:0000:0000:0000/56
-    Location: MER
-    SSH keys: 1
-    SSH port: 5123
-    URLs:
-      http://www.mypi.hostedpi.com
-      https://www.mypi.hostedpi.com
-    SSH command: ssh -p 5123 root@ssh.mypi.hostedpi.com
+:doc:`cli_add_key`
+    Add an SSH key to the Pi
 
-Show all information for all Pis in the account:
+:doc:`cli_copy_keys`
+    Copy all SSH keys from one Pi to another
 
-.. code-block:: console
+:doc:`cli_remove_keys`
+    Remove all SSH keys from the Pi
 
-    $ hostedpi show all
-    Name: mypi
-    Status: live
-    Model: Raspberry Pi 3
-    Disk size: 30 GB
-    Power: No
-    Initialised keys: No
-    IPv6 address: 2a00:1098:0008:0088:0000:0000:0000:0001
-    IPv6 address (routed): 2a00:1098:0008:8800:0000:0000:0000:0000/56
-    Location: MER
-    SSH keys: 1
-    SSH port: 5123
-    URLs:
-      http://www.mypi.hostedpi.com
-      https://www.mypi.hostedpi.com
-    SSH command: ssh -p 5123 root@ssh.mypi.hostedpi.com
+:doc:`cli_import_keys_gh`
+    Import SSH keys from GitHub and add them to the Pi
 
-    Name: mypi2
-    Status: live
-    Model: Raspberry Pi 4
-    Disk size: 30 GB
-    Power: No
-    Initialised keys: No
-    IPv6 address: 2a00:1098:0088:0088:0000:0000:0000:0001
-    IPv6 address (routed): 2a00:1098:0088:8800:0000:0000:0000:0000/56
-    Location: MER
-    SSH keys: 1
-    SSH port: 5124
-    URLs:
-      http://www.mypi2.hostedpi.com
-      https://www.mypi2.hostedpi.com
-    SSH command: ssh -p 5124 root@ssh.mypi2.hostedpi.com
-
-hostedpi create
----------------
-
-Provision a new Pi:
-
-.. code-block:: console
-
-    $ hostedpi create mypi3
-    Name: mypi3
-    Status: provisioning
-    Model: Raspberry Pi 3
-    Disk size: 10 GB
-    Power: No
-    IPv6 address: 2a00:1098:0008:0088:0000:0000:0000:0001
-    IPv6 address (routed): 2a00:1098:0008:8800:0000:0000:0000:0000/56
-    Location: MER
-    SSH port: 5136
-    URLs:
-      http://www.piwheels.hostedpi.com
-      https://www.piwheels.hostedpi.com
-    SSH command: ssh -p 5136 root@ssh.piwheels.hostedpi.com
-
-Positional arguments:
-
-1. NAME
-2. MODEL (optional)
-3. SSH_KEY_PATH (optional)
-
-.. code-block:: console
-
-    $ hostedpi create mypi 3 .ssh/id_rsa.pub
-
-hostedpi reboot
----------------
-
-Reboot a Pi:
-
-.. code-block:: console
-
-    $ hostedpi reboot mypi
-    mypi rebooted
-
-Reboot all the Pis in the account:
-
-.. code-block:: console
-
-    $ hostedpi reboot all
-    mypi rebooted
-    mypi2 rebooted
-
-hostedpi keys
--------------
-
-???
-
-hostedpi cancel
----------------
-
-Cancel a Pi service:
-
-.. code-block:: console
-
-    $ hostedpi cancel mypi
-    Pi service mypi cancelled
-
-Cancel all the Pi services in the account:
-
-.. code-block:: console
-
-    $ hostedpi cancel all
-    Pi service mypi cancelled
-    Pi service mypi2 cancelled
+:doc:`cli_import_keys_lp`
+    Import SSH keys from Launchpad and add them to the Pi

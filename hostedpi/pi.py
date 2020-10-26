@@ -131,7 +131,7 @@ class Pi:
     @property
     def ipv6_address(self):
         """
-        The Pi's IPv6 address.
+        The Pi's IPv6 address as an :class:`~ipaddress.IPv6Address` object.
         """
         if self._ipv6_address is None:
             self._get_data()
@@ -140,7 +140,7 @@ class Pi:
     @property
     def ipv6_network(self):
         """
-        The Pi's IPv6 network.
+        The Pi's IPv6 network as an :class:`~ipaddress.IPv6Network` object.
         """
         if self._ipv6_network is None:
             self._get_data()

@@ -20,7 +20,7 @@ Provision a Pi
 
     cloud = PiCloud()
 
-    pi = cloud.create_pi('', model=3, disk=10)
+    pi = cloud.create_pi('mypi', model=3, disk=10)
 
 Provision some Pis
 ------------------
@@ -87,7 +87,7 @@ List all Pis and their IPv6 address
     cloud = PiCloud()
 
     for name, pi in cloud.pis.items():
-        print(name, pi.ip)
+        print(name, pi.ipv6_address)
 
 Rebooting
 =========
@@ -134,6 +134,21 @@ Reboot all Pis not responding to ping
         if not pi.ping_ipv6():
             pi.reboot()
 
+Power on/off
+============
+
+Power all Pis on
+----------------
+
+.. code-block:: python
+
+    from hostedpi import PiCloud
+
+    cloud = PiCloud()
+
+    for pi in cloud.pis.values():
+        pi.on()
+
 SSH
 ===
 
@@ -147,7 +162,16 @@ List SSH commands for all Pis
     cloud = PiCloud()
 
     for pi in cloud.pis.values():
-        print(pi.ssh_command)
+        print(pi.ipv4_ssh_command)
+
+.. code-block:: python
+
+    from hostedpi import PiCloud
+
+    cloud = PiCloud()
+
+    for pi in cloud.pis.values():
+        print(pi.ipv6_ssh_command)
 
 Write SSH config to a file
 --------------------------
@@ -161,74 +185,6 @@ Write SSH config to a file
     with open('config', 'w') as f:
         f.write(cloud.ssh_config)
 
-Ping
-====
-
-.. note::
-    :meth:`~hostedpi.pi.Pi.ping_ipv6` requires an IPv6 internet connection, and
-    no IPv4 equivalent is available
-
-Ping all Pis every minute
--------------------------
-
-List style:
-
-.. code-block:: python
-
-    from hostedpi import PiCloud
-    from time import sleep
-
-    cloud = PiCloud()
-    pi = cloud.pis['somepi']
-
-    while True:
-        for name, pi in cloud.pis.items():
-            if pi.ping_ipv6():
-                print(name, "is up")
-            else:
-                print(name, "is down")
-            sleep(60)
-
-Unit test style:
-
-.. code-block:: python
-
-    from hostedpi import PiCloud
-    from time import sleep
-
-    cloud = PiCloud()
-    pi = cloud.pis['somepi']
-
-    while True:
-        results = ['.' if pi.ping_ipv6() else 'F' for pi in cloud.pis.values()]
-        print(''.join(results))
-        sleep(60)
-
-Ping status LED
----------------
-
-.. code-block:: python
-
-    from hostedpi import PiCloud
-    from gpiozero import LED
-    from time import sleep
-
-    cloud = PiCloud()
-    pi = cloud.pis['somepi']
-    led = LED(2)
-
-    while True:
-        if pi.ping_ipv6():
-            led.on()
-        else:
-            led.off()
-        sleep(60)
-
-.. note::
-    This requires the `gpiozero`_ library.
-
-.. _gpiozero: https://gpiozero.readthedocs.io/
-
 Web
 ===
 
@@ -240,7 +196,7 @@ Retrieve the contents of the homepage
     a web browser, and an SSL certificate must be created for the https URL to
     resolve.
 
-Print them out:
+Print out:
 
 .. code-block:: python
 
@@ -250,7 +206,8 @@ Print them out:
     cloud = PiCloud()
     pi = cloud.pis['somepi']
 
-    print(pi.get_web_contents(ssl=True))
+    r = requests.get(pi.url)
+    print(r.text)
 
 Save to a file:
 
@@ -262,8 +219,9 @@ Save to a file:
     cloud = PiCloud()
     pi = cloud.pis['somepi']
 
+    r = requests.get(pi.url)
     with open('pi.html', 'w') as f:
-        f.write(pi.get_web_contents(ssl=True))
+        f.write(r.text)
 
 Access a particular web location
 --------------------------------
@@ -278,7 +236,7 @@ Access ``data.json`` from the web server, and print out the ``message`` value:
     cloud = PiCloud()
     pi = cloud.pis['somepi']
 
-    url = pi.url_ssl + '/data.json'
+    url = pi.url + '/data.json'
     r = requests.get(url)
     data = r.json()
     print(data['message'])

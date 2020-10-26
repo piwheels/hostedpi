@@ -106,9 +106,9 @@ class CLI:
         get_images_cmd = commands.add_parser(
             "images", aliases=["get-images"],
             description=(
-                "Test a connection to the Mythic Beasts API using API ID and "
-                "secret in environment variables."),
-            help=("Test a connection to the Mythic Beasts API"))
+                "Retrieve the list of operating system images available for the "
+                "given Pi model."),
+            help=("Retrieve the list of operating system images available"))
         get_images_cmd.add_argument(
             "model", metavar="model", nargs='?',
             help=("The Pi model number (3 or 4) to get operating systems for")
@@ -132,7 +132,7 @@ class CLI:
         show_cmd.set_defaults(func=self.do_show)
 
         create_cmd = commands.add_parser(
-            "create", aliases=["new", "provision"],
+            "create",
             description=("Provision a new Pi server in the account"),
             help=("Provision a new Pi server in the account"))
         create_cmd.add_argument(
@@ -160,7 +160,7 @@ class CLI:
         reboot_cmd.set_defaults(func=self.do_reboot)
 
         power_on_cmd = commands.add_parser(
-            "power-on", aliases=["power", "on"],
+            "on", aliases=["poweron"],
             description=("Power on a Pi in the account"),
             help=("Power on a Pi in the account"))
         power_on_cmd.add_argument(
@@ -170,7 +170,7 @@ class CLI:
         power_on_cmd.set_defaults(func=self.do_power_on)
 
         power_off_cmd = commands.add_parser(
-            "power-off", aliases=["power", "off"],
+            "off", aliases=["poweroff"],
             description=("Power off a Pi in the account"),
             help=("Power off a Pi in the account"))
         power_off_cmd.add_argument(
@@ -180,7 +180,7 @@ class CLI:
         power_off_cmd.set_defaults(func=self.do_power_off)
 
         cancel_cmd = commands.add_parser(
-            "cancel", aliases=["rm", "unprovision"],
+            "cancel", aliases=["rm"],
             description=("Cancel a Pi server in the account"),
             help=("Cancel a Pi server in the account"))
         cancel_cmd.add_argument(
