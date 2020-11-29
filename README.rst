@@ -57,7 +57,7 @@ Provision a new Pi and view its SSH command (using Python):
     >>> print(pi.ssh_command)
     ssh -p 5123 root@ssh.mypi.hostedpi.com
 
-See the `getting_started`_ page for information on how to authenticate, and
+See the `getting started`_ page for information on how to authenticate, and
 see the `command line interface`_ page for information on using the command line
 interface.
 
