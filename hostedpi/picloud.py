@@ -88,7 +88,7 @@ class PiCloud:
     @property
     def pis(self):
         "A dictionary of :class:`~hostedpi.pi.Pi` objects keyed by their names."
-        url = '{}/pi'.format(self._API_URL)
+        url = '{self._API_URL}/pi'.format(self=self)
         r = requests.get(url, headers=self.headers)
 
         try:
@@ -110,7 +110,7 @@ class PiCloud:
         The contents could be added to an SSH config file for easy access to the
         Pis in the account.
         """
-        return "\n".join(pi.ipv4_ssh_config for pi in self.pis.values())
+        return '\n'.join(pi.ipv4_ssh_config for pi in self.pis.values())
 
     @property
     def ipv6_ssh_config(self):
@@ -119,7 +119,7 @@ class PiCloud:
         The contents could be added to an SSH config file for easy access to the
         Pis in the account.
         """
-        return "\n".join(pi.ipv6_ssh_config for pi in self.pis.values())
+        return '\n'.join(pi.ipv6_ssh_config for pi in self.pis.values())
 
     def create_pi(self, name, *, model=3, disk_size=10,
                   os_image=None, ssh_keys=None, ssh_key_path=None,
@@ -190,7 +190,7 @@ class PiCloud:
         self._validate_model(model)
         self._validate_disk_size(disk_size)
 
-        url = '{}/pi/{}'.format(self._API_URL, name)
+        url = '{self._API_URL}/pi/{name}'.format(self=self, name=name)
         data = {
             'disk': disk_size,
             'model': model,
@@ -209,9 +209,8 @@ class PiCloud:
                 raise HostedPiException("Server name already exists") from e
             if r.status_code == 503:
                 raise HostedPiException(
-                    "Out of stock of Pi Model {}".format(model)) from e
-            else:
-                raise HostedPiException(e) from e
+                    "Out of stock of Pi Model {model}".format(model=model)) from e
+            raise HostedPiException(e) from e
 
         return Pi(cloud=self, name=name, model=model)
 
@@ -230,7 +229,7 @@ class PiCloud:
         if disk_size < 10 or disk_size % 10 > 0:
             raise HostedPiException("disk size must be a multiple of 10")
 
-    def get_operating_systems(self, *, model=3):
+    def get_operating_systems(self, *, model):
         """
         Return a dict of operating systems supported by the given Pi *model* (3
         or 4). Dict keys are identifiers (e.g. "raspbian-buster") which can be
@@ -240,13 +239,13 @@ class PiCloud:
 
         :type model: int or None
         :param model:
-            The Raspberry Pi model (3 or 4) to get operating systems for -
-            defaults to 3 (keyword-only argument)
+            The Raspberry Pi model (3 or 4) to get operating systems for
+            (keyword-only argument)
         """
         model = str(model)
         if model not in ('3', '4'):
             raise HostedPiException("model must be 3 or 4")
-        url = '{}/pi-os-images/{}'.format(self._API_URL, model)
+        url = '{self._API_URL}/pi-os-images/{model}'.format(self=self, model=model)
         r = requests.get(url, headers=self.headers)
 
         try:
