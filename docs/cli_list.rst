@@ -4,20 +4,22 @@ hostedpi list
 
 .. program:: hostedpi-list
 
-Synopsis
-========
+List all Pis in the account
 
 .. code-block:: text
 
-    hostedpi list
-
-Description
-===========
-
-List all Pis in the account
-
-Options
-=======
+    optional arguments:
+      -h, --help  show this help message and exit
 
 Usage
 =====
+
+List all Pis in the account:
+
+.. code-block:: console
+
+    $ hostedpi list
+    mypi
+    mypi2
+    mypi3
+    mypi4

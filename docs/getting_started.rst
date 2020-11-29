@@ -27,7 +27,7 @@ Create an API key
 6. Make a note of the API ID and Secret. You'll need them to use this Python
    module, and you can't retrieve them after this screen is gone.
 
-.. note:
+.. note::
     If you lose your keys, you can simply reset them or create a new API key.
 
 Install the hostedpi module
@@ -39,7 +39,13 @@ For a system-wide installation:
 
     $ sudo pip3 install hostedpi
 
-Or in a virtual environment:
+for a user-level installation:
+
+.. code-block:: console
+
+    $ pip3 install hostedpi --user
+
+or in a virtual environment:
 
 .. code-block:: console
 
@@ -54,9 +60,10 @@ window, with your API ID and secret:
 .. code-block:: console
 
     $ HOSTEDPI_ID='YOUR ID' HOSTEDPI_SECRET='YOUR SECRET' hostedpi test
+    Connected to the Mythic Beasts API
 
-If your API ID and secret are correct, you should see the response "Connected
-to the Mythic Beasts API".
+This message means your API credentials were found and a successful connection
+was made.
 
 Start using the Python module
 =============================
@@ -72,7 +79,7 @@ credentials, and print out a list of Pi services in your account::
         print(name)
 
 .. note::
-    You can either initialise :class:`~hostedpi.picloud.PiCloud` with your API
+    You can either construct :class:`~hostedpi.picloud.PiCloud` with your API
     ID and secret, or set them in environment variables like above.
 
 You can provision a new Pi with the :meth:`~hostedpi.picloud.PiCloud.create_pi`
@@ -93,7 +100,7 @@ a Pi 3 or Pi 4 and specify the disk size (which must be a multiple of 10)::
 
     pi = cloud.create_pi('mypi4', model=4, disk_size=20)
 
-.. note:
+.. note::
     When requesting a Pi 3, you will either get a model 3B or 3B+. It is not
     possible to request a particular model beyond 3 or 4. The Pi 4 is the 4GB
     RAM model.

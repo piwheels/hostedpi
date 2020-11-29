@@ -1,23 +1,35 @@
 import requests
+from requests.exceptions import HTTPError
+
+from .exc import HostedPiException
 
 
 def ssh_import_id(*, github=None, launchpad=None):
     "Returns a set of SSH keys imported from GitHub or Launchpad"
+    if github is None and launchpad is None:
+        raise HostedPiException("GitHub or Launchpad username must be provided")
+
+    keys = set()
     if github is not None:
         url = 'https://github.com/{}.keys'.format(github)
         sep = '\n'
-    elif launchpad is not None:
+        keys |= fetch_keys(url, sep)
+    if launchpad is not None:
         url = 'https://launchpad.net/~{}/+sshkeys'.format(launchpad)
         sep = '\r\n\n'
-    else:
-        raise HostedPiException('GitHub or Launchpad username must be provided')
+        keys |= fetch_keys(url, sep)
 
+    return keys
+
+
+def fetch_keys(url, sep):
+    "Retrieve keys from *url* and return a set of keys"
     r = requests.get(url)
 
     try:
         r.raise_for_status()
     except HTTPError as e:
-        raise HostedPiException(e)
+        raise HostedPiException(e) from e
 
     return set(r.text.strip().split(sep))
 

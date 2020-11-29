@@ -4,8 +4,6 @@ API
 
 .. module:: hostedpi
 
-.. currentmodule:: hostedpi
-
 This page describes the methods and properties available in the
 :class:`~hostedpi.picloud.PiCloud` and :class:`~hostedpi.pi.Pi` classes and are
 intended as a useful reference to the functionality provided.
@@ -45,9 +43,11 @@ PiCloud
 
 .. autoclass:: hostedpi.picloud.PiCloud
     :members:
+    :special-members: __str__
 
 Pi
 ==
 
 .. autoclass:: hostedpi.pi.Pi()
     :members:
+    :special-members: __str__

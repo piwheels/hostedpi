@@ -1,16 +1,11 @@
-from datetime import datetime, timedelta
-import webbrowser
-import io
-import os
-import subprocess
-import json
+from datetime import datetime
 from ipaddress import IPv6Address, IPv6Network
 from time import sleep
 
 import requests
 from requests.exceptions import HTTPError
 
-from .utils import ssh_import_id, parse_ssh_keys
+from .utils import parse_ssh_keys
 from .exc import HostedPiException
 
 
@@ -46,7 +41,7 @@ class Pi:
         self._model_full = None
         self._power = None
         self._ipv4_ssh_port = None
-        self._status = None
+        self._provision_status = None
         self._data_expiry = datetime.now()
         self._reboot_thread = None
 
@@ -56,6 +51,57 @@ class Pi:
         else:
             model = self.model_full if self.model_full else self.model
             return "<Pi model {} {}>".format(model, self.name)
+
+    def __str__(self):
+        "A string of the information about the Pi"
+        self._get_data()
+        if self._provision_status == "live":
+            if self._is_booting:
+                boot_progress = "booting: {}".format(self._boot_progress)
+            elif self._boot_progress:
+                boot_progress = self._boot_progress
+            else:
+                boot_progress = "live"
+            num_keys = len(self.ssh_keys)
+            power = "on" if self._power else "off"
+            initialised_keys = "yes" if self._initialised_keys else "no"
+            return """
+Name: {self.name}
+Provision status: {boot_progress}
+Model: Raspberry Pi {self._model_full}
+Disk size: {self._disk_size}GB
+Power: {power}
+IPv6 address: {self._ipv6_address}
+IPv6 network: {self._ipv6_network}
+Initialised keys: {initialised_keys}
+SSH keys: {num_keys}
+IPv4 SSH port: {self.ipv4_ssh_port}
+Location: {self.location}
+URLs:
+  {self.url}
+  {self.url_ssl}
+SSH commands:
+  IPv4: {self.ipv4_ssh_command}
+  IPv6: {self.ipv6_ssh_command}
+"""[1:-1].format(self=self, boot_progress=boot_progress, power=power,
+                 num_keys=num_keys, initialised_keys=initialised_keys)
+        else:
+            return """
+Name: {self.name}
+Provision status: {self._provision_status}
+Model: Raspberry Pi {self._model}
+Disk size: {self._disk_size}GB
+IPv6 address: {self._ipv6_address}
+IPv6 network: {self._ipv6_network}
+SSH port: {self.ipv4_ssh_port}
+Location: {self.location}
+URLs:
+  {self.url}
+  {self.url_ssl}
+SSH commands:
+  {self.ipv4_ssh_command}  # IPv4
+  {self.ipv6_ssh_command}  # IPv6
+"""[1:-1].format(self=self)
 
     def _get_data(self):
         url = "{}/{}".format(self._API_URL, self.name)
@@ -77,10 +123,10 @@ class Pi:
         self._ipv6_network = IPv6Network(data['ip_routed'])
         self._is_booting = bool(data['is_booting'])
         self._location = data['location']
-        self._model = int(data['model'])
+        self._model = data['model']
         self._model_full = data['model_full']
         self._power = bool(data['power'])
-        self._status = data['status']
+        self._provision_status = data['status']
 
     @property
     def _API_URL(self):
@@ -180,13 +226,13 @@ class Pi:
         return self._power
 
     @property
-    def status(self):
+    def provision_status(self):
         """
         A string representing the provision status of the Pi. Can be
         "provisioning", "initialising" or "live".
         """
         self._get_data()
-        return self._status
+        return self._provision_status
 
     @property
     def ipv4_ssh_command(self):
@@ -372,47 +418,3 @@ class Pi:
                                       ssh_import_launchpad=launchpad)
         self.ssh_keys |= ssh_keys_set
         return ssh_keys_set
-
-    def pprint(self):
-        "Pretty print the information about the Pi"
-        self._get_data()
-        if self._status == "live":
-            if self._is_booting:
-                boot_progress = "booting: {}".format(self._boot_progress)
-            elif self._boot_progress:
-                boot_progress = self._boot_progress
-            else:
-                boot_progress = "live"
-            num_keys = len(self.ssh_keys)
-            print("Name:", self.name)
-            print("Status:", boot_progress)
-            print("Model: Raspberry Pi", self._model_full)
-            print("Disk size:", self._disk_size, "GB")
-            print("Power:", "Yes" if self._power else "No")
-            print("IPv6 address:", self._ipv6_address)
-            print("IPv6 network:", self._ipv6_network)
-            print("Initialised keys:", "Yes" if self._initialised_keys else "No")
-            print("SSH keys:", num_keys)
-            print("IPv4 SSH port:", self.ipv4_ssh_port)
-            print("Location:", self.location)
-            print("URLs:")
-            print(" ", self.url)
-            print(" ", self.url_ssl)
-            print("SSH commands:")
-            print("  IPv4:", self.ipv4_ssh_command)
-            print("  IPv6:", self.ipv6_ssh_command)
-        else:
-            print("Name:", self.name)
-            print("Status:", self.status)
-            print("Model: Raspberry Pi", self._model)
-            print("Disk size:", self._disk_size, "GB")
-            print("IPv6 address:", self._ipv6_address)
-            print("IPv6 network:", self._ipv6_network)
-            print("SSH port:", self.ipv4_ssh_port)
-            print("Location:", self.location)
-            print("URLs:")
-            print(" ", self.url)
-            print(" ", self.url_ssl)
-            print("SSH commands:")
-            print("  IPv4:", self.ipv4_ssh_command)
-            print("  IPv6:", self.ipv6_ssh_command)

@@ -32,7 +32,7 @@ Provision a new Pi and view its SSH command (using Python):
     >>> cloud = PiCloud(api_id, secret, ssh_key_path='/home/ben/.ssh/id_rsa.pub')
     >>> pi = cloud.create_pi('mypi')
     >>> print(pi.ssh_command)
-    ssh -p 5123 root@ssh.somepi.hostedpi.com
+    ssh -p 5123 root@ssh.mypi.hostedpi.com
 
 View the information about a Pi from the command line:
 
@@ -65,35 +65,12 @@ Table of Contents
 
 .. toctree::
     :maxdepth: 1
-    :numbered:
 
     getting_started
     recipes
     api
     cli
-    cli_test
-    cli_images
-    cli_list
-    cli_show
-    cli_create
-    cli_reboot
-    cli_on
-    cli_off
-    cli_cancel
-    cli_keys
-    cli_add_key
-    cli_copy_keys
-    cli_remove_keys
-    cli_import_keys_gh
-    cli_import_keys_lp
     development
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 Contributing
 ============

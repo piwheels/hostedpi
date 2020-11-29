@@ -1,6 +1,4 @@
 import os
-from pathlib import Path
-from datetime import datetime, timedelta
 import string
 
 import requests
@@ -8,7 +6,7 @@ from requests.exceptions import HTTPError
 
 from .auth import MythicAuth
 from .pi import Pi
-from .utils import ssh_import_id, parse_ssh_keys
+from .utils import parse_ssh_keys
 from .exc import HostedPiException
 
 
@@ -52,7 +50,7 @@ class PiCloud:
         when creating Pis but are overriden by any passed to the
         :meth:`~hostedpi.picloud.PiCloud.create_pi` method.
 
-        All SSH arguments provided will be used in combination
+        All SSH arguments provided will be used in combination.
     """
     _API_URL = 'https://api.mythic-beasts.com/beta/servers'
 
@@ -79,6 +77,10 @@ class PiCloud:
     def __repr__(self):
         return "<PiCloud>"
 
+    def __str__(self):
+        "String of information about all the Pis in the account"
+        print(*self.pis, sep='\n\n')
+
     @property
     def headers(self):
         return self._auth.headers
@@ -92,7 +94,7 @@ class PiCloud:
         try:
             r.raise_for_status()
         except HTTPError as e:
-            raise HostedPiException(e)
+            raise HostedPiException(e) from e
 
         pis = r.json()['servers']
 
@@ -204,14 +206,12 @@ class PiCloud:
             r.raise_for_status()
         except HTTPError as e:
             if r.status_code == 409:
-                raise HostedPiException("Server name already exists")
+                raise HostedPiException("Server name already exists") from e
             if r.status_code == 503:
                 raise HostedPiException(
-                    "Out of stock of Pi Model {}".format(model))
+                    "Out of stock of Pi Model {}".format(model)) from e
             else:
-                raise HostedPiException(e)
-
-        body = r.json()
+                raise HostedPiException(e) from e
 
         return Pi(cloud=self, name=name, model=model)
 
@@ -245,21 +245,13 @@ class PiCloud:
         """
         model = str(model)
         if model not in ('3', '4'):
-            raise HostedPiException('model must be 3 or 4')
+            raise HostedPiException("model must be 3 or 4")
         url = '{}/pi-os-images/{}'.format(self._API_URL, model)
         r = requests.get(url, headers=self.headers)
 
         try:
             r.raise_for_status()
         except HTTPError as e:
-            raise HostedPiException(e)
+            raise HostedPiException(e) from e
 
         return r.json()['images']['images']
-
-    def pprint(self):
-        """
-        Pretty-print information about all the Pis in the account.
-        """
-        for pi in self.pis.values():
-            pi.pprint()
-            print()

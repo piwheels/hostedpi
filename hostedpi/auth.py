@@ -12,6 +12,7 @@ class MythicAuth:
 
     def __init__(self, api_id, api_secret):
         self._creds = (api_id, api_secret)
+        self._token = None
         self._token_expiry = datetime.now()
         self._headers = {
             'User-Agent': 'python-hostedpi/' + __version__,
@@ -43,7 +44,7 @@ class MythicAuth:
         try:
             r.raise_for_status()
         except HTTPError as e:
-            raise MythicAuthenticationError(e)
+            raise MythicAuthenticationError("Failed to authenticate") from e
 
         body = r.json()
         if 'access_token' in body:
@@ -51,5 +52,4 @@ class MythicAuth:
             expires = body.get('expires_in', 0)
             self._token_expiry = datetime.now() + timedelta(seconds=expires)
             return body['access_token']
-        else:
-            raise MythicAuthenticationError("no access token in response")
+        raise MythicAuthenticationError("no access token in response")
