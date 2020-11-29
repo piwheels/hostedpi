@@ -53,7 +53,7 @@ class Pi:
             return "<Pi model {model} {self.name}>".format(model=model, self=self)
 
     def __str__(self):
-        "A string of the information about the Pi"
+        "A multip-line string of the information about the Pi"
         self._get_data()
         if self._provision_status == "live":
             if self._is_booting:
@@ -110,7 +110,7 @@ SSH commands:
         try:
             r.raise_for_status()
         except HTTPError as e:
-            raise HostedPiException(e)
+            raise HostedPiException(e) from e
 
         data = r.json()
         self._boot_progress = data['boot_progress']
@@ -152,7 +152,7 @@ SSH commands:
     @property
     def disk_size(self):
         """
-        The Pi's disk size in GB.
+        The Pi's disk size in GB
         """
         if self._disk_size is None:
             self._get_data()
@@ -162,23 +162,21 @@ SSH commands:
     def initialised_keys(self):
         """
         A boolean representing whether or not the Pi has been initialised with
-        SSH keys.
+        SSH keys
         """
         self._get_data()
         return self._initialised_keys
 
     @property
     def ipv4_ssh_port(self):
-        "The SSH port to use when connecting via the IPv4 proxy."
+        "The SSH port to use when connecting via the IPv4 proxy"
         if self._ipv4_ssh_port is None:
             self._get_data()
         return self._ipv4_ssh_port
 
     @property
     def ipv6_address(self):
-        """
-        The Pi's IPv6 address as an :class:`~ipaddress.IPv6Address` object.
-        """
+        "The Pi's IPv6 address as an :class:`~ipaddress.IPv6Address` object"
         if self._ipv6_address is None:
             self._get_data()
         return self._ipv6_address
@@ -186,7 +184,7 @@ SSH commands:
     @property
     def ipv6_network(self):
         """
-        The Pi's IPv6 network as an :class:`~ipaddress.IPv6Network` object.
+        The Pi's IPv6 network as an :class:`~ipaddress.IPv6Network` object
         """
         if self._ipv6_network is None:
             self._get_data()
@@ -194,34 +192,30 @@ SSH commands:
 
     @property
     def is_booting(self):
-        "A boolean representing whether or not the Pi is currently booting."
+        "A boolean representing whether or not the Pi is currently booting"
         self._get_data()
         return self._is_booting
 
     @property
     def location(self):
-        """
-        The Pi's physical location (data centre).
-        """
+        "The Pi's physical location (data centre)"
         if self._location is None:
             self._get_data()
         return self._location
 
     @property
     def model(self):
-        "The Pi's model (3 or 4)."
+        "The Pi's model (3 or 4)"
         return self._model
 
     @property
     def model_full(self):
-        "The Pi's model (3 or 4)."
+        "The Pi's model name (3B, 3B+ or 4B)"
         return self._model_full
 
     @property
     def power(self):
-        """
-        A boolean representing whether or not the Pi is currently powered on.
-        """
+        "A boolean representing whether or not the Pi is currently powered on"
         self._get_data()
         return self._power
 
@@ -236,12 +230,12 @@ SSH commands:
 
     @property
     def ipv4_ssh_command(self):
-        "The SSH command required to connect to the Pi over IPv4."
+        "The SSH command required to connect to the Pi over IPv4"
         return "ssh -p {self.ipv4_ssh_port} root@ssh.{self.name}.hostedpi.com".format(self=self)
 
     @property
     def ipv6_ssh_command(self):
-        "The SSH command required to connect to the Pi over IPv6."
+        "The SSH command required to connect to the Pi over IPv6"
         return "ssh root@[{self.ipv6_address}]".format(self=self)
 
     @property
@@ -295,7 +289,7 @@ SSH commands:
         if ssh_keys:
             ssh_keys_str = '\r\n'.join(set(ssh_keys))
         else:
-            ssh_keys_str = '\r\n'  # hack: server doesn't allow empty string
+            ssh_keys_str = '\r\n'  # server doesn't allow empty string
         data = {
             'ssh_key': ssh_keys_str,
         }
@@ -355,9 +349,7 @@ SSH commands:
             return self.power
 
     def off(self):
-        """
-        Power the Pi off and return immediately.
-        """
+        "Power the Pi off and return immediately"
         self._power_on_off(on=False)
 
     def reboot(self, *, wait=False):
@@ -386,7 +378,7 @@ SSH commands:
             return self.power
 
     def cancel(self):
-        "Cancel the Pi service."
+        "Cancel the Pi service"
         url = "{self._API_URL}/{self.name}".format(self=self)
         r = requests.delete(url, headers=self._cloud.headers)
 

@@ -190,7 +190,7 @@ class PiCloud:
         self._validate_model(model)
         self._validate_disk_size(disk_size)
 
-        url = '{self._API_URL}/pi/{name}'.format(self=self, name=name)
+        url = "{self._API_URL}/pi/{name}".format(self=self, name=name)
         data = {
             'disk': disk_size,
             'model': model,
@@ -218,16 +218,16 @@ class PiCloud:
         valid_chars = string.ascii_lowercase + string.digits + '-_'
         if not all(c in valid_chars for c in server_name):
             raise HostedPiException(
-                "server name must consist of alphanumeric characters and "
+                "Server name must consist of alphanumeric characters and "
                 "hyphens")
 
     def _validate_model(self, model):
         if model not in ('3', '4'):
-            raise HostedPiException("model must be 3 or 4")
+            raise HostedPiException("Model must be 3 or 4")
 
     def _validate_disk_size(self, disk_size):
         if disk_size < 10 or disk_size % 10 > 0:
-            raise HostedPiException("disk size must be a multiple of 10")
+            raise HostedPiException("Disk size must be a multiple of 10")
 
     def get_operating_systems(self, *, model):
         """
@@ -245,7 +245,7 @@ class PiCloud:
         model = str(model)
         if model not in ('3', '4'):
             raise HostedPiException("model must be 3 or 4")
-        url = '{self._API_URL}/pi-os-images/{model}'.format(self=self, model=model)
+        url = "{self._API_URL}/pi-os-images/{model}".format(self=self, model=model)
         r = requests.get(url, headers=self.headers)
 
         try:
