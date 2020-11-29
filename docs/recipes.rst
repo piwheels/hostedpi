@@ -2,6 +2,9 @@
 Recipes
 =======
 
+This page includes some recipes for using the Python library to make custom
+API interactions, perhaps beyond what the :doc:`cli` can provide.
+
 .. note::
     You'll need to create an API key to be able to use these recipes. See the
     :doc:`getting_started` page to begin. The following examples assume the API
@@ -104,8 +107,11 @@ Reboot all Pis
     for pi in cloud.pis.values():
         pi.reboot()
 
-Reboot all Pis powered off
---------------------------
+Power on/off
+============
+
+Boot all Pis powered off
+------------------------
 
 .. code-block:: python
 
@@ -115,39 +121,7 @@ Reboot all Pis powered off
 
     for pi in cloud.pis.values():
         if not pi.power:
-            pi.reboot()
-
-Reboot all Pis not responding to ping
--------------------------------------
-
-.. note::
-    :meth:`~hostedpi.pi.Pi.ping_ipv6` requires an IPv6 internet connection, and no IPv4 equivalent is
-    available
-
-.. code-block:: python
-
-    from hostedpi import PiCloud
-
-    cloud = PiCloud()
-
-    for pi in cloud.pis.values():
-        if not pi.ping_ipv6():
-            pi.reboot()
-
-Power on/off
-============
-
-Power all Pis on
-----------------
-
-.. code-block:: python
-
-    from hostedpi import PiCloud
-
-    cloud = PiCloud()
-
-    for pi in cloud.pis.values():
-        pi.on()
+            pi.on()
 
 SSH
 ===
