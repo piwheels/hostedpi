@@ -2,6 +2,10 @@
 hostedpi
 ========
 
+.. image:: https://badge.fury.io/py/hostedpi.svg
+    :target: https://badge.fury.io/py/hostedpi
+    :alt: Latest Version
+
 Python interface to the `Mythic Beasts Hosted Pi`_ API, developed by the
 `piwheels`_ team (`Ben Nuttall`_ and `Dave Jones`_).
 
