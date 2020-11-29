@@ -15,18 +15,21 @@ all:
 	@echo "make test - Run tests"
 	@echo "make doc - Build the docs as HTML"
 	@echo "make doc-serve - Serve the docs locally"
+	@echo "make release - Release to PyPI"
 
 install:
 	pip install .
 
 develop:
+	pip install -U pip
+	pip install twine
 	pip install -e .[test,doc]
-
-build:
-	python setup.py sdist bdist_wheel
 
 clean:
 	rm -rf build/ dist/ $(NAME).egg-info/ docs/build/ .pytest_cache/ .coverage
+
+build: clean
+	python setup.py sdist bdist_wheel
 
 lint:
 	pylint -E $(NAME)
@@ -42,4 +45,7 @@ doc:
 doc-serve:
 	cd $(DOC_HTML) && python -m http.server
 
-.PHONY: all install develop build clean lint test doc doc-serve
+release: build
+	twine upload dist/*
+
+.PHONY: all install develop build clean lint test doc doc-serve release
