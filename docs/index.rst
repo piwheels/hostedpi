@@ -10,8 +10,8 @@ Python interface to the `Mythic Beasts Hosted Pi`_ API, developed by the
 .. _Ben Nuttall: https://twitter.com/ben_nuttall
 .. _Dave Jones: https://twitter.com/waveform80
 
-This module provides a Pythonic interface to the API, as well as some command
-line utilities.
+This module provides a Pythonic interface to the API, as well as a command line
+interface.
 
 The authors of this library are not affiliated with Mythic Beasts, but we use
 their Pi cloud to power the piwheels project.
@@ -21,6 +21,29 @@ https://www.mythic-beasts.com/support/api/raspberry-pi
 
 Usage
 =====
+
+View the information about a Pi from the command line:
+
+.. code-block:: console
+
+    $ hostedpi show mypi
+    Name: mypi
+    Provision status: live
+    Model: Raspberry Pi 3B
+    Disk size: 10GB
+    Power: on
+    IPv6 address: 2a00:1098:8:5b::1
+    IPv6 network: 2a00:1098:8:5b00::/56
+    Initialised keys: yes
+    SSH keys: 4
+    IPv4 SSH port: 5091
+    Location: MER
+    URLs:
+      http://www.mypi.hostedpi.com
+      https://www.mypi.hostedpi.com
+    SSH commands:
+      IPv4: ssh -p 5091 root@ssh.mypi.hostedpi.com
+      IPv6: ssh root@[2a00:1098:8:5b::1]
 
 Provision a new Pi and view its SSH command (using Python):
 
@@ -33,29 +56,6 @@ Provision a new Pi and view its SSH command (using Python):
     >>> pi = cloud.create_pi('mypi')
     >>> print(pi.ssh_command)
     ssh -p 5123 root@ssh.mypi.hostedpi.com
-
-View the information about a Pi from the command line:
-
-.. code-block:: console
-
-    $ hostedpi show mypi
-    Name: mypi
-    Status: live
-    Model: Raspberry Pi 3B+
-    Disk size: 10 GB
-    Power: Yes
-    IPv6 address: 2a00:1098:8:94::1
-    IPv6 network: 2a00:1098:8:9400::/56
-    Initialised keys: Yes
-    SSH keys: 1
-    IPv4 SSH port: 5148
-    Location: MER
-    URLs:
-      http://www.mypi.hostedpi.com
-      https://www.mypi.hostedpi.com
-    SSH commands:
-      IPv4: ssh -p 5148 root@ssh.mypi.hostedpi.com
-      IPv6: ssh root@[2a00:1098:8:94::1]
 
 See the :doc:`getting_started` page for information on how to authenticate, and
 see the :doc:`cli` page for information on using the command line interface.
