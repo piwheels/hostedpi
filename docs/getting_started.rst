@@ -124,11 +124,11 @@ which should print something like::
 
 Other properties you can read are include:
 
-* :attr:`~hostedpi.pi.Pi.status`
-* :attr:`~hostedpi.pi.Pi.power`
-* :attr:`~hostedpi.pi.Pi.ip`
-* :attr:`~hostedpi.pi.Pi.ssh_port`
-* :attr:`~hostedpi.pi.Pi.ssh_config`
+* :attr:`~hostedpi.pi.Pi.boot_progress`
+* :attr:`~hostedpi.pi.Pi.disk_size`
+* :attr:`~hostedpi.pi.Pi.ipv4_ssh_command`
+* :attr:`~hostedpi.pi.Pi.ipv4_ssh_config`
+* :attr:`~hostedpi.pi.Pi.ipv4_ssh_port`
 * :attr:`~hostedpi.pi.Pi.ssh_keys`
 * :attr:`~hostedpi.pi.Pi.url`
 
@@ -139,16 +139,14 @@ There are also methods such as :meth:`~hostedpi.pi.Pi.reboot`::
 Other methods include:
 
 * :meth:`~hostedpi.pi.Pi.cancel`
-* :meth:`~hostedpi.pi.Pi.ping_ipv6`
-* :meth:`~hostedpi.pi.Pi.open_web`
-* :meth:`~hostedpi.pi.Pi.get_web`
+* :meth:`~hostedpi.pi.Pi.ssh_import_id`
 
 More
 ====
 
+* See the :doc:`cli` page for details of the possibilities provided by
+ready-made scripts
 * See the API documentation for :class:`~hostedpi.pi.Pi` for more information
   on available properties and methods.
 * See the :doc:`recipes` page for more ideas showing what you can do with this
   module.
-* See the :doc:`cli` page for details of the possibilities provided by
-  ready-made scripts

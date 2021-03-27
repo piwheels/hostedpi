@@ -20,11 +20,13 @@ Setting up for Development
         $ git clone https://github.com/piwheels/hostedpi
         $ cd hostedpi
 
-2. Create a virtual environment:
+2. Create a virtual environment e.g. using `virtualenvwrapper`_:
 
     .. code-block:: console
 
-        $ mkvirtualenv -p hostedpi
+        $ mkvirtualenv hostedpi
+
+    .. _virtualenvwrapper: https://virtualenvwrapper.readthedocs.io/
 
 3. Install the project for development:
 

@@ -23,7 +23,7 @@ Add your SSH key to one Pi:
 .. code-block:: console
 
     $ hostedpi add-key ~/.ssh/id_rsa.pub mypi
-    1 key added to raspberry
+    1 key added to mypi
 
 Add your SSH key to multiple Pis:
 

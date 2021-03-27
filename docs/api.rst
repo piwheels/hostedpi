@@ -1,6 +1,6 @@
-===
-API
-===
+==================
+Python library API
+==================
 
 .. module:: hostedpi
 

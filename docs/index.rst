@@ -76,9 +76,9 @@ Table of Contents
     :maxdepth: 1
 
     getting_started
+    cli
     recipes
     api
-    cli
     development
 
 Contributing

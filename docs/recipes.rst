@@ -3,7 +3,8 @@ Recipes
 =======
 
 This page includes some recipes for using the Python library to make custom
-API interactions, perhaps beyond what the :doc:`cli` can provide.
+programs with the utilities provided, perhaps combined with other libraries. See
+the :doc:`api` page for a full API reference.
 
 .. note::
     You'll need to create an API key to be able to use these recipes. See the

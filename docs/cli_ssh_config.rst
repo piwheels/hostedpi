@@ -1,8 +1,8 @@
-=============
-hostedpi test
-=============
+===================
+hostedpi ssh-config
+===================
 
-.. program:: hostedpi-test
+.. program:: hostedpi-ssh-config
 
 Output the SSH config for one or more Pis in the account
 

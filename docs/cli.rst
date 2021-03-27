@@ -2,9 +2,6 @@
 Command line interface
 ======================
 
-hostedpi
-========
-
 The ``hostedpi`` command is a multi-purpose utility for common actions
 interacting with the API.
 
