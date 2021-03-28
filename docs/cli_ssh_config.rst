@@ -32,7 +32,7 @@ Output the IPv6 SSH config for a Pi:
 
 .. code-block:: console
 
-    $ hostedpi ssh-config mypi
+    $ hostedpi ssh-config mypi --ipv6
     Host mypi
         user root
         hostname 2a00:1098:8:5b::1
