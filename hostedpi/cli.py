@@ -370,7 +370,7 @@ class CLI:
         model = self._args.model
         disk_size = self._args.disk
         ssh_key_path = self._args.ssh_key_path
-        os_image = self._args.os_image
+        os_image = self._args.image
         args = {
             'model': model,
             'disk_size': disk_size,
