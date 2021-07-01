@@ -52,7 +52,7 @@ class PiCloud:
 
         All SSH arguments provided will be used in combination.
     """
-    _API_URL = 'https://api.mythic-beasts.com/beta/servers'
+    _API_URL = 'https://api.mythic-beasts.com/beta/pi'
 
     def __init__(self, api_id=None, api_secret=None, *, ssh_keys=None,
                  ssh_key_path=None, ssh_import_github=None,
@@ -88,7 +88,7 @@ class PiCloud:
     @property
     def pis(self):
         "A dictionary of :class:`~hostedpi.pi.Pi` objects keyed by their names."
-        url = '{self._API_URL}/pi'.format(self=self)
+        url = '{self._API_URL}/servers'.format(self=self)
         r = requests.get(url, headers=self.headers)
 
         try:
@@ -190,7 +190,7 @@ class PiCloud:
         self._validate_model(model)
         self._validate_disk_size(disk_size)
 
-        url = "{self._API_URL}/pi/{name}".format(self=self, name=name)
+        url = "{self._API_URL}/servers/{name}".format(self=self, name=name)
         data = {
             'disk': disk_size,
             'model': model,
@@ -245,7 +245,7 @@ class PiCloud:
         model = str(model)
         if model not in ('3', '4'):
             raise HostedPiException("model must be 3 or 4")
-        url = "{self._API_URL}/pi-os-images/{model}".format(self=self, model=model)
+        url = "{self._API_URL}/images/{model}".format(self=self, model=model)
         r = requests.get(url, headers=self.headers)
 
         try:

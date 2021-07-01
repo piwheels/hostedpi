@@ -130,7 +130,7 @@ SSH commands:
 
     @property
     def _API_URL(self):
-        return self._cloud._API_URL + '/pi'
+        return self._cloud._API_URL + '/servers'
 
     @property
     def name(self):
