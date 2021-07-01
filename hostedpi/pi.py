@@ -299,6 +299,8 @@ SSH commands:
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 403:
+                raise HostedPiException("Not authorised to access server or server does not exist") from e
             raise HostedPiException(e) from e
 
     @property
@@ -334,6 +336,8 @@ SSH commands:
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 403:
+                raise HostedPiException("Not authorised to access server or server does not exist") from e
             raise HostedPiException(e) from e
 
     def on(self, *, wait=False):
@@ -370,6 +374,11 @@ SSH commands:
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 403:
+                raise HostedPiException("Not authorised to access server or server does not exist") from e
+            if r.status_code == 409:
+                # The server is already being rebooted
+                pass
             raise HostedPiException(e) from e
 
         if wait:
@@ -385,9 +394,10 @@ SSH commands:
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 403:
+                raise HostedPiException("Not authorised to access server or server does not exist") from e
             raise HostedPiException(e) from e
 
-        body = r.json()
         self._cancelled = True
 
     def ssh_import_id(self, *, github=None, launchpad=None):

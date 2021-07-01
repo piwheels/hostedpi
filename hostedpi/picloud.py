@@ -205,6 +205,8 @@ class PiCloud:
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 403:
+                raise HostedPiException("Not authorised to provision server") from e
             if r.status_code == 409:
                 raise HostedPiException("Server name already exists") from e
             if r.status_code == 503:
