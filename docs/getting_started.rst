@@ -145,7 +145,7 @@ More
 ====
 
 * See the :doc:`cli` page for details of the possibilities provided by
-ready-made scripts
+  ready-made scripts
 * See the API documentation for :class:`~hostedpi.pi.Pi` for more information
   on available properties and methods.
 * See the :doc:`recipes` page for more ideas showing what you can do with this
