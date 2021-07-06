@@ -239,7 +239,7 @@ class PiCloud:
         :meth:`~hostedpi.picloud.PiCloud.create_pi`; dict values are text labels
         of the OS/distro names (e.g. "Raspbian Buster").
 
-        :type model: int or None
+        :type model: int
         :param model:
             The Raspberry Pi model (3 or 4) to get operating systems for
             (keyword-only argument)
@@ -255,4 +255,4 @@ class PiCloud:
         except HTTPError as e:
             raise HostedPiException(e) from e
 
-        return r.json()['images']['images']
+        return r.json()
