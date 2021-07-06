@@ -101,7 +101,7 @@ class CLI:
             description=("Retrieve the list of operating system images available for the given Pi model."),
             help=("Retrieve the list of operating system images available for the given Pi model"))
         get_images_cmd.add_argument(
-            "model", metavar="model", type=int,
+            "model", metavar="model", nargs='?', type=int,
             help=("The Pi model number (3 or 4) to get operating systems for")
         )
         get_images_cmd.set_defaults(func=self.do_get_images)
@@ -349,10 +349,18 @@ class CLI:
         return 2
 
     def do_get_images(self):
-        images = self.cloud.get_operating_systems(model=self._args.model)
-        col_width = max(len(name) for name in images.values()) + 1
-        for id, name in images.items():
-            print("{name:{col_width}}: {id}".format(name=name, id=id, col_width=col_width))
+        if self._args.model is None:
+            models = [3, 4]
+        else:
+            models = [self._args.model]
+
+        for model in models:
+            print("Images for Pi {model}:".format(model=model))
+            images = self.cloud.get_operating_systems(model=model)
+            col_width = max(len(name) for name in images.values()) + 1
+            for id, name in images.items():
+                print("{name:{col_width}}: {id}".format(name=name, id=id, col_width=col_width))
+            print()
 
     def do_list(self):
         for name in self.pis:

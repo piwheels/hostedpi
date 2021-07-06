@@ -17,6 +17,22 @@ Retrieve the list of operating system images available for the given Pi model
 Usage
 =====
 
+List the available operating system images for Pi 3 and Pi 4:
+
+.. code-block:: console
+
+    Images for Pi 3:
+    Ubuntu 18.04 (Bionic) : ubuntu-18.04
+    Ubuntu 16.04 (Xenial) : ubuntu-16.04
+    Raspbian Buster       : raspbian-buster
+    Raspbian Jessie       : raspbian-jessie
+    Raspbian Stretch      : stretch
+
+    Images for Pi 4:
+    Ubuntu 20.04 64 bit (experimental) : ubuntu20.04.arm64
+    Raspbian Buster                    : raspbian-buster4
+    Raspberry Pi OS 64 bit             : pios64b
+
 List the available operating system images for Pi 3:
 
 .. code-block:: console
