@@ -46,8 +46,8 @@ View the information about a Pi from the command line:
       http://www.mypi.hostedpi.com
       https://www.mypi.hostedpi.com
     SSH commands:
-      IPv4: ssh -p 5091 root@ssh.mypi.hostedpi.com
-      IPv6: ssh root@[2a00:1098:8:5b::1]
+      ssh -p 5091 root@ssh.mypi.hostedpi.com  #IPv4
+      ssh root@[2a00:1098:8:5b::1]  #IPv6
 
 Provision a new Pi and view its SSH command (using Python):
 

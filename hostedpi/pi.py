@@ -53,7 +53,7 @@ class Pi:
             return "<Pi model {model} {self.name}>".format(model=model, self=self)
 
     def __str__(self):
-        "A multip-line string of the information about the Pi"
+        "A multi-line string of the information about the Pi"
         self._get_data()
         if self._provision_status == "live":
             if self._is_booting:
