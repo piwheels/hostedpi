@@ -26,19 +26,19 @@ Description
 
     Show this help message and exit
 
-.. option:: --model model
+.. option:: --model [model]
 
     The model of the new Pi to provision (3 or 4)
 
-.. option:: --disk disk
+.. option:: --disk [disk]
 
     The disk size in GB
 
-.. option:: --image image
+.. option:: --image [image]
 
     The operating system image to use
 
-.. option:: --ssh-key-path ssh_key_path
+.. option:: --ssh-key-path [ssh key path]
 
     The path to an SSH public key file to add to the Pi
 
