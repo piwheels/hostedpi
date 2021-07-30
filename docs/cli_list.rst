@@ -2,14 +2,23 @@
 hostedpi list
 =============
 
-.. program:: hostedpi-list
-
 List all Pis in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    optional arguments:
-      -h, --help  show this help message and exit
+    hostedpi list [-h]
+
+Description
+===========
+
+.. program:: hostedpi-list
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====

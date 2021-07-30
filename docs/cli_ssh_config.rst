@@ -2,18 +2,31 @@
 hostedpi ssh-config
 ===================
 
-.. program:: hostedpi-ssh-config
-
 Output the SSH config for one or more Pis in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The names of the Pis to get SSH config for
+    hostedpi ssh-config [-h] [--ipv6] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
-      --ipv6      Show IPv6 command
+Description
+===========
+
+.. program:: hostedpi-ssh-config
+
+.. option:: names [names ...]
+
+    The name of the Pis to add keys to
+
+.. option:: -h, --help
+
+    Show this help message and exit
+
+.. option:: --ipv6
+
+    Use IPv6 connection details
 
 Usage
 =====
@@ -52,6 +65,7 @@ Output the IPv4 SSH config for multiple Pis:
         hostname ssh.mypi2.hostedpi.com
 
 .. note::
+
     If no names of Pis are given, the SSH commands will be shown for all Pis in
     the account
 
@@ -63,4 +77,5 @@ config file:
     $ hostedpi ssh-config >> ~/.ssh/config
 
 .. note::
+
     Read more about the SSH config file: https://www.ssh.com/ssh/config/

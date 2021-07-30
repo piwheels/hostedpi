@@ -2,17 +2,27 @@
 hostedpi status
 ===============
 
-.. program:: hostedpi-status
-
 Get the provision status of one or more Pis
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The names of the Pis to get the provision status for
+    hostedpi status [-h] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-status
+
+.. option:: names [names ...]
+
+    The names of the Pis to get the provision status for
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
@@ -33,5 +43,6 @@ Get the provision status of multiple Pis:
     mypi2: provisioning
 
 .. note::
+    
     If no names of Pis are given, the provision status will be shown for all Pis
     in the account

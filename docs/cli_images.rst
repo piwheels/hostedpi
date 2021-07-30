@@ -2,17 +2,27 @@
 hostedpi images
 ===============
 
-.. program:: hostedpi-images
-
 Retrieve the list of operating system images available for the given Pi model
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      model       The Pi model number (3 or 4) to get operating systems for
+    hostedpi images [-h] [model]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-images
+
+.. option:: model
+
+    The Pi model number (3 or 4) to get operating systems for
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====

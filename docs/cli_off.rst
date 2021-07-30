@@ -2,17 +2,27 @@
 hostedpi off
 ============
 
-.. program:: hostedpi-off
-
 Power off one or more Pis in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The name of the Pi to power off
+    hostedpi off [-h] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-off
+
+.. option:: names [names ...]
+
+    The name of the Pi to power off
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====

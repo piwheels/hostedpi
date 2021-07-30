@@ -92,13 +92,13 @@ class CLI:
             "test", aliases=["connect"],
             description=(
                 "Test a connection to the Mythic Beasts API using API ID and "
-                "secret in environment variables."),
+                "secret in environment variables"),
             help=("Test a connection to the Mythic Beasts API"))
         test_cmd.set_defaults(func=self.do_test)
 
         get_images_cmd = commands.add_parser(
             "images",
-            description=("Retrieve the list of operating system images available for the given Pi model."),
+            description=("Retrieve the list of operating system images available for the given Pi model"),
             help=("Retrieve the list of operating system images available for the given Pi model"))
         get_images_cmd.add_argument(
             "model", metavar="model", nargs='?', type=int,
@@ -174,7 +174,7 @@ class CLI:
             help=("Reboot one or more Pis in the account"))
         reboot_cmd.add_argument(
             "names", metavar="names", nargs='*',
-            help=("The name of the Pi to reboot")
+            help=("The names of the Pis to reboot")
         )
         reboot_cmd.set_defaults(func=self.do_reboot)
 
@@ -184,7 +184,7 @@ class CLI:
             help=("Power on one or more Pis in the account"))
         power_on_cmd.add_argument(
             "names", metavar="names", nargs='*',
-            help=("The name of the Pi to power on")
+            help=("The names of the Pis to power on")
         )
         power_on_cmd.set_defaults(func=self.do_power_on)
 
@@ -194,7 +194,7 @@ class CLI:
             help=("Power off one or more Pis in the account"))
         power_off_cmd.add_argument(
             "names", metavar="names", nargs='*',
-            help=("The name of the Pi to power off")
+            help=("The names of the Pis to power off")
         )
         power_off_cmd.set_defaults(func=self.do_power_off)
 
@@ -219,7 +219,7 @@ class CLI:
             help=("Show the number of SSH keys currently on one or more Pis"))
         count_keys_cmd.add_argument(
             "names", metavar="names", nargs='*',
-            help=("The names of the Pis to get keys for")
+            help=("The names of the Pis to count keys for")
         )
         count_keys_cmd.set_defaults(func=self.do_count_keys)
 
@@ -229,7 +229,7 @@ class CLI:
             help=("Show the SSH keys currently on a Pi"))
         show_keys_cmd.add_argument(
             "name", metavar="name",
-            help=("The name of the Pi to get keys for")
+            help=("The name of the Pi to show keys for")
         )
         show_keys_cmd.set_defaults(func=self.do_show_keys)
 
@@ -238,12 +238,12 @@ class CLI:
             description=("Add an SSH key from a public key file to one or more Pis"),
             help=("Add an SSH key from a public key file to one or more Pis"))
         add_key_cmd.add_argument(
-            "ssh_key_path", metavar="ssh_key_path", nargs='?',
+            "ssh_key_path", metavar="ssh_key_path",
             help=("The path to an SSH public key file to add to the Pi")
         )
         add_key_cmd.add_argument(
             "names", metavar="names", nargs='*',
-            help=("The name of the Pis to add keys to")
+            help=("The names of the Pis to add keys to")
         )
         add_key_cmd.set_defaults(func=self.do_add_key)
 
@@ -257,7 +257,7 @@ class CLI:
         )
         copy_keys_cmd.add_argument(
             "names_dest", metavar="names_dest", nargs='*',
-            help=("The name of the Pis to copy keys to")
+            help=("The names of the Pis to copy keys to")
         )
         copy_keys_cmd.set_defaults(func=self.do_copy_keys)
 
@@ -315,7 +315,7 @@ class CLI:
         ssh_config_cmd.add_argument(
             "--ipv6",
             action="store_true",
-            help=("Show IPv6 command")
+            help=("Use IPv6 connection details")
         )
         ssh_config_cmd.set_defaults(func=self.do_ssh_config)
 

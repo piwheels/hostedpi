@@ -2,17 +2,27 @@
 hostedpi keys
 =============
 
-.. program:: hostedpi-keys
-
 Show the SSH keys currently on a Pi
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      name        The name of the Pi to get keys for
+    hostedpi hostedpi keys [-h] name
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-keys
+
+.. option:: name
+
+    The name of the Pi to show keys for
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====

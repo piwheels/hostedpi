@@ -2,18 +2,31 @@
 hostedpi copy-keys
 ==================
 
-.. program:: hostedpi-copy-keys
-
 Copy all SSH keys from one Pi to one or more others
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      name_src    The name of the Pi to copy keys from
-      names_dest  The names of the Pis to copy keys to
+    hostedpi copy-keys [-h] name_src [names_dest [names_dest ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-copy-keys
+
+.. option:: name_src
+
+    The name of the Pi to copy keys from
+
+.. option:: names_dest
+
+    The names of the Pis to copy keys to
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
@@ -35,5 +48,6 @@ Copy the keys from one Pi to several others:
     1 keys added to mypi4
 
 .. note::
+    
     Keys are counted before and after addition, and de-duplicated, so if a key
     is already found on the Pi, it will show as not having been added, as above.

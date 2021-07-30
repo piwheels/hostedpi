@@ -2,15 +2,24 @@
 hostedpi test
 =============
 
-.. program:: hostedpi-test
-
 Test a connection to the Mythic Beasts API using API ID and secret in
-environment variables.
+environment variables
+
+Synopsis
+========
 
 .. code-block:: text
 
-    optional arguments:
-    -h, --help  show this help message and exit
+    hostedpi test [-h]
+
+Description
+===========
+
+.. program:: hostedpi-test
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
@@ -30,4 +39,5 @@ An error will be shown if the connection fails:
     hostedpi error: Failed to authenticate
 
 .. note::
+    
     See the :doc:`getting_started` section for details on how to authenticate

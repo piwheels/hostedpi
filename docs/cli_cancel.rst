@@ -2,18 +2,31 @@
 hostedpi cancel
 ===============
 
-.. program:: hostedpi-cancel
-
 Cancel one or more Pis in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The names of the Pis to cancel
+    hostedpi cancel [-h] [-y] names [names ...]
 
-    optional arguments:
-      -h, --help  show this help message and exit
-      -y, --yes   Proceed without confirmation
+Description
+===========
+
+.. program:: hostedpi-cancel
+
+.. option:: names
+
+    The name of the Pis to cancel
+
+.. option:: -h, --help
+
+    Show this help message and exit
+
+.. option:: -y, --yes
+
+    Proceed without confirmation
 
 Usage
 =====
@@ -50,4 +63,5 @@ Cancel a Pi without the confirmation step:
     mypi cancelled
 
 .. warning::
+    
     Be careful!

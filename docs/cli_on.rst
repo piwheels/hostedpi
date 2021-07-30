@@ -2,29 +2,39 @@
 hostedpi on
 ===========
 
-.. program:: hostedpi-on
-
 Power on one or more Pis in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The name of the Pi to power on
+    hostedpi on [-h] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-on
+
+.. option:: names [names ...]
+
+    The name of the Pi to power on
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
 
-Power off a Pi:
+Power on a Pi:
 
 .. code-block:: console
 
     $ hostedpi on mypi
     mypi powered on
 
-Power off multiple Pis:
+Power on multiple Pis:
 
 .. code-block:: console
 
@@ -33,4 +43,5 @@ Power off multiple Pis:
     mypi2 powered on
 
 .. note::
+    
     If no names of Pis are given, all Pis in the account will be powered on

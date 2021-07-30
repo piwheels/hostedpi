@@ -2,21 +2,36 @@
 hostedpi ssh-import-id
 ======================
 
-.. program:: hostedpi-ssh-import-id
-
 Import SSH keys from GitHub or Launchpad and add them to one or more Pis
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names                 The names of the Pis to import keys onto
+    hostedpi ssh-import-id [-h] [--gh [github username]] [--lp [launchpad username]]
+                           [names [names ...]]
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --gh [github username]
-                            The GitHub username to import keys from
-      --lp [launchpad username]
-                            The Launchpad username to import keys from
+Description
+===========
+
+.. program:: hostedpi-ssh-import-id
+
+.. option:: names [names ...]
+
+    The names of the Pis to import keys onto
+
+.. option:: -h, --help
+
+    Show this help message and exit
+
+.. option:: --gh [github username]
+
+    The GitHub username to import keys from
+
+.. option:: --lp [launchpad username]
+
+    The Launchpad username to import keys from
 
 Usage
 =====
@@ -41,10 +56,12 @@ Import keys from GitHub onto multiple Pis:
     4 keys added to mypi2
 
 .. note::
+
     If no names of Pis are given, the key count will be shown for all Pis in the
     account
 
 .. note::
+
     Keys are counted before and after addition, and de-duplicated, so if a key
     is already found on the Pi, it will show as not having been added, as above.
 
@@ -59,5 +76,6 @@ Import keys from GitHub and Launchpad onto a Pi:
     1 key added to mypi
 
 .. note::
+    
     Keys are counted before and after addition, and de-duplicated, so if a key
     is already found on the Pi, it will show as not having been added, as above.

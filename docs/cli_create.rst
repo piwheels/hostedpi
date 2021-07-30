@@ -2,22 +2,45 @@
 hostedpi create
 ===============
 
-.. program:: hostedpi-create
-
 Provision a new Pi in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      name                  The name of the new Pi to provision
+    hostedpi create [-h] [--model [model]] [--disk [disk]] [--image [image]]
+                    [--ssh-key-path [ssh_key_path]]
+                    name
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --model [model]       The model of the new Pi to provision (3 or 4)
-      --disk [disk]         The disk size in GB
-      --image [image]       The operating system image to use
-      --ssh-key-path [ssh_key_path]
-                            The path to an SSH public key file to add to the Pi
+Description
+===========
+
+.. program:: hostedpi-create
+
+.. option:: name
+
+    The name of the new Pi to provision
+
+.. option:: -h, --help
+
+    Show this help message and exit
+
+.. option:: --model model
+
+    The model of the new Pi to provision (3 or 4)
+
+.. option:: --disk disk
+
+    The disk size in GB
+
+.. option:: --image image
+
+    The operating system image to use
+
+.. option:: --ssh-key-path ssh_key_path
+
+    The path to an SSH public key file to add to the Pi
 
 Usage
 =====

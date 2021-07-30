@@ -2,18 +2,31 @@
 hostedpi ssh-command
 ====================
 
-.. program:: hostedpi-ssh-command
-
 Output the SSH command for one or more Pis in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The names of the Pis to get SSH commands for
+    hostedpi ssh-command [-h] [--ipv6] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
-      --ipv6      Show IPv6 command
+Description
+===========
+
+.. program:: hostedpi-ssh-command
+
+.. option:: names [names ...]
+
+    The names of the Pis to get SSH commands for
+
+.. option:: -h, --help
+
+    Show this help message and exit
+
+.. option:: --ipv6
+
+    Show IPv6 command
 
 Usage
 =====
@@ -41,6 +54,7 @@ Show the number of keys on multiple Pis:
     ssh -p 5091 root@ssh.mypi2.hostedpi.com
 
 .. note::
+    
     If no names of Pis are given, the key count will be shown for all Pis in the
     account
 
@@ -51,4 +65,5 @@ Execute the SSH command directly:
     $ $(hostedpi ssh-command mypi)
 
 .. warning::
+
     Use with caution

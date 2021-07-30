@@ -2,17 +2,27 @@
 hostedpi power
 ==============
 
-.. program:: hostedpi-power
-
 Get the power status for one or more Pis
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The names of the Pis to get the power status for
+    hostedpi power [-h] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-power
+
+.. option:: names [names ...]
+
+    The names of the Pis to get the power status for
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
@@ -34,5 +44,6 @@ Show the number of keys on multiple Pis:
     mypi3: powered on
 
 .. note::
+    
     If no names of Pis are given, the power status will be shown for all Pis in
     the account

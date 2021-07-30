@@ -2,17 +2,27 @@
 hostedpi reboot
 ===============
 
-.. program:: hostedpi-reboot
-
 Reboot one or more Pis in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The name of the Pi to reboot
+    hostedpi reboot [-h] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-reboot
+
+.. option:: names [names ...]
+
+    The names of the Pis to reboot
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
@@ -33,4 +43,5 @@ Reboot multiple Pis:
     mypi2 rebooted
 
 .. note::
+    
     If no names of Pis are given, all Pis in the account will be rebooted

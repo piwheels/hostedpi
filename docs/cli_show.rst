@@ -2,17 +2,27 @@
 hostedpi show
 =============
 
-.. program:: hostedpi-show
-
 Show the information about one or more Pis in the account
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The names of the Pis to show information for
+    hostedpi show [-h] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-show
+
+.. option:: names [names ...]
+
+    The names of the Pis to show information for
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
@@ -37,8 +47,8 @@ Show the information about a Pi:
       http://www.mypi.hostedpi.com
       https://www.mypi.hostedpi.com
     SSH commands:
-      IPv4: ssh -p 5091 root@ssh.mypi.hostedpi.com
-      IPv6: ssh root@[2a00:1098:8:5b::1]
+      ssh -p 5091 root@ssh.mypi.hostedpi.com  # IPv4
+      ssh root@[2a00:1098:8:5b::1]  # IPv6
 
 Show the number of keys on multiple Pis:
 
@@ -60,8 +70,8 @@ Show the number of keys on multiple Pis:
       http://www.mypi.hostedpi.com
       https://www.mypi.hostedpi.com
     SSH commands:
-      IPv4: ssh -p 5091 root@ssh.mypi.hostedpi.com
-      IPv6: ssh root@[2a00:1098:8:5b::1]
+      ssh -p 5091 root@ssh.mypi.hostedpi.com  # IPv4
+      ssh root@[2a00:1098:8:5b::1]  # IPv6
 
     Name: mypi2
     Provision status: live
@@ -78,8 +88,9 @@ Show the number of keys on multiple Pis:
       http://www.mypi2.hostedpi.com
       https://www.mypi2.hostedpi.com
     SSH commands:
-      IPv4: ssh -p 5072 root@ssh.mypi2.hostedpi.com
-      IPv6: ssh root@[2a00:1098:8:68::1]
+      ssh -p 5072 root@ssh.mypi2.hostedpi.com  # IPv4
+      ssh root@[2a00:1098:8:68::1]  # IPv6
 
 .. note::
+  
     If no names of Pis are given, information about all Pis will be shown.

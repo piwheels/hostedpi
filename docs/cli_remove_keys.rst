@@ -2,17 +2,27 @@
 hostedpi remove-keys
 ====================
 
-.. program:: hostedpi-remove-keys
-
 Remove all SSH keys from one or more Pis
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The names of the Pis to remove keys from
+    hostedpi remove-keys [-h] names [names ...]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-remove-keys
+
+.. option:: names [names ...]
+
+    The name of the Pis to remove keys from
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
@@ -33,5 +43,6 @@ Remove all SSH keys from multiple Pis:
     0 keys removed from mypi2
 
 .. note::
+    
     Unlike other commands, there is no implicit targeting of all Pis. Pis must
     be listed explicitly to have keys removed.

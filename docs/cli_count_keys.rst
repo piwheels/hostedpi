@@ -2,17 +2,27 @@
 hostedpi count-keys
 ===================
 
-.. program:: hostedpi-count-keys
-
 Show the number of SSH keys currently on one or more Pis
+
+Synopsis
+========
 
 .. code-block:: text
 
-    positional arguments:
-      names       The names of the Pis to get keys for
+    hostedpi count-keys [-h] [names [names ...]]
 
-    optional arguments:
-      -h, --help  show this help message and exit
+Description
+===========
+
+.. program:: hostedpi-count-keys
+
+.. option:: names
+
+    The names of the Pis to count keys for
+
+.. option:: -h, --help
+
+    Show this help message and exit
 
 Usage
 =====
