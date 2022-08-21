@@ -236,7 +236,7 @@ class PiCloud:
     def get_operating_systems(self, *, model):
         """
         Return a dict of operating systems supported by the given Pi *model* (3
-        or 4). Dict keys are identifiers (e.g. "raspbian-buster") which can be
+        or 4). Dict keys are identifiers (e.g. "rpi-buster-armhf") which can be
         used when provisioning a new Pi with
         :meth:`~hostedpi.picloud.PiCloud.create_pi`; dict values are text labels
         of the OS/distro names (e.g. "Raspbian Buster").

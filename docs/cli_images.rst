@@ -31,38 +31,56 @@ List the available operating system images for Pi 3 and Pi 4:
 
 .. code-block:: console
 
+    $ hostedpi images
     Images for Pi 3:
-    Ubuntu 18.04 (Bionic) : ubuntu-18.04
-    Ubuntu 16.04 (Xenial) : ubuntu-16.04
-    Raspbian Buster       : raspbian-buster
-    Raspbian Jessie       : raspbian-jessie
-    Raspbian Stretch      : stretch
+    Ubuntu 18.04 (Bionic Beaver) (64 bit)                : rpi-bionic-arm64
+    Ubuntu 20.04 (Focal Fossa) (32 bit)                  : rpi-focal-armhf
+    Raspberry Pi OS Bullseye Desktop (64 bit, 1920x1080) : rpi-bullseye-arm64-vnc.2022-03-25T17:23:56+00:00
+    Ubuntu 20.04 (Focal Fossa) (64 bit)                  : rpi-focal-arm64
+    Raspberry Pi OS Bullseye (64 bit)                    : rpi-bullseye-arm64
+    Raspberry Pi OS Buster (32 bit)                      : rpi-buster-armhf
+    Raspberry Pi OS Bullseye (32 bit)                    : rpi-bullseye-armhf
+    Raspberry Pi OS Buster (64 bit)                      : rpi-buster-arm64
 
     Images for Pi 4:
-    Ubuntu 20.04 64 bit (experimental) : ubuntu20.04.arm64
-    Raspbian Buster                    : raspbian-buster4
-    Raspberry Pi OS 64 bit             : pios64b
+    Ubuntu 18.04 (Bionic Beaver) (64 bit)                : rpi-bionic-arm64
+    Raspberry Pi OS Bullseye Desktop (64 bit, 1920x1080) : rpi-bullseye-arm64-vnc.2022-03-25T17:23:56+00:00
+    Raspberry Pi OS Buster (32 bit)                      : rpi-buster-armhf
+    Ubuntu 20.04 (Focal Fossa) (64 bit)                  : rpi-focal-arm64
+    Raspberry Pi OS Bullseye (64 bit)                    : rpi-bullseye-arm64
+    Ubuntu 20.04 (Focal Fossa) (32 bit)                  : rpi-focal-armhf
+    Raspberry Pi OS Bullseye (32 bit)                    : rpi-bullseye-armhf
+    Raspberry Pi OS Buster (64 bit)                      : rpi-buster-arm64
 
 List the available operating system images for Pi 3:
 
 .. code-block:: console
 
     $ hostedpi images 3
-    Ubuntu 16.04 (Xenial) : ubuntu-16.04
-    Ubuntu 18.04 (Bionic) : ubuntu-18.04
-    Raspbian Jessie       : raspbian-jessie
-    Raspbian Stretch      : stretch
-    Raspbian Buster       : raspbian-buster
+    Images for Pi 3:
+    Ubuntu 18.04 (Bionic Beaver) (64 bit)                : rpi-bionic-arm64
+    Ubuntu 20.04 (Focal Fossa) (32 bit)                  : rpi-focal-armhf
+    Raspberry Pi OS Bullseye Desktop (64 bit, 1920x1080) : rpi-bullseye-arm64-vnc.2022-03-25T17:23:56+00:00
+    Ubuntu 20.04 (Focal Fossa) (64 bit)                  : rpi-focal-arm64
+    Raspberry Pi OS Bullseye (64 bit)                    : rpi-bullseye-arm64
+    Raspberry Pi OS Buster (32 bit)                      : rpi-buster-armhf
+    Raspberry Pi OS Bullseye (32 bit)                    : rpi-bullseye-armhf
+    Raspberry Pi OS Buster (64 bit)                      : rpi-buster-arm64
 
 List the available operating system images for Pi 4:
 
 .. code-block:: console
 
     $ hostedpi images 4
-    Ubuntu 20.04 64 bit (experimental) : ubuntu20.04.arm64
-    Raspbian Buster                    : raspbian-buster4
-    Raspberry Pi OS 64 bit             : pios64b
-    Ubuntu 18.04 (Bionic)              : ubuntu-18.04-rpi4
+    Images for Pi 4:
+    Ubuntu 18.04 (Bionic Beaver) (64 bit)                : rpi-bionic-arm64
+    Raspberry Pi OS Bullseye Desktop (64 bit, 1920x1080) : rpi-bullseye-arm64-vnc.2022-03-25T17:23:56+00:00
+    Raspberry Pi OS Buster (32 bit)                      : rpi-buster-armhf
+    Ubuntu 20.04 (Focal Fossa) (64 bit)                  : rpi-focal-arm64
+    Raspberry Pi OS Bullseye (64 bit)                    : rpi-bullseye-arm64
+    Ubuntu 20.04 (Focal Fossa) (32 bit)                  : rpi-focal-armhf
+    Raspberry Pi OS Bullseye (32 bit)                    : rpi-bullseye-armhf
+    Raspberry Pi OS Buster (64 bit)                      : rpi-buster-arm64
 
 .. note::
     The right hand column represents the image label which can be used when
