@@ -11,11 +11,11 @@ def ssh_import_id(*, github=None, launchpad=None):
 
     keys = set()
     if github is not None:
-        url = 'https://github.com/{}.keys'.format(github)
+        url = f"https://github.com/{github}.keys"
         sep = '\n'
         keys |= fetch_keys(url, sep)
     if launchpad is not None:
-        url = 'https://launchpad.net/~{}/+sshkeys'.format(launchpad)
+        url = f"https://launchpad.net/~{launchpad}/+sshkeys"
         sep = '\r\n\n'
         keys |= fetch_keys(url, sep)
 
