@@ -185,7 +185,6 @@ class PiCloud:
         ssh_keys_str = "\r\n".join(ssh_keys_set)
 
         server_name = name.lower()
-        model = str(model)
         self._validate_server_name(server_name)
         self._validate_model(model)
         self._validate_disk_size(disk_size)
@@ -226,7 +225,7 @@ class PiCloud:
                 "hyphens")
 
     def _validate_model(self, model):
-        if model not in ('3', '4'):
+        if model not in {3, 4}:
             raise HostedPiException("Model must be 3 or 4")
 
     def _validate_disk_size(self, disk_size):
