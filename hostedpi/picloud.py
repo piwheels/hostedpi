@@ -189,7 +189,7 @@ class PiCloud:
         self._validate_model(model)
         self._validate_disk_size(disk_size)
 
-        url = "{self._API_URL}/servers/{name}".format(self=self, name=name)
+        url = f"{self._API_URL}/servers/{name}"
         data = {
             'disk': disk_size,
             'model': model,
@@ -211,8 +211,7 @@ class PiCloud:
             if r.status_code == 409:
                 raise HostedPiException("Server name already exists") from e
             if r.status_code == 503:
-                raise HostedPiException(
-                    "Out of stock of Pi Model {model}".format(model=model)) from e
+                raise HostedPiException(f"Out of stock of Pi Model {model}") from e
             raise HostedPiException(e) from e
 
         return Pi(cloud=self, name=name, model=model)
@@ -248,7 +247,7 @@ class PiCloud:
         model = str(model)
         if model not in ('3', '4'):
             raise HostedPiException("model must be 3 or 4")
-        url = "{self._API_URL}/images/{model}".format(self=self, model=model)
+        url = f"{self._API_URL}/images/{model}"
         r = requests.get(url, headers=self.headers)
 
         try:

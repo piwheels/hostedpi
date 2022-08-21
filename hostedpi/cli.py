@@ -24,7 +24,7 @@ class CLI:
         try:
             return self._args.func()
         except HostedPiException as e:
-            sys.stderr.write("hostedpi error: {e}\n".format(e=e))
+            sys.stderr.write(f"hostedpi error: {e}\n")
             return 2
         except KeyboardInterrupt:
             print("Operation cancelled during process")
@@ -334,7 +334,7 @@ class CLI:
         return {name: self.pis.get(name) for name in names}.items()
 
     def print_not_found(self, name):
-        sys.stderr.write("{name} not found\n".format(name=name))
+        sys.stderr.write(f"{name} not found\n")
 
     def do_help(self):
         if self._args.cmd:
@@ -355,11 +355,11 @@ class CLI:
             models = [self._args.model]
 
         for model in models:
-            print("Images for Pi {model}:".format(model=model))
+            print(f"Images for Pi {model}:")
             images = self.cloud.get_operating_systems(model=model)
             col_width = max(len(name) for name in images.values()) + 1
             for id, name in images.items():
-                print("{name:{col_width}}: {id}".format(name=name, id=id, col_width=col_width))
+                print(f"{name:{col_width}}: {id}")
             print()
 
     def do_list(self):
@@ -389,7 +389,7 @@ class CLI:
         kwargs = {k: v for k, v in args.items() if v is not None}
         pi = self.cloud.create_pi(name, **kwargs)
 
-        print("Pi {} provisioned successfully".format(name))
+        print(f"Pi {name} provisioned successfully")
         print()
         print(pi)
 
@@ -397,7 +397,7 @@ class CLI:
         for name, pi in self.get_pis(self._args.names):
             if pi:
                 pi.reboot()
-                print("{name} rebooted".format(name=name))
+                print(f"{name} rebooted")
             else:
                 self.print_not_found(name)
 
@@ -405,7 +405,7 @@ class CLI:
         for name, pi in self.get_pis(self._args.names):
             if pi:
                 pi.on()
-                print("{name} powered on".format(name=name))
+                print(f"{name} powered on")
             else:
                 self.print_not_found(name)
 
@@ -413,7 +413,7 @@ class CLI:
         for name, pi in self.get_pis(self._args.names):
             if pi:
                 pi.off()
-                print("{name} powered off".format(name=name))
+                print(f"{name} powered off")
             else:
                 self.print_not_found(name)
 
@@ -422,7 +422,7 @@ class CLI:
             num_pis = len(self._args.names)
             try:
                 s = '' if num_pis == 1 else 's'
-                y = input("Cancelling {n} Pi{s}. Proceed? [Y/n]".format(n=num_pis, s=s))
+                y = input(f"Cancelling {num_pis} Pi{s}. Proceed? [Y/n]")
             except KeyboardInterrupt:
                 print()
                 print("Not cancelled")
@@ -433,7 +433,7 @@ class CLI:
         for name, pi in self.get_pis(self._args.names):
             if pi:
                 pi.cancel()
-                print("{name} cancelled".format(name=name))
+                print(f"{name} cancelled")
             else:
                 self.print_not_found(name)
 
@@ -447,7 +447,7 @@ class CLI:
         for name, pi in self.get_pis(self._args.names):
             num_keys = len(pi.ssh_keys)
             s = '' if num_keys == 1 else 's'
-            print("{name}: {n} key{s}".format(name=name, n=num_keys, s=s))
+            print(f"{name}: {num_keys} key{s}")
 
     def do_add_key(self):
         ssh_key = read_ssh_key(self._args.ssh_key_path)
@@ -458,7 +458,7 @@ class CLI:
             keys_after = len(pi.ssh_keys)
             num_keys = keys_after - keys_before
             s = '' if num_keys == 1 else ''
-            print("{n} key{s} added to {name}".format(n=num_keys, name=name, s=s))
+            print(f"{num_keys} key{s} added to {name}")
 
     def do_copy_keys(self):
         src_pi = self.get_pi(self._args.name_src)
@@ -473,7 +473,7 @@ class CLI:
                 keys_after = len(pi.ssh_keys)
                 num_keys = keys_after - keys_before
                 s = '' if num_keys == 1 else 's'
-                print("{n} key{s} added to {name}".format(n=num_keys, name=name, s=s))
+                print(f"{num_keys} key{s} added to {name}")
 
     def do_remove_keys(self):
         for name, pi in self.get_pis(self._args.names):
@@ -481,7 +481,7 @@ class CLI:
                 num_keys = len(pi.ssh_keys)
                 pi.ssh_keys = set()
                 s = '' if num_keys == 1 else 's'
-                print("{n} key{s} removed from {name}".format(n=num_keys, name=name, s=s))
+                print(f"{num_keys} key{s} removed from {name}")
             else:
                 self.print_not_found(name)
 
@@ -494,17 +494,17 @@ class CLI:
         if github:
             github_keys |= ssh_import_id(github=github)
             s = '' if len(github_keys) == 1 else 's'
-            print("{n} key{s} retrieved from GitHub".format(n=len(github_keys), s=s))
+            print(f"{len(github_keys)} key{s} retrieved from GitHub")
         if launchpad:
             launchpad_keys |= ssh_import_id(launchpad=launchpad)
             s = '' if len(launchpad_keys) == 1 else 's'
-            print("{n} key{s} retrieved from Launchpad".format(n=len(launchpad_keys), s=s))
+            print(f"{len(launchpad_keys)} key{s} retrieved from Launchpad")
 
         print()
         new_keys = github_keys | launchpad_keys
         if len(new_keys) < (len(github_keys) + len(launchpad_keys)):
             s = '' if len(new_keys) == 1 else 's'
-            print("{n} key{s} to add".format(n=len(new_keys), s=s))
+            print(f"{len(new_keys)} key{s} to add")
 
         if new_keys:
             for name, pi in self.get_pis(self._args.names):
@@ -514,7 +514,7 @@ class CLI:
                     keys_after = len(pi.ssh_keys)
                     num_keys = keys_after - keys_before
                     s = '' if num_keys == 1 else 's'
-                    print("{n} key{s} added to {name}".format(n=num_keys, name=name, s=s))
+                    print(f"{num_keys} key{s} added to {name}")
                 else:
                     self.print_not_found(name)
         else:
@@ -543,7 +543,7 @@ class CLI:
     def do_provision_status(self):
         for name, pi in self.get_pis(self._args.names):
             if pi:
-                print("{pi.name}: {pi.provision_status}".format(pi=pi))
+                print(f"{pi.name}: {pi.provision_status}")
             else:
                 self.print_not_found(name)
 
@@ -551,7 +551,7 @@ class CLI:
         for name, pi in self.get_pis(self._args.names):
             if pi:
                 on_off = "on" if pi.power else "off"
-                print("{name}: powered {on_off}".format(name=name, on_off=on_off))
+                print(f"{name}: powered {on_off}")
             else:
                 self.print_not_found(name)
 

@@ -47,17 +47,17 @@ class Pi:
 
     def __repr__(self):
         if self._cancelled:
-            return "<Pi {self.name} cancelled>".format(self=self)
+            return f"<Pi {self.name} cancelled>"
         else:
             model = self.model_full if self.model_full else self.model
-            return "<Pi model {model} {self.name}>".format(model=model, self=self)
+            return f"<Pi model {model} {self.name}>"
 
     def __str__(self):
         "A multi-line string of the information about the Pi"
         self._get_data()
         if self._provision_status == "live":
             if self._is_booting:
-                boot_progress = "booting: {progress}".format(progress=self._boot_progress)
+                boot_progress = "booting: {self._boot_progress}"
             elif self._boot_progress:
                 boot_progress = self._boot_progress
             else:
@@ -65,7 +65,7 @@ class Pi:
             num_keys = len(self.ssh_keys)
             power = "on" if self._power else "off"
             initialised_keys = "yes" if self._initialised_keys else "no"
-            return """
+            return f"""
 Name: {self.name}
 Provision status: {boot_progress}
 Model: Raspberry Pi {self._model_full}
@@ -83,10 +83,9 @@ URLs:
 SSH commands:
   {self.ipv4_ssh_command}  # IPv4
   {self.ipv6_ssh_command}  # IPv6
-"""[1:-1].format(self=self, boot_progress=boot_progress, power=power,
-                 num_keys=num_keys, initialised_keys=initialised_keys)
+"""[1:-1]
         else:
-            return """
+            return f"""
 Name: {self.name}
 Provision status: {self._provision_status}
 Model: Raspberry Pi {self._model}
@@ -101,10 +100,10 @@ URLs:
 SSH commands:
   {self.ipv4_ssh_command}  # IPv4
   {self.ipv6_ssh_command}  # IPv6
-"""[1:-1].format(self=self)
+"""[1:-1]
 
     def _get_data(self):
-        url = '{self._API_URL}/{self.name}'.format(self=self)
+        url = f"{self._API_URL}/{self.name}"
         r = requests.get(url, headers=self._cloud.headers)
 
         try:
@@ -231,12 +230,12 @@ SSH commands:
     @property
     def ipv4_ssh_command(self):
         "The SSH command required to connect to the Pi over IPv4"
-        return "ssh -p {self.ipv4_ssh_port} root@ssh.{self.name}.hostedpi.com".format(self=self)
+        return f"ssh -p {self.ipv4_ssh_port} root@ssh.{self.name}.hostedpi.com"
 
     @property
     def ipv6_ssh_command(self):
         "The SSH command required to connect to the Pi over IPv6"
-        return "ssh root@[{self.ipv6_address}]".format(self=self)
+        return f"ssh root@[{self.ipv6_address}]"
 
     @property
     def ipv4_ssh_config(self):
@@ -244,11 +243,11 @@ SSH commands:
         A string containing the IPv4 SSH config for the Pi. The contents could
         be added to an SSH config file for easy access to the Pi.
         """
-        return """Host {self.name}
+        return f"""Host {self.name}
     user root
     port {self.ipv4_ssh_port}
     hostname ssh.{self.name}.hostedpi.com
-        """.format(self=self).strip()
+        """.strip()
 
     @property
     def ipv6_ssh_config(self):
@@ -256,10 +255,10 @@ SSH commands:
         A string containing the IPv6 SSH config for the Pi. The contents could
         be added to an SSH config file for easy access to the Pi.
         """
-        return """Host {self.name}
+        return f"""Host {self.name}
     user root
     hostname {self.ipv6_address}
-        """.format(self=self).strip()
+        """.strip()
 
     @property
     def ssh_keys(self):
@@ -268,7 +267,7 @@ SSH commands:
         Property value is a set of strings. Assigned value should also be a set
         of strings.
         """
-        url = "{self._API_URL}/{self.name}/ssh-key".format(self=self)
+        url = f"{self._API_URL}/{self.name}/ssh-key"
         r = requests.get(url, headers=self._cloud.headers)
 
         try:
@@ -283,7 +282,7 @@ SSH commands:
 
     @ssh_keys.setter
     def ssh_keys(self, ssh_keys):
-        url = "{self._API_URL}/{self.name}/ssh-key".format(self=self)
+        url = f"{self._API_URL}/{self.name}/ssh-key"
         headers = self._cloud.headers.copy()
         headers['Content-Type'] = 'application/json'
         if ssh_keys:
@@ -312,7 +311,7 @@ SSH commands:
             Note that a web server must be installed on the Pi for the URL to
             resolve in a web browser.
         """
-        return "http://www.{self.name}.hostedpi.com".format(self=self)
+        return f"http://www.{self.name}.hostedpi.com"
 
     @property
     def url_ssl(self):
@@ -324,10 +323,10 @@ SSH commands:
             resolve in a web browser, and an SSL certificate must be created.
             See https://letsencrypt.org/
         """
-        return "https://www.{self.name}.hostedpi.com".format(self=self)
+        return f"https://www.{self.name}.hostedpi.com"
 
     def _power_on_off(self, *, on=False):
-        url = "{self._API_URL}/{self.name}/power".format(self=self)
+        url = f"{self._API_URL}/{self.name}/power"
         data = {
             'power': on,
         }
@@ -368,7 +367,7 @@ SSH commands:
             :attr:`~hostedpi.pi.Pi.is_booting` and
             :attr:`~hostedpi.pi.Pi.boot_progress`.
         """
-        url = "{self._API_URL}/{self.name}/reboot".format(self=self)
+        url = f"{self._API_URL}/{self.name}/reboot"
         r = requests.post(url, headers=self._cloud.headers)
 
         try:
@@ -388,7 +387,7 @@ SSH commands:
 
     def cancel(self):
         "Cancel the Pi service"
-        url = "{self._API_URL}/{self.name}".format(self=self)
+        url = f"{self._API_URL}/{self.name}"
         r = requests.delete(url, headers=self._cloud.headers)
 
         try:
