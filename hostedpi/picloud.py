@@ -104,12 +104,15 @@ class PiCloud:
         """
         A dictionary of :class:`~hostedpi.pi.Pi` objects keyed by their names
         """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piservers
         url = f"{self._API_URL}/servers"
         r = requests.get(url, headers=self.headers)
 
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 403:
+                raise HostedPiException("Not authorised") from e
             raise HostedPiException(e) from e
 
         pis = r.json()['servers']
@@ -204,6 +207,7 @@ class PiCloud:
             not possible to request a particular model beyond 3 or 4. The Pi 4
             is the 4GB RAM model.
         """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
         ssh_keys_set = parse_ssh_keys(ssh_keys, ssh_key_path, ssh_import_github,
                                       ssh_import_launchpad)
         ssh_keys_str = "\r\n".join(ssh_keys_set)
@@ -229,7 +233,8 @@ class PiCloud:
             r.raise_for_status()
         except HTTPError as e:
             if r.status_code == 400:
-                raise HostedPiException("Invalid parameters") from e
+                error = r.json().get('error', '')
+                raise HostedPiException(f"Invalid parameters: {error}") from e
             if r.status_code == 403:
                 raise HostedPiException("Not authorised to provision server") from e
             if r.status_code == 409:
@@ -245,7 +250,8 @@ class PiCloud:
         if not all(c in valid_chars for c in server_name):
             raise HostedPiException(
                 "Server name must consist of alphanumeric characters and "
-                "hyphens")
+                "hyphens"
+            )
 
     def _validate_model(self, model: int):
         if model not in {3, 4}:
@@ -268,6 +274,7 @@ class PiCloud:
             The Raspberry Pi model (3 or 4) to get operating systems for
             (keyword-only argument)
         """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piimagesmodel
         if model not in {3, 4}:
             raise HostedPiException("model must be 3 or 4")
         url = f"{self._API_URL}/images/{model}"
@@ -276,6 +283,9 @@ class PiCloud:
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 400:
+                error = r.json()['error']
+                raise HostedPiException(error) from e
             raise HostedPiException(e) from e
 
         return r.json()

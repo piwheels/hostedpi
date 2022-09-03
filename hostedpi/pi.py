@@ -12,6 +12,9 @@ from .utils import parse_ssh_keys
 from .exc import HostedPiException
 
 
+NOT_AUTHORISED = "Not authorised to access server or server does not exist"
+
+
 class Pi:
     """
     The ``Pi`` class represents a single Raspberry Pi service in the Mythic
@@ -106,12 +109,15 @@ SSH commands:
 """[1:-1]
 
     def _get_data(self):
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifier
         url = f"{self._API_URL}/{self.name}"
         r = requests.get(url, headers=self._cloud.headers)
 
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 403:
+                raise HostedPiException(NOT_AUTHORISED) from e
             raise HostedPiException(e) from e
 
         data = r.json()
@@ -290,12 +296,15 @@ SSH commands:
         Property value is a set of strings. Assigned value should also be a set
         of strings.
         """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifierssh-key
         url = f"{self._API_URL}/{self.name}/ssh-key"
         r = requests.get(url, headers=self._cloud.headers)
 
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 403:
+                raise HostedPiException(NOT_AUTHORISED) from e
             raise HostedPiException(e) from e
 
         body = r.json()
@@ -305,6 +314,7 @@ SSH commands:
 
     @ssh_keys.setter
     def ssh_keys(self, ssh_keys: Union[Set[str], List[str]]):
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierssh-key
         url = f"{self._API_URL}/{self.name}/ssh-key"
         headers = self._cloud.headers.copy()
         headers['Content-Type'] = 'application/json'
@@ -322,7 +332,7 @@ SSH commands:
             r.raise_for_status()
         except HTTPError as e:
             if r.status_code == 403:
-                raise HostedPiException("Not authorised to access server or server does not exist") from e
+                raise HostedPiException(NOT_AUTHORISED) from e
             raise HostedPiException(e) from e
 
     @property
@@ -349,6 +359,7 @@ SSH commands:
         return f"https://www.{self.name}.hostedpi.com"
 
     def _power_on_off(self, *, on=False):
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierpower
         url = f"{self._API_URL}/{self.name}/power"
         data = {
             'power': on,
@@ -358,8 +369,11 @@ SSH commands:
         try:
             r.raise_for_status()
         except HTTPError as e:
+            if r.status_code == 400:
+                msg = "The server is already being rebooted"
+                raise HostedPiException(NOT_AUTHORISED) from e
             if r.status_code == 403:
-                raise HostedPiException("Not authorised to access server or server does not exist") from e
+                raise HostedPiException(NOT_AUTHORISED) from e
             raise HostedPiException(e) from e
 
     def on(self, *, wait: bool = False) -> Optional[bool]:
@@ -392,6 +406,7 @@ SSH commands:
             :attr:`~hostedpi.pi.Pi.is_booting` and
             :attr:`~hostedpi.pi.Pi.boot_progress`.
         """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifierreboot
         url = f"{self._API_URL}/{self.name}/reboot"
         r = requests.post(url, headers=self._cloud.headers)
 
@@ -399,7 +414,7 @@ SSH commands:
             r.raise_for_status()
         except HTTPError as e:
             if r.status_code == 403:
-                raise HostedPiException("Not authorised to access server or server does not exist") from e
+                raise HostedPiException(NOT_AUTHORISED) from e
             if r.status_code == 409:
                 # The server is already being rebooted
                 pass
@@ -414,6 +429,7 @@ SSH commands:
         """
         Cancel the Pi service
         """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
         url = f"{self._API_URL}/{self.name}"
         r = requests.delete(url, headers=self._cloud.headers)
 
@@ -421,7 +437,7 @@ SSH commands:
             r.raise_for_status()
         except HTTPError as e:
             if r.status_code == 403:
-                raise HostedPiException("Not authorised to access server or server does not exist") from e
+                raise HostedPiException(NOT_AUTHORISED) from e
             raise HostedPiException(e) from e
 
         self._cancelled = True
