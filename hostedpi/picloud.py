@@ -1,5 +1,6 @@
 import os
 import string
+from typing import Optional, Union, Dict, List, Set
 
 import requests
 from requests.exceptions import HTTPError
@@ -52,11 +53,18 @@ class PiCloud:
 
         All SSH arguments provided will be used in combination.
     """
-    _API_URL = 'https://api.mythic-beasts.com/beta/pi'
+    _API_URL = "https://api.mythic-beasts.com/beta/pi"
 
-    def __init__(self, api_id=None, api_secret=None, *, ssh_keys=None,
-                 ssh_key_path=None, ssh_import_github=None,
-                 ssh_import_launchpad=None):
+    def __init__(
+        self,
+        api_id: Optional[str] = None,
+        api_secret: Optional[str] = None,
+        *,
+        ssh_keys: Optional[Union[List[str], Set[str]]] = None,
+        ssh_key_path: Optional[str] = None,
+        ssh_import_github: Optional[Union[List[str], Set[str]]] = None,
+        ssh_import_launchpad: Optional[Union[List[str], Set[str]]] = None,
+    ):
         if api_id is None:
             api_id = os.environ.get('HOSTEDPI_ID')
 
@@ -69,8 +77,9 @@ class PiCloud:
                 "set or api_id and api_secret passed as arguments"
             )
 
-        self.ssh_keys = parse_ssh_keys(ssh_keys, ssh_key_path,
-                                       ssh_import_github, ssh_import_launchpad)
+        self.ssh_keys = parse_ssh_keys(
+            ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad
+        )
 
         self._auth = MythicAuth(api_id, api_secret)
 
@@ -78,17 +87,24 @@ class PiCloud:
         return "<PiCloud>"
 
     def __str__(self):
-        "String of information about all the Pis in the account"
+        """
+        String of information about all the Pis in the account
+        """
         print(*self.pis, sep='\n\n')
 
     @property
-    def headers(self):
+    def headers(self) -> Dict[str, str]:
+        """
+        Default request headers
+        """
         return self._auth.headers
 
     @property
-    def pis(self):
-        "A dictionary of :class:`~hostedpi.pi.Pi` objects keyed by their names."
-        url = '{self._API_URL}/servers'.format(self=self)
+    def pis(self) -> Dict[str, Pi]:
+        """
+        A dictionary of :class:`~hostedpi.pi.Pi` objects keyed by their names
+        """
+        url = f"{self._API_URL}/servers"
         r = requests.get(url, headers=self.headers)
 
         try:
@@ -104,7 +120,7 @@ class PiCloud:
         }
 
     @property
-    def ipv4_ssh_config(self):
+    def ipv4_ssh_config(self) -> str:
         """
         A string containing the IPv4 SSH config for all Pis within the account.
         The contents could be added to an SSH config file for easy access to the
@@ -113,7 +129,7 @@ class PiCloud:
         return '\n'.join(pi.ipv4_ssh_config for pi in self.pis.values())
 
     @property
-    def ipv6_ssh_config(self):
+    def ipv6_ssh_config(self) -> str:
         """
         A string containing the IPv6 SSH config for all Pis within the account.
         The contents could be added to an SSH config file for easy access to the
@@ -121,9 +137,17 @@ class PiCloud:
         """
         return '\n'.join(pi.ipv6_ssh_config for pi in self.pis.values())
 
-    def create_pi(self, name, *, model=3, disk_size=10,
-                  os_image=None, ssh_keys=None, ssh_key_path=None,
-                  ssh_import_github=None, ssh_import_launchpad=None):
+    def create_pi(self,
+        name: str,
+        *,
+        model: int = 3,
+        disk_size: int = 10,
+        os_image: Optional[str] = None,
+        ssh_keys: Optional[Union[List[str], Set[str]]] = None,
+        ssh_key_path: Optional[str] = None,
+        ssh_import_github: Optional[Union[List[str], Set[str]]] = None,
+        ssh_import_launchpad: Optional[Union[List[str], Set[str]]] = None,
+    ) -> Pi:
         """
         Provision a new cloud Pi with the specified name, model, disk size and
         SSH keys. Return a new :class:`~hostedpi.pi.Pi` instance.
@@ -223,29 +247,28 @@ class PiCloud:
                 "Server name must consist of alphanumeric characters and "
                 "hyphens")
 
-    def _validate_model(self, model):
+    def _validate_model(self, model: int):
         if model not in {3, 4}:
             raise HostedPiException("Model must be 3 or 4")
 
-    def _validate_disk_size(self, disk_size):
+    def _validate_disk_size(self, disk_size: int):
         if disk_size < 10 or disk_size % 10 > 0:
             raise HostedPiException("Disk size must be a multiple of 10")
 
-    def get_operating_systems(self, *, model):
+    def get_operating_systems(self, *, model: int) -> Dict[str, str]:
         """
         Return a dict of operating systems supported by the given Pi *model* (3
         or 4). Dict keys are identifiers (e.g. "rpi-buster-armhf") which can be
         used when provisioning a new Pi with
         :meth:`~hostedpi.picloud.PiCloud.create_pi`; dict values are text labels
-        of the OS/distro names (e.g. "Raspbian Buster").
+        of the OS/distro names (e.g. "Raspberry Pi OS Bullseye (32 bit)").
 
         :type model: int
         :param model:
             The Raspberry Pi model (3 or 4) to get operating systems for
             (keyword-only argument)
         """
-        model = str(model)
-        if model not in ('3', '4'):
+        if model not in {3, 4}:
             raise HostedPiException("model must be 3 or 4")
         url = f"{self._API_URL}/images/{model}"
         r = requests.get(url, headers=self.headers)

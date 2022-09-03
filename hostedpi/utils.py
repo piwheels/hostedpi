@@ -1,11 +1,16 @@
+from typing import Optional, Union, Set
+from pathlib import Path
+
 import requests
 from requests.exceptions import HTTPError
 
 from .exc import HostedPiException
 
 
-def ssh_import_id(*, github=None, launchpad=None):
-    "Returns a set of SSH keys imported from GitHub or Launchpad"
+def ssh_import_id(*, github: Optional[str] = None, launchpad: Optional[str] = None) -> Set[str]:
+    """
+    Returns a set of SSH keys imported from GitHub or Launchpad
+    """
     if github is None and launchpad is None:
         raise HostedPiException("GitHub or Launchpad username must be provided")
 
@@ -22,8 +27,10 @@ def ssh_import_id(*, github=None, launchpad=None):
     return keys
 
 
-def fetch_keys(url, sep):
-    "Retrieve keys from *url* and return a set of keys"
+def fetch_keys(url: str, sep: str) -> Set[str]:
+    """
+    Retrieve keys from *url* and return a set of keys
+    """
     r = requests.get(url)
 
     try:
@@ -34,23 +41,30 @@ def fetch_keys(url, sep):
     return set(r.text.strip().split(sep))
 
 
-def read_ssh_key(ssh_key_path):
-    "Read the SSH key from the given path and return the file contents"
-    with open(ssh_key_path) as f:
-        return f.read()
+def read_ssh_key(ssh_key_path: Path) -> str:
+    """
+    Read the SSH key from the given path and return the file contents
+    """
+    return ssh_key_path.read_text()
 
 
-def parse_ssh_keys(ssh_keys=None, ssh_key_path=None, ssh_import_github=None,
-                   ssh_import_launchpad=None):
-    "Parse SSH keys from any of various sources"
-    if type(ssh_import_github) == str:
+def parse_ssh_keys(
+    ssh_keys: Optional[Set[str]] = None,
+    ssh_key_path: Optional[Path] = None,
+    ssh_import_github: Optional[Union[Set[str], str]] = None,
+    ssh_import_launchpad: Optional[Union[Set[str], str]] = None,
+) -> Set[str]:
+    """
+    Parse SSH keys from any of various sources
+    """
+    if type(ssh_import_github) is str:
         ssh_import_github = {ssh_import_github}
-    if type(ssh_import_launchpad) == str:
+    if type(ssh_import_launchpad) is str:
         ssh_import_launchpad = {ssh_import_launchpad}
 
     ssh_keys_set = set()
     if ssh_keys:
-        ssh_keys_set |= set(ssh_keys)
+        ssh_keys_set |= ssh_keys
     if ssh_key_path:
         ssh_keys_set |= {read_ssh_key(ssh_key_path)}
     if ssh_import_github:

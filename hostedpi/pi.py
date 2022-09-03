@@ -1,6 +1,9 @@
-from datetime import datetime
 from ipaddress import IPv6Address, IPv6Network
 from time import sleep
+from typing import Optional, Union, List, Set, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .picloud import PiCloud
 
 import requests
 from requests.exceptions import HTTPError
@@ -26,7 +29,7 @@ class Pi:
         The ``Pi`` class should not be initialised by the user, only internally
         within the module.
     """
-    def __init__(self, *, cloud, name, model):
+    def __init__(self, *, cloud: "PiCloud", name: str, model: int):
         self._cloud = cloud
         self._name = name
         self._model = model
@@ -42,8 +45,6 @@ class Pi:
         self._power = None
         self._ipv4_ssh_port = None
         self._provision_status = None
-        self._data_expiry = datetime.now()
-        self._reboot_thread = None
 
     def __repr__(self):
         if self._cancelled:
@@ -53,7 +54,9 @@ class Pi:
             return f"<Pi model {model} {self.name}>"
 
     def __str__(self):
-        "A multi-line string of the information about the Pi"
+        """
+        A multi-line string of the information about the Pi
+        """
         self._get_data()
         if self._provision_status == "live":
             if self._is_booting:
@@ -122,22 +125,24 @@ SSH commands:
         self._ipv6_network = IPv6Network(data['ip_routed'])
         self._is_booting = bool(data['is_booting'])
         self._location = data['location']
-        self._model = data['model']
+        self._model = int(data['model'])
         self._model_full = data['model_full']
         self._power = bool(data['power'])
         self._provision_status = data['status']
 
     @property
-    def _API_URL(self):
+    def _API_URL(self) -> str:
         return self._cloud._API_URL + '/servers'
 
     @property
-    def name(self):
-        "The name of the Pi service."
+    def name(self) -> str:
+        """
+        The name of the Pi service
+        """
         return self._name
 
     @property
-    def boot_progress(self):
+    def boot_progress(self) -> str:
         """
         A string representing the Pi's boot progress. Can be ``booted``,
         ``powered off`` or a particular stage of the boot process if currently
@@ -149,7 +154,7 @@ SSH commands:
         return "booted" if self.power else "powered off"
 
     @property
-    def disk_size(self):
+    def disk_size(self) -> int:
         """
         The Pi's disk size in GB
         """
@@ -158,7 +163,7 @@ SSH commands:
         return self._disk_size
 
     @property
-    def initialised_keys(self):
+    def initialised_keys(self) -> bool:
         """
         A boolean representing whether or not the Pi has been initialised with
         SSH keys
@@ -167,21 +172,25 @@ SSH commands:
         return self._initialised_keys
 
     @property
-    def ipv4_ssh_port(self):
-        "The SSH port to use when connecting via the IPv4 proxy"
+    def ipv4_ssh_port(self) -> int:
+        """
+        The SSH port to use when connecting via the IPv4 proxy
+        """
         if self._ipv4_ssh_port is None:
             self._get_data()
         return self._ipv4_ssh_port
 
     @property
-    def ipv6_address(self):
-        "The Pi's IPv6 address as an :class:`~ipaddress.IPv6Address` object"
+    def ipv6_address(self) -> IPv6Address:
+        """
+        The Pi's IPv6 address as an :class:`~ipaddress.IPv6Address` object
+        """
         if self._ipv6_address is None:
             self._get_data()
         return self._ipv6_address
 
     @property
-    def ipv6_network(self):
+    def ipv6_network(self) -> IPv6Network:
         """
         The Pi's IPv6 network as an :class:`~ipaddress.IPv6Network` object
         """
@@ -190,36 +199,46 @@ SSH commands:
         return self._ipv6_network
 
     @property
-    def is_booting(self):
-        "A boolean representing whether or not the Pi is currently booting"
+    def is_booting(self) -> bool:
+        """
+        A boolean representing whether or not the Pi is currently booting
+        """
         self._get_data()
         return self._is_booting
 
     @property
-    def location(self):
-        "The Pi's physical location (data centre)"
+    def location(self) -> str:
+        """
+        The Pi's physical location (data centre)
+        """
         if self._location is None:
             self._get_data()
         return self._location
 
     @property
-    def model(self):
-        "The Pi's model (3 or 4)"
+    def model(self) -> int:
+        """
+        The Pi's model (3 or 4)
+        """
         return self._model
 
     @property
-    def model_full(self):
-        "The Pi's model name (3B, 3B+ or 4B)"
+    def model_full(self) -> str:
+        """
+        The Pi's model name (3B, 3B+ or 4B)
+        """
         return self._model_full
 
     @property
-    def power(self):
-        "A boolean representing whether or not the Pi is currently powered on"
+    def power(self) -> bool:
+        """
+        A boolean representing whether or not the Pi is currently powered on
+        """
         self._get_data()
         return self._power
 
     @property
-    def provision_status(self):
+    def provision_status(self) -> str:
         """
         A string representing the provision status of the Pi. Can be
         "provisioning", "initialising" or "live".
@@ -228,17 +247,21 @@ SSH commands:
         return self._provision_status
 
     @property
-    def ipv4_ssh_command(self):
-        "The SSH command required to connect to the Pi over IPv4"
+    def ipv4_ssh_command(self) -> str:
+        """
+        The SSH command required to connect to the Pi over IPv4
+        """
         return f"ssh -p {self.ipv4_ssh_port} root@ssh.{self.name}.hostedpi.com"
 
     @property
-    def ipv6_ssh_command(self):
-        "The SSH command required to connect to the Pi over IPv6"
+    def ipv6_ssh_command(self) -> str:
+        """
+        The SSH command required to connect to the Pi over IPv6
+        """
         return f"ssh root@[{self.ipv6_address}]"
 
     @property
-    def ipv4_ssh_config(self):
+    def ipv4_ssh_config(self) -> str:
         """
         A string containing the IPv4 SSH config for the Pi. The contents could
         be added to an SSH config file for easy access to the Pi.
@@ -250,7 +273,7 @@ SSH commands:
         """.strip()
 
     @property
-    def ipv6_ssh_config(self):
+    def ipv6_ssh_config(self) -> str:
         """
         A string containing the IPv6 SSH config for the Pi. The contents could
         be added to an SSH config file for easy access to the Pi.
@@ -261,7 +284,7 @@ SSH commands:
         """.strip()
 
     @property
-    def ssh_keys(self):
+    def ssh_keys(self) -> Set[str]:
         """
         Retrieve the SSH keys on the Pi, or use assignment to update them.
         Property value is a set of strings. Assigned value should also be a set
@@ -281,7 +304,7 @@ SSH commands:
         return {key.strip() for key in keys.split('\n') if key.strip()}
 
     @ssh_keys.setter
-    def ssh_keys(self, ssh_keys):
+    def ssh_keys(self, ssh_keys: Union[Set[str], List[str]]):
         url = f"{self._API_URL}/{self.name}/ssh-key"
         headers = self._cloud.headers.copy()
         headers['Content-Type'] = 'application/json'
@@ -303,7 +326,7 @@ SSH commands:
             raise HostedPiException(e) from e
 
     @property
-    def url(self):
+    def url(self) -> str:
         """
         The http version of the hostedpi.com URL of the Pi.
 
@@ -314,7 +337,7 @@ SSH commands:
         return f"http://www.{self.name}.hostedpi.com"
 
     @property
-    def url_ssl(self):
+    def url_ssl(self) -> str:
         """
         The https version of the hostedpi.com URL of the Pi.
 
@@ -339,7 +362,7 @@ SSH commands:
                 raise HostedPiException("Not authorised to access server or server does not exist") from e
             raise HostedPiException(e) from e
 
-    def on(self, *, wait=False):
+    def on(self, *, wait: bool = False) -> Optional[bool]:
         """
         Power the Pi on. If *wait* is ``False`` (the default), return
         immediately. If *wait* is ``True``, wait until the power on request is
@@ -352,10 +375,12 @@ SSH commands:
             return self.power
 
     def off(self):
-        "Power the Pi off and return immediately"
+        """
+        Power the Pi off and return immediately
+        """
         self._power_on_off(on=False)
 
-    def reboot(self, *, wait=False):
+    def reboot(self, *, wait: bool = False):
         """
         Reboot the Pi. If *wait* is ``False`` (the default), return ``None``
         immediately. If *wait* is ``True``, wait until the reboot request is
@@ -386,7 +411,9 @@ SSH commands:
             return self.power
 
     def cancel(self):
-        "Cancel the Pi service"
+        """
+        Cancel the Pi service
+        """
         url = f"{self._API_URL}/{self.name}"
         r = requests.delete(url, headers=self._cloud.headers)
 
@@ -399,7 +426,12 @@ SSH commands:
 
         self._cancelled = True
 
-    def ssh_import_id(self, *, github=None, launchpad=None):
+    def ssh_import_id(
+        self,
+        *,
+        github: Optional[Union[Set[str], List[str]]] = None,
+        launchpad: Optional[Union[Set[str], List[str]]] = None
+    ) -> Set[str]:
         """
         Import SSH keys from GitHub or Launchpad, and add them to the Pi. Return
         the set of keys added.
@@ -414,7 +446,9 @@ SSH commands:
             A list/set of Launchpad usernames to import SSH keys from
             (keyword-only argument)
         """
-        ssh_keys_set = parse_ssh_keys(ssh_import_github=github,
-                                      ssh_import_launchpad=launchpad)
+        ssh_keys_set = parse_ssh_keys(
+            ssh_import_github=github,
+            ssh_import_launchpad=launchpad,
+        )
         self.ssh_keys |= ssh_keys_set
         return ssh_keys_set

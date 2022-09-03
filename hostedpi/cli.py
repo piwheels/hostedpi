@@ -352,7 +352,7 @@ class CLI:
         if self._args.model is None:
             models = [3, 4]
         else:
-            models = [self._args.model]
+            models = [int(m) for m in self._args.model]
 
         for model in models:
             print(f"Images for Pi {model}:")
