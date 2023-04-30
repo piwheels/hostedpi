@@ -32,11 +32,13 @@ class CLI:
     @property
     def cloud(self):
         if self._cloud is None:
-            API_ID = os.environ.get('HOSTEDPI_ID')
-            API_SECRET = os.environ.get('HOSTEDPI_SECRET')
+            API_ID = os.environ.get("HOSTEDPI_ID")
+            API_SECRET = os.environ.get("HOSTEDPI_SECRET")
             if API_ID is None or API_SECRET is None:
-                print("HOSTEDPI_ID and HOSTEDPI_SECRET environment variables "
-                      "must be set")
+                print(
+                    "HOSTEDPI_ID and HOSTEDPI_SECRET environment variables "
+                    "must be set"
+                )
             self._cloud = PiCloud(API_ID, API_SECRET)
         return self._cloud
 
@@ -67,255 +69,328 @@ class CLI:
         parser = argparse.ArgumentParser(
             description=(
                 "hostedpi is a tool for provisioning and managing Raspberry Pis "
-                "in the Mythic Beasts Pi Cloud"))
-        parser.add_argument(
-            '--version', action='version', version=__version__)
+                "in the Mythic Beasts Pi Cloud"
+            )
+        )
+        parser.add_argument("--version", action="version", version=__version__)
         parser.set_defaults(func=self.do_help, cmd=None)
         commands = parser.add_subparsers(title=("commands"))
 
         help_cmd = commands.add_parser(
-            "help", aliases=["h"],
+            "help",
+            aliases=["h"],
             description=(
                 "With no arguments, displays the list of hostedpi "
                 "commands. If a command name is given, displays the "
                 "description and options for the named command. If a "
                 "setting name is given, displays the description and "
-                "default value for that setting."),
-            help=("Displays help about the specified command or setting"))
+                "default value for that setting."
+            ),
+            help=("Displays help about the specified command or setting"),
+        )
         help_cmd.add_argument(
-            "cmd", metavar="cmd", nargs='?',
-            help=("The name of the command to output help for")
+            "cmd",
+            metavar="cmd",
+            nargs="?",
+            help=("The name of the command to output help for"),
         )
         help_cmd.set_defaults(func=self.do_help)
 
         test_cmd = commands.add_parser(
-            "test", aliases=["connect"],
+            "test",
+            aliases=["connect"],
             description=(
                 "Test a connection to the Mythic Beasts API using API ID and "
-                "secret in environment variables"),
-            help=("Test a connection to the Mythic Beasts API"))
+                "secret in environment variables"
+            ),
+            help=("Test a connection to the Mythic Beasts API"),
+        )
         test_cmd.set_defaults(func=self.do_test)
 
         get_images_cmd = commands.add_parser(
             "images",
-            description=("Retrieve the list of operating system images available for the given Pi model"),
-            help=("Retrieve the list of operating system images available for the given Pi model"))
+            description=(
+                "Retrieve the list of operating system images available for the given Pi model"
+            ),
+            help=(
+                "Retrieve the list of operating system images available for the given Pi model"
+            ),
+        )
         get_images_cmd.add_argument(
-            "model", metavar="model", nargs='?', type=int,
-            help=("The Pi model number (3 or 4) to get operating systems for")
+            "model",
+            metavar="model",
+            nargs="?",
+            type=int,
+            help=("The Pi model number (3 or 4) to get operating systems for"),
         )
         get_images_cmd.set_defaults(func=self.do_get_images)
 
         list_cmd = commands.add_parser(
-            "list", aliases=["ls"],
+            "list",
+            aliases=["ls"],
             description=("List all Pis in the account"),
-            help=("List all Pis in the account"))
+            help=("List all Pis in the account"),
+        )
         list_cmd.set_defaults(func=self.do_list)
 
         show_cmd = commands.add_parser(
-            "show", aliases=["cat"],
+            "show",
+            aliases=["cat"],
             description=("Show the information about one or more Pis in the account"),
-            help=("Show the information about one or more Pis in the account"))
+            help=("Show the information about one or more Pis in the account"),
+        )
         show_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to show information for")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to show information for"),
         )
         show_cmd.set_defaults(func=self.do_show_pis)
 
         create_cmd = commands.add_parser(
             "create",
             description=("Provision a new Pi in the account"),
-            help=("Provision a new Pi in the account"))
-        create_cmd.add_argument(
-            "name", metavar="name",
-            help=("The name of the new Pi to provision")
+            help=("Provision a new Pi in the account"),
         )
         create_cmd.add_argument(
-            "--model", metavar="model", type=int, nargs='?',
-            help=("The model of the new Pi to provision (3 or 4)")
+            "name", metavar="name", help=("The name of the new Pi to provision")
         )
         create_cmd.add_argument(
-            "--disk", metavar="disk", type=int, nargs='?',
-            help=("The disk size in GB")
+            "--model",
+            metavar="model",
+            type=int,
+            nargs="?",
+            help=("The model of the new Pi to provision (3 or 4)"),
         )
         create_cmd.add_argument(
-            "--image", metavar="image", type=str, nargs='?',
-            help=("The operating system image to use")
+            "--disk", metavar="disk", type=int, nargs="?", help=("The disk size in GB")
         )
         create_cmd.add_argument(
-            "--ssh-key-path", metavar="ssh_key_path", nargs='?',
-            help=("The path to an SSH public key file to add to the Pi")
+            "--image",
+            metavar="image",
+            type=str,
+            nargs="?",
+            help=("The operating system image to use"),
+        )
+        create_cmd.add_argument(
+            "--ssh-key-path",
+            metavar="ssh_key_path",
+            nargs="?",
+            help=("The path to an SSH public key file to add to the Pi"),
         )
         create_cmd.set_defaults(func=self.do_create)
 
         provision_status_cmd = commands.add_parser(
             "status",
             description=("Get the provision status of one or more Pis"),
-            help=("Get the provision status of one or more Pis"))
+            help=("Get the provision status of one or more Pis"),
+        )
         provision_status_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to get the provision status for")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to get the provision status for"),
         )
         provision_status_cmd.set_defaults(func=self.do_provision_status)
 
         power_status_cmd = commands.add_parser(
             "power",
             description=("Get the power status for one or more Pis"),
-            help=("Get the power status (on/off) for one or more Pis"))
+            help=("Get the power status (on/off) for one or more Pis"),
+        )
         power_status_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to get the power status for")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to get the power status for"),
         )
         power_status_cmd.set_defaults(func=self.do_power_status)
 
         reboot_cmd = commands.add_parser(
             "reboot",
             description=("Reboot one or more Pis in the account"),
-            help=("Reboot one or more Pis in the account"))
+            help=("Reboot one or more Pis in the account"),
+        )
         reboot_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to reboot")
+            "names", metavar="names", nargs="*", help=("The names of the Pis to reboot")
         )
         reboot_cmd.set_defaults(func=self.do_reboot)
 
         power_on_cmd = commands.add_parser(
-            "on", aliases=["poweron"],
+            "on",
             description=("Power on one or more Pis in the account"),
-            help=("Power on one or more Pis in the account"))
+            help=("Power on one or more Pis in the account"),
+        )
         power_on_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to power on")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to power on"),
         )
         power_on_cmd.set_defaults(func=self.do_power_on)
 
         power_off_cmd = commands.add_parser(
-            "off", aliases=["poweroff"],
+            "off",
             description=("Power off one or more Pis in the account"),
-            help=("Power off one or more Pis in the account"))
+            help=("Power off one or more Pis in the account"),
+        )
         power_off_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to power off")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to power off"),
         )
         power_off_cmd.set_defaults(func=self.do_power_off)
 
         cancel_cmd = commands.add_parser(
             "cancel",
+            aliases=["rm"],
             description=("Cancel one or more Pis in the account"),
-            help=("Cancel one or more Pis in the account"))
-        cancel_cmd.add_argument(
-            "names", metavar="names", nargs='+',
-            help=("The names of the Pis to cancel")
+            help=("Cancel one or more Pis in the account"),
         )
         cancel_cmd.add_argument(
-            "-y", "--yes",
-            action="store_true",
-            help=("Proceed without confirmation")
+            "names", metavar="names", nargs="+", help=("The names of the Pis to cancel")
+        )
+        cancel_cmd.add_argument(
+            "-y", "--yes", action="store_true", help=("Proceed without confirmation")
         )
         cancel_cmd.set_defaults(func=self.do_cancel)
 
         count_keys_cmd = commands.add_parser(
-            "count-keys", aliases=["num-keys"],
+            "count-keys",
             description=("Show the number of SSH keys currently on one or more Pis"),
-            help=("Show the number of SSH keys currently on one or more Pis"))
+            help=("Show the number of SSH keys currently on one or more Pis"),
+        )
         count_keys_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to count keys for")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to count keys for"),
         )
         count_keys_cmd.set_defaults(func=self.do_count_keys)
 
         show_keys_cmd = commands.add_parser(
             "keys",
             description=("Show the SSH keys currently on a Pi"),
-            help=("Show the SSH keys currently on a Pi"))
+            help=("Show the SSH keys currently on a Pi"),
+        )
         show_keys_cmd.add_argument(
-            "name", metavar="name",
-            help=("The name of the Pi to show keys for")
+            "name", metavar="name", help=("The name of the Pi to show keys for")
         )
         show_keys_cmd.set_defaults(func=self.do_show_keys)
 
         add_key_cmd = commands.add_parser(
             "add-key",
             description=("Add an SSH key from a public key file to one or more Pis"),
-            help=("Add an SSH key from a public key file to one or more Pis"))
-        add_key_cmd.add_argument(
-            "ssh_key_path", metavar="ssh_key_path",
-            help=("The path to an SSH public key file to add to the Pi")
+            help=("Add an SSH key from a public key file to one or more Pis"),
         )
         add_key_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to add keys to")
+            "ssh_key_path",
+            metavar="ssh_key_path",
+            help=("The path to an SSH public key file to add to the Pi"),
+        )
+        add_key_cmd.add_argument(
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to add keys to"),
         )
         add_key_cmd.set_defaults(func=self.do_add_key)
 
         copy_keys_cmd = commands.add_parser(
-            "copy-keys", aliases=["cp"],
+            "copy-keys",
+            aliases=["cp"],
             description=("Copy all SSH keys from one Pi to one or more others"),
-            help=("Copy all SSH keys from one Pi to one or more others"))
-        copy_keys_cmd.add_argument(
-            "name_src", metavar="name_src",
-            help=("The name of the Pi to copy keys from")
+            help=("Copy all SSH keys from one Pi to one or more others"),
         )
         copy_keys_cmd.add_argument(
-            "names_dest", metavar="names_dest", nargs='*',
-            help=("The names of the Pis to copy keys to")
+            "name_src",
+            metavar="name_src",
+            help=("The name of the Pi to copy keys from"),
+        )
+        copy_keys_cmd.add_argument(
+            "names_dest",
+            metavar="names_dest",
+            nargs="*",
+            help=("The names of the Pis to copy keys to"),
         )
         copy_keys_cmd.set_defaults(func=self.do_copy_keys)
 
         remove_keys_cmd = commands.add_parser(
             "remove-keys",
             description=("Remove all SSH keys from one or more Pis"),
-            help=("Remove all SSH keys from one or more Pis"))
+            help=("Remove all SSH keys from one or more Pis"),
+        )
         remove_keys_cmd.add_argument(
-            "names", metavar="names", nargs='+',
-            help=("The names of the Pis to remove keys from")
+            "names",
+            metavar="names",
+            nargs="+",
+            help=("The names of the Pis to remove keys from"),
         )
         remove_keys_cmd.set_defaults(func=self.do_remove_keys)
 
         ssh_import_id_cmd = commands.add_parser(
             "ssh-import-id",
-            description=("Import SSH keys from GitHub or Launchpad and add them to one or more Pis"),
-            help=("Import SSH keys from GitHub or Launchpad and add them to one or more Pis"))
-        ssh_import_id_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to import keys onto")
+            description=(
+                "Import SSH keys from GitHub or Launchpad and add them to one or more Pis"
+            ),
+            help=(
+                "Import SSH keys from GitHub or Launchpad and add them to one or more Pis"
+            ),
         )
         ssh_import_id_cmd.add_argument(
-            "--gh", metavar="github username", nargs='?',
-            help=("The GitHub username to import keys from")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to import keys onto"),
         )
         ssh_import_id_cmd.add_argument(
-            "--lp", metavar="launchpad username", nargs='?',
-            help=("The Launchpad username to import keys from")
+            "--gh",
+            metavar="github username",
+            nargs="?",
+            help=("The GitHub username to import keys from"),
+        )
+        ssh_import_id_cmd.add_argument(
+            "--lp",
+            metavar="launchpad username",
+            nargs="?",
+            help=("The Launchpad username to import keys from"),
         )
         ssh_import_id_cmd.set_defaults(func=self.do_ssh_import_id)
 
         ssh_command_cmd = commands.add_parser(
             "ssh-command",
             description=("Output the SSH command for one or more Pis in the account"),
-            help=("Output the (IPv4 or IPv6) SSH command for one or more Pis in the account"))
-        ssh_command_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to get SSH commands for")
+            help=(
+                "Output the SSH command for one or more Pis in the account"
+            ),
         )
         ssh_command_cmd.add_argument(
-            "--ipv6",
-            action="store_true",
-            help=("Show IPv6 command")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to get SSH commands for"),
+        )
+        ssh_command_cmd.add_argument(
+            "--ipv6", action="store_true", help=("Show IPv6 command")
         )
         ssh_command_cmd.set_defaults(func=self.do_ssh_command)
 
         ssh_config_cmd = commands.add_parser(
             "ssh-config",
             description=("Output the SSH config for one or more Pis in the account"),
-            help=("Output the (IPv4 or IPv6) SSH config for one or more Pis in the account"))
-        ssh_config_cmd.add_argument(
-            "names", metavar="names", nargs='*',
-            help=("The names of the Pis to get SSH config for")
+            help=(
+                "Output the SSH config for one or more Pis in the account"
+            ),
         )
         ssh_config_cmd.add_argument(
-            "--ipv6",
-            action="store_true",
-            help=("Use IPv6 connection details")
+            "names",
+            metavar="names",
+            nargs="*",
+            help=("The names of the Pis to get SSH config for"),
+        )
+        ssh_config_cmd.add_argument(
+            "--ipv6", action="store_true", help=("Use IPv6 connection details")
         )
         ssh_config_cmd.set_defaults(func=self.do_ssh_config)
 
@@ -338,9 +413,9 @@ class CLI:
 
     def do_help(self):
         if self._args.cmd:
-            self.parser.parse_args([self._args.cmd, '-h'])
+            self.parser.parse_args([self._args.cmd, "-h"])
         else:
-            self.parser.parse_args(['-h'])
+            self.parser.parse_args(["-h"])
 
     def do_test(self):
         if self.cloud:
@@ -369,7 +444,7 @@ class CLI:
     def do_show_pis(self):
         for name, pi in self.get_pis(self._args.names):
             if pi:
-                print(pi, end='\n\n')
+                print(pi, end="\n\n")
             else:
                 self.print_not_found(name)
 
@@ -380,18 +455,16 @@ class CLI:
         ssh_key_path = self._args.ssh_key_path
         os_image = self._args.image
         args = {
-            'model': model,
-            'disk_size': disk_size,
-            'ssh_key_path': ssh_key_path,
-            'os_image': os_image,
+            "model": model,
+            "disk_size": disk_size,
+            "ssh_key_path": ssh_key_path,
+            "os_image": os_image,
         }
 
         kwargs = {k: v for k, v in args.items() if v is not None}
-        pi = self.cloud.create_pi(name, **kwargs)
+        self.cloud.create_pi(name, **kwargs)
 
         print(f"Pi {name} provisioned successfully")
-        print()
-        print(pi)
 
     def do_reboot(self):
         for name, pi in self.get_pis(self._args.names):
@@ -419,10 +492,21 @@ class CLI:
 
     def do_cancel(self):
         if not self._args.yes:
-            num_pis = len(self._args.names)
+            pis_to_cancel = sorted(set(self._args.names) & set(self.pis))
+            if len(pis_to_cancel) == 0:
+                print("No Pis to cancel. Check the server names are correct.")
+                return
+            elif len(pis_to_cancel) == 1:
+                pi = pis_to_cancel[0]
+                cancel_prompt = (
+                    f"Cancelling {pi}. Proceed? [Y/n] "
+                )
+            else:
+                cancel_prompt = (
+                    f"Cancelling {len(pis_to_cancel)} Pis: [{', '.join(pis_to_cancel)}]. Proceed? [Y/n] "
+                )
             try:
-                s = '' if num_pis == 1 else 's'
-                y = input(f"Cancelling {num_pis} Pi{s}. Proceed? [Y/n]")
+                y = input(cancel_prompt)
             except KeyboardInterrupt:
                 print()
                 print("Not cancelled")
@@ -441,12 +525,12 @@ class CLI:
         pi = self.get_pi(self._args.name)
         if not pi:
             return 2
-        print(*pi.ssh_keys, sep='\n')
+        print(*pi.ssh_keys, sep="\n")
 
     def do_count_keys(self):
         for name, pi in self.get_pis(self._args.names):
             num_keys = len(pi.ssh_keys)
-            s = '' if num_keys == 1 else 's'
+            s = "" if num_keys == 1 else "s"
             print(f"{name}: {num_keys} key{s}")
 
     def do_add_key(self):
@@ -457,7 +541,7 @@ class CLI:
             pi.ssh_keys |= {ssh_key}
             keys_after = len(pi.ssh_keys)
             num_keys = keys_after - keys_before
-            s = '' if num_keys == 1 else ''
+            s = "" if num_keys == 1 else ""
             print(f"{num_keys} key{s} added to {name}")
 
     def do_copy_keys(self):
@@ -472,7 +556,7 @@ class CLI:
                 pi.ssh_keys |= ssh_keys
                 keys_after = len(pi.ssh_keys)
                 num_keys = keys_after - keys_before
-                s = '' if num_keys == 1 else 's'
+                s = "" if num_keys == 1 else "s"
                 print(f"{num_keys} key{s} added to {name}")
 
     def do_remove_keys(self):
@@ -480,7 +564,7 @@ class CLI:
             if pi:
                 num_keys = len(pi.ssh_keys)
                 pi.ssh_keys = set()
-                s = '' if num_keys == 1 else 's'
+                s = "" if num_keys == 1 else "s"
                 print(f"{num_keys} key{s} removed from {name}")
             else:
                 self.print_not_found(name)
@@ -493,17 +577,17 @@ class CLI:
 
         if github:
             github_keys |= ssh_import_id(github=github)
-            s = '' if len(github_keys) == 1 else 's'
+            s = "" if len(github_keys) == 1 else "s"
             print(f"{len(github_keys)} key{s} retrieved from GitHub")
         if launchpad:
             launchpad_keys |= ssh_import_id(launchpad=launchpad)
-            s = '' if len(launchpad_keys) == 1 else 's'
+            s = "" if len(launchpad_keys) == 1 else "s"
             print(f"{len(launchpad_keys)} key{s} retrieved from Launchpad")
 
         print()
         new_keys = github_keys | launchpad_keys
         if len(new_keys) < (len(github_keys) + len(launchpad_keys)):
-            s = '' if len(new_keys) == 1 else 's'
+            s = "" if len(new_keys) == 1 else "s"
             print(f"{len(new_keys)} key{s} to add")
 
         if new_keys:
@@ -513,7 +597,7 @@ class CLI:
                     pi.ssh_keys |= new_keys
                     keys_after = len(pi.ssh_keys)
                     num_keys = keys_after - keys_before
-                    s = '' if num_keys == 1 else 's'
+                    s = "" if num_keys == 1 else "s"
                     print(f"{num_keys} key{s} added to {name}")
                 else:
                     self.print_not_found(name)
@@ -554,5 +638,6 @@ class CLI:
                 print(f"{name}: powered {on_off}")
             else:
                 self.print_not_found(name)
+
 
 main = CLI()

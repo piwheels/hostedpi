@@ -2,8 +2,7 @@ import os
 import string
 from typing import Optional, Union, Dict, List, Set
 
-import requests
-from requests.exceptions import HTTPError
+from requests import Session, HTTPError
 
 from .auth import MythicAuth
 from .pi import Pi
@@ -53,6 +52,7 @@ class PiCloud:
 
         All SSH arguments provided will be used in combination.
     """
+
     _API_URL = "https://api.mythic-beasts.com/beta/pi"
 
     def __init__(
@@ -66,10 +66,10 @@ class PiCloud:
         ssh_import_launchpad: Optional[Union[List[str], Set[str]]] = None,
     ):
         if api_id is None:
-            api_id = os.environ.get('HOSTEDPI_ID')
+            api_id = os.environ.get("HOSTEDPI_ID")
 
         if api_secret is None:
-            api_secret = os.environ.get('HOSTEDPI_SECRET')
+            api_secret = os.environ.get("HOSTEDPI_SECRET")
 
         if api_id is None or api_secret is None:
             raise HostedPiException(
@@ -90,14 +90,11 @@ class PiCloud:
         """
         String of information about all the Pis in the account
         """
-        print(*self.pis, sep='\n\n')
+        print(*self.pis, sep="\n\n")
 
     @property
-    def headers(self) -> Dict[str, str]:
-        """
-        Default request headers
-        """
-        return self._auth.headers
+    def session(self) -> Session:
+        return self._auth.session
 
     @property
     def pis(self) -> Dict[str, Pi]:
@@ -106,7 +103,7 @@ class PiCloud:
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piservers
         url = f"{self._API_URL}/servers"
-        r = requests.get(url, headers=self.headers)
+        r = self.session.get(url)
 
         try:
             r.raise_for_status()
@@ -115,10 +112,10 @@ class PiCloud:
                 raise HostedPiException("Not authorised") from e
             raise HostedPiException(e) from e
 
-        pis = r.json()['servers']
+        pis = r.json()["servers"]
 
         return {
-            name: Pi(cloud=self, name=name, model=data['model'])
+            name: Pi(cloud=self, name=name, model=data["model"])
             for name, data in sorted(pis.items())
         }
 
@@ -129,7 +126,7 @@ class PiCloud:
         The contents could be added to an SSH config file for easy access to the
         Pis in the account.
         """
-        return '\n'.join(pi.ipv4_ssh_config for pi in self.pis.values())
+        return "\n".join(pi.ipv4_ssh_config for pi in self.pis.values())
 
     @property
     def ipv6_ssh_config(self) -> str:
@@ -138,9 +135,10 @@ class PiCloud:
         The contents could be added to an SSH config file for easy access to the
         Pis in the account.
         """
-        return '\n'.join(pi.ipv6_ssh_config for pi in self.pis.values())
+        return "\n".join(pi.ipv6_ssh_config for pi in self.pis.values())
 
-    def create_pi(self,
+    def create_pi(
+        self,
         name: str,
         *,
         model: int = 3,
@@ -208,8 +206,9 @@ class PiCloud:
             is the 4GB RAM model.
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
-        ssh_keys_set = parse_ssh_keys(ssh_keys, ssh_key_path, ssh_import_github,
-                                      ssh_import_launchpad)
+        ssh_keys_set = parse_ssh_keys(
+            ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad
+        )
         ssh_keys_str = "\r\n".join(ssh_keys_set)
 
         server_name = name.lower()
@@ -219,21 +218,21 @@ class PiCloud:
 
         url = f"{self._API_URL}/servers/{name}"
         data = {
-            'disk': disk_size,
-            'model': model,
-            'os_image': os_image,
+            "disk": disk_size,
+            "model": model,
+            "os_image": os_image,
         }
 
         if ssh_keys:
-            data['ssh_key'] = ssh_keys_str
+            data["ssh_key"] = ssh_keys_str
 
-        r = requests.post(url, headers=self.headers, json=data)
+        r = self.session.post(url, json=data)
 
         try:
             r.raise_for_status()
         except HTTPError as e:
             if r.status_code == 400:
-                error = r.json().get('error', '')
+                error = r.json().get("error", "")
                 raise HostedPiException(f"Invalid parameters: {error}") from e
             if r.status_code == 403:
                 raise HostedPiException("Not authorised to provision server") from e
@@ -246,11 +245,10 @@ class PiCloud:
         return Pi(cloud=self, name=name, model=model)
 
     def _validate_server_name(self, server_name):
-        valid_chars = string.ascii_lowercase + string.digits + '-_'
+        valid_chars = string.ascii_lowercase + string.digits + "-_"
         if not all(c in valid_chars for c in server_name):
             raise HostedPiException(
-                "Server name must consist of alphanumeric characters and "
-                "hyphens"
+                "Server name must consist of alphanumeric characters and " "hyphens"
             )
 
     def _validate_model(self, model: int):
@@ -278,13 +276,13 @@ class PiCloud:
         if model not in {3, 4}:
             raise HostedPiException("model must be 3 or 4")
         url = f"{self._API_URL}/images/{model}"
-        r = requests.get(url, headers=self.headers)
+        r = self.session.get(url)
 
         try:
             r.raise_for_status()
         except HTTPError as e:
             if r.status_code == 400:
-                error = r.json()['error']
+                error = r.json()["error"]
                 raise HostedPiException(error) from e
             raise HostedPiException(e) from e
 

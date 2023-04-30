@@ -5,14 +5,14 @@ from typing import Optional, Union, List, Set, TYPE_CHECKING
 if TYPE_CHECKING:
     from .picloud import PiCloud
 
-import requests
-from requests.exceptions import HTTPError
+from requests import Session, HTTPError
 
 from .utils import parse_ssh_keys
 from .exc import HostedPiException
 
 
 NOT_AUTHORISED = "Not authorised to access server or server does not exist"
+NOT_PROVISIONED = "Server is not fully provisioned"
 
 
 class Pi:
@@ -32,6 +32,7 @@ class Pi:
         The ``Pi`` class should not be initialised by the user, only internally
         within the module.
     """
+
     def __init__(self, *, cloud: "PiCloud", name: str, model: int):
         self._cloud = cloud
         self._name = name
@@ -89,7 +90,9 @@ URLs:
 SSH commands:
   {self.ipv4_ssh_command}  # IPv4
   {self.ipv6_ssh_command}  # IPv6
-"""[1:-1]
+"""[
+                1:-1
+            ]
         else:
             return f"""
 Name: {self.name}
@@ -106,39 +109,47 @@ URLs:
 SSH commands:
   {self.ipv4_ssh_command}  # IPv4
   {self.ipv6_ssh_command}  # IPv6
-"""[1:-1]
+"""[
+                1:-1
+            ]
 
     def _get_data(self):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifier
         url = f"{self._API_URL}/{self.name}"
-        r = requests.get(url, headers=self._cloud.headers)
+        r = self.session.get(url)
 
         try:
             r.raise_for_status()
         except HTTPError as e:
             if r.status_code == 403:
                 raise HostedPiException(NOT_AUTHORISED) from e
+            if r.status_code == 409:
+                raise HostedPiException(NOT_PROVISIONED) from e
             raise HostedPiException(e) from e
 
         data = r.json()
-        self._boot_progress = data['boot_progress']
-        disk_size = data.get('disk_size')
+        self._boot_progress = data["boot_progress"]
+        disk_size = data.get("disk_size")
         if disk_size:
             self._disk_size = int(float(disk_size))
-        self._initialised_keys = data['initialised_keys']
-        self._ipv4_ssh_port = int(data['ssh_port'])
-        self._ipv6_address = IPv6Address(data['ip'])
-        self._ipv6_network = IPv6Network(data['ip_routed'])
-        self._is_booting = bool(data['is_booting'])
-        self._location = data['location']
-        self._model = int(data['model'])
-        self._model_full = data['model_full']
-        self._power = bool(data['power'])
-        self._provision_status = data['status']
+        self._initialised_keys = data["initialised_keys"]
+        self._ipv4_ssh_port = int(data["ssh_port"])
+        self._ipv6_address = IPv6Address(data["ip"])
+        self._ipv6_network = IPv6Network(data["ip_routed"])
+        self._is_booting = bool(data["is_booting"])
+        self._location = data["location"]
+        self._model = int(data["model"])
+        self._model_full = data["model_full"]
+        self._power = bool(data["power"])
+        self._provision_status = data["status"]
 
     @property
     def _API_URL(self) -> str:
-        return self._cloud._API_URL + '/servers'
+        return self._cloud._API_URL + "/servers"
+
+    @property
+    def session(self) -> Session:
+        return self._cloud.session
 
     @property
     def name(self) -> str:
@@ -298,7 +309,7 @@ SSH commands:
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifierssh-key
         url = f"{self._API_URL}/{self.name}/ssh-key"
-        r = requests.get(url, headers=self._cloud.headers)
+        r = self.session.get(url)
 
         try:
             r.raise_for_status()
@@ -309,24 +320,22 @@ SSH commands:
 
         body = r.json()
 
-        keys = body['ssh_key']
-        return {key.strip() for key in keys.split('\n') if key.strip()}
+        keys = body["ssh_key"]
+        return {key.strip() for key in keys.split("\n") if key.strip()}
 
     @ssh_keys.setter
     def ssh_keys(self, ssh_keys: Union[Set[str], List[str]]):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierssh-key
         url = f"{self._API_URL}/{self.name}/ssh-key"
-        headers = self._cloud.headers.copy()
-        headers['Content-Type'] = 'application/json'
         if ssh_keys:
-            ssh_keys_str = '\r\n'.join(set(ssh_keys))
+            ssh_keys_str = "\r\n".join(set(ssh_keys))
         else:
-            ssh_keys_str = '\r\n'  # server doesn't allow empty string
+            ssh_keys_str = "\r\n"  # server doesn't allow empty string
         data = {
-            'ssh_key': ssh_keys_str,
+            "ssh_key": ssh_keys_str,
         }
 
-        r = requests.put(url, headers=headers, json=data)
+        r = self.session.put(url, json=data)
 
         try:
             r.raise_for_status()
@@ -362,9 +371,9 @@ SSH commands:
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierpower
         url = f"{self._API_URL}/{self.name}/power"
         data = {
-            'power': on,
+            "power": on,
         }
-        r = requests.put(url, headers=self._cloud.headers, json=data)
+        r = self.session.put(url, json=data)
 
         try:
             r.raise_for_status()
@@ -408,7 +417,7 @@ SSH commands:
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifierreboot
         url = f"{self._API_URL}/{self.name}/reboot"
-        r = requests.post(url, headers=self._cloud.headers)
+        r = self.session.post(url)
 
         try:
             r.raise_for_status()
@@ -431,7 +440,7 @@ SSH commands:
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
         url = f"{self._API_URL}/{self.name}"
-        r = requests.delete(url, headers=self._cloud.headers)
+        r = self.session.delete(url)
 
         try:
             r.raise_for_status()
@@ -446,7 +455,7 @@ SSH commands:
         self,
         *,
         github: Optional[Union[Set[str], List[str]]] = None,
-        launchpad: Optional[Union[Set[str], List[str]]] = None
+        launchpad: Optional[Union[Set[str], List[str]]] = None,
     ) -> Set[str]:
         """
         Import SSH keys from GitHub or Launchpad, and add them to the Pi. Return

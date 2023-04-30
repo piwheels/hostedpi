@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
-from typing import Dict
 
-import requests
-from requests.exceptions import HTTPError
+from requests import Session, HTTPError
 
 from .exc import MythicAuthenticationError
 from .__version__ import __version__
@@ -15,41 +13,41 @@ class MythicAuth:
         self._creds = (api_id, api_secret)
         self._token = None
         self._token_expiry = datetime.now()
-        self._headers = {
+        self._session = Session()
+        self._session.headers = {
             "User-Agent": f"python-hostedpi/{__version__}",
         }
-        self._authenticate()
+        # force the session to authenticate now
+        self.session
 
     def __repr__(self):
         return "<MythicAuth>"
 
     @property
-    def headers(self) -> Dict[str, str]:
-        headers = self._headers
-        headers['Authorization'] = f"Bearer {self.token}"
-        return headers
+    def session(self) -> Session:
+        self._session.headers["Authorization"] = f"Bearer {self.token}"
+        return self._session
 
     @property
     def token(self) -> str:
         if datetime.now() > self._token_expiry:
-            self._token = self._authenticate()
+            data = {"grant_type": "client_credentials"}
+            self._session.headers.pop("Authorization", None)
+            self._session.headers.pop("Content-Type", None)
+            r = self._session.post(self._LOGIN_URL, auth=self._creds, data=data)
+
+            try:
+                r.raise_for_status()
+            except HTTPError as e:
+                print(r.text)
+                raise MythicAuthenticationError("Failed to authenticate") from e
+
+            body = r.json()
+            if "access_token" in body:
+                self._token = body["access_token"]
+                expires = body.get("expires_in", 0)
+                self._token_expiry = datetime.now() + timedelta(seconds=expires)
+                self._token = body["access_token"]
+            else:
+                raise MythicAuthenticationError("No access token in response")
         return self._token
-
-    def _authenticate(self) -> str:
-        data = {
-            'grant_type': 'client_credentials'
-        }
-        r = requests.post(self._LOGIN_URL, headers=self._headers, auth=self._creds, data=data)
-
-        try:
-            r.raise_for_status()
-        except HTTPError as e:
-            raise MythicAuthenticationError("Failed to authenticate") from e
-
-        body = r.json()
-        if 'access_token' in body:
-            self._token = body['access_token']
-            expires = body.get('expires_in', 0)
-            self._token_expiry = datetime.now() + timedelta(seconds=expires)
-            return body['access_token']
-        raise MythicAuthenticationError("no access token in response")
