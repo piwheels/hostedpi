@@ -43,5 +43,5 @@ Show the number of keys on multiple Pis:
     mypi2: 2 keys
 
 .. note::
-    If no names of Pis are given, the key count will be shown for all Pis in the
-    account
+
+    If no names of Pis are given, the key count will be shown for all Pis in the account

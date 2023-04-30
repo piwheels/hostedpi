@@ -44,5 +44,5 @@ Remove all SSH keys from multiple Pis:
 
 .. note::
     
-    Unlike other commands, there is no implicit targeting of all Pis. Pis must
-    be listed explicitly to have keys removed.
+    Unlike other commands, there is no implicit targeting of all Pis. Pis must be listed explicitly
+    to have keys removed.

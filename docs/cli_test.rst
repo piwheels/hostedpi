@@ -2,8 +2,7 @@
 hostedpi test
 =============
 
-Test a connection to the Mythic Beasts API using API ID and secret in
-environment variables
+Test a connection to the Mythic Beasts API using API ID and secret in environment variables
 
 Synopsis
 ========
@@ -28,7 +27,7 @@ Successful test:
 
 .. code-block:: console
 
-    $ hostedpi cancel mypi
+    $ hostedpi test
     Connected to the Mythic Beasts API
 
 An error will be shown if the connection fails:

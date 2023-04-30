@@ -57,13 +57,12 @@ Import keys from GitHub onto multiple Pis:
 
 .. note::
 
-    If no names of Pis are given, the key count will be shown for all Pis in the
-    account
+    If no names of Pis are given, the key count will be shown for all Pis in the account
 
 .. note::
 
-    Keys are counted before and after addition, and de-duplicated, so if a key
-    is already found on the Pi, it will show as not having been added, as above.
+    Keys are counted before and after addition, and de-duplicated, so if a key is already found on
+    the Pi, it will show as not having been added, as above.
 
 Import keys from GitHub and Launchpad onto a Pi:
 
@@ -77,5 +76,5 @@ Import keys from GitHub and Launchpad onto a Pi:
 
 .. note::
     
-    Keys are counted before and after addition, and de-duplicated, so if a key
-    is already found on the Pi, it will show as not having been added, as above.
+    Keys are counted before and after addition, and de-duplicated, so if a key is already found on
+    the Pi, it will show as not having been added, as above.

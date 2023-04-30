@@ -43,8 +43,8 @@ Cancel a Pi:
     You can cancel by entering ``n`` or interrupting with ``Ctrl + C``.
 
 .. note::
-    Unlike other commands, there is no implicit targeting of all Pis. Pis must
-    be listed explicitly to be cancelled.
+    Unlike other commands, there is no implicit targeting of all Pis. Pis must be listed explicitly
+    to be cancelled.
 
 Cancel multiple Pis:
 

@@ -6,27 +6,25 @@ hostedpi
     :target: https://badge.fury.io/py/hostedpi
     :alt: Latest Version
 
-Python interface to the `Mythic Beasts Hosted Pi`_ API, developed by the
-`piwheels`_ team (`Ben Nuttall`_ and `Dave Jones`_).
+Python interface to the `Mythic Beasts Hosted Pi`_ API, developed by the `piwheels`_ team
+(`Ben Nuttall`_ and `Dave Jones`_).
 
 .. _Mythic Beasts Hosted Pi: https://www.mythic-beasts.com/order/rpi
 .. _piwheels: https://www.piwheels.org/
 .. _Ben Nuttall: https://twitter.com/ben_nuttall
 .. _Dave Jones: https://twitter.com/waveform80
 
-This module provides a Pythonic interface to the API, as well as a command line
-interface.
+This module provides a Pythonic interface to the API, as well as a command line interface.
 
-The authors of this library are not affiliated with Mythic Beasts, but we use
-their Pi cloud to power the piwheels project.
+The authors of this library are not affiliated with Mythic Beasts, but we use their Pi cloud to
+power the piwheels project.
 
 Documentation of the API itself can be found at
 https://www.mythic-beasts.com/support/api/raspberry-pi
 
 .. note::
-    Note that the library is currently in beta. The API and CLI are not yet
-    stable and may change. Once the library reaches v1.0, it will be considered
-    stable.
+    Note that the library is currently in beta. The API and CLI are not yet stable and may change.
+    Once the library reaches v1.0, it will be considered stable.
 
 Usage
 =====

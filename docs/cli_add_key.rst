@@ -49,5 +49,5 @@ Add your SSH key to multiple Pis:
 
 .. note::
     
-    Keys are counted before and after addition, and de-duplicated, so if the key
-    is already found on the Pi, it will show as not having been added, as above.
+    Keys are counted before and after addition, and de-duplicated, so if the key is already found on
+    the Pi, it will show as not having been added, as above.

@@ -49,5 +49,5 @@ Copy the keys from one Pi to several others:
 
 .. note::
     
-    Keys are counted before and after addition, and de-duplicated, so if a key
-    is already found on the Pi, it will show as not having been added, as above.
+    Keys are counted before and after addition, and de-duplicated, so if a key is already found on
+    the Pi, it will show as not having been added, as above.

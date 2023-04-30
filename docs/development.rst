@@ -2,11 +2,11 @@
 Development
 ===========
 
-This page contains reference material for those interested in developing and
-contributing to the **hostedpi** module.
+This page contains reference material for those interested in developing and contributing to the
+**hostedpi** module.
 
-The project source code is hosted on GitHub at https://github.com/piwheels/hostedpi
-which also includes the `issue tracker`_.
+The project source code is hosted on GitHub at https://github.com/piwheels/hostedpi which also
+includes the `issue tracker`_.
 
 .. _issue tracker: https://github.com/piwheels/hostedpi/issues
 

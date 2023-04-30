@@ -55,15 +55,8 @@ Show the number of keys on multiple Pis:
 
 .. note::
     
-    If no names of Pis are given, the key count will be shown for all Pis in the
-    account
+    If no names of Pis are given, the SSH commands will be shown for all Pis in the account
 
 Execute the SSH command directly:
 
 .. code-block:: console
-
-    $ $(hostedpi ssh-command mypi)
-
-.. warning::
-
-    Use with caution

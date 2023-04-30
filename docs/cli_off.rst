@@ -43,4 +43,5 @@ Power off multiple Pis:
     mypi2 powered off
 
 .. note::
+
     If no names of Pis are given, all Pis in the account will be powered off

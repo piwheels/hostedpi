@@ -2,9 +2,8 @@
 Getting started
 ===============
 
-This page contains a simple tutorial to help you get started by creating a
-Mythic Beasts account, create an API key, use the command line interface and the
-Python module.
+This page contains a simple tutorial to help you get started by creating a Mythic Beasts account,
+create an API key, use the command line interface and the Python module.
 
 Create a Mythic Beasts account
 ==============================
@@ -54,22 +53,21 @@ or in a virtual environment:
 Test your API keys
 ==================
 
-To test your API connection, try running the following commands in a terminal
-window, with your API ID and secret:
+To test your API connection, try running the following commands in a terminal window, with your API
+ID and secret:
 
 .. code-block:: console
 
     $ HOSTEDPI_ID='YOUR ID' HOSTEDPI_SECRET='YOUR SECRET' hostedpi test
     Connected to the Mythic Beasts API
 
-This message means your API credentials were found and a successful connection
-was made.
+This message means your API credentials were found and a successful connection was made.
 
 Start using the Python module
 =============================
 
-The following Python program will connect to the Mythic Beasts API using your
-credentials, and print out a list of Pi services in your account::
+The following Python program will connect to the Mythic Beasts API using your credentials, and print
+out a list of Pi services in your account::
 
     from hostedpi import PiCloud
 
@@ -79,11 +77,10 @@ credentials, and print out a list of Pi services in your account::
         print(name)
 
 .. note::
-    You can either construct :class:`~hostedpi.picloud.PiCloud` with your API
-    ID and secret, or set them in environment variables like above.
+    You can either construct :class:`~hostedpi.picloud.PiCloud` with your API ID and secret, or set
+    them in environment variables like above.
 
-You can provision a new Pi with the :meth:`~hostedpi.picloud.PiCloud.create_pi`
-method::
+You can provision a new Pi with the :meth:`~hostedpi.picloud.PiCloud.create_pi` method::
 
     from hostedpi import PiCloud
 
@@ -91,8 +88,8 @@ method::
 
     pi = cloud.create_pi('mypi3')
 
-The default values are for a Pi 3 with a 10GB disk, but you can request either
-a Pi 3 or Pi 4 and specify the disk size (which must be a multiple of 10)::
+The default values are for a Pi 3 with a 10GB disk, but you can request either a Pi 3 or Pi 4 and
+specify the disk size (which must be a multiple of 10)::
 
     from hostedpi import PiCloud
 
@@ -101,13 +98,12 @@ a Pi 3 or Pi 4 and specify the disk size (which must be a multiple of 10)::
     pi = cloud.create_pi('mypi4', model=4, disk_size=20)
 
 .. note::
-    When requesting a Pi 3, you will either get a model 3B or 3B+. It is not
-    possible to request a particular model beyond 3 or 4. The Pi 4 is the 4GB
-    RAM model.
+    When requesting a Pi 3, you will either get a model 3B or 3B+. It is not possible to request a
+    particular model beyond 3 or 4. The Pi 4 is the 4GB RAM model.
 
-The return value of this method is a :class:`~hostedpi.pi.Pi` object which you
-can use to retrieve information about the service, and to manage it. The repr of
-a :class:`~hostedpi.pi.Pi` object includes the name and model:
+The return value of this method is a :class:`~hostedpi.pi.Pi` object which you can use to retrieve
+information about the service, and to manage it. The repr of a :class:`~hostedpi.pi.Pi` object
+includes the name and model:
 
 .. code-block:: pycon
 
@@ -144,9 +140,7 @@ Other methods include:
 More
 ====
 
-* See the :doc:`cli` page for details of the possibilities provided by
-  ready-made scripts
-* See the API documentation for :class:`~hostedpi.pi.Pi` for more information
-  on available properties and methods.
-* See the :doc:`recipes` page for more ideas showing what you can do with this
-  module.
+* See the :doc:`cli` page for details of the possibilities provided by ready-made scripts
+* See the API documentation for :class:`~hostedpi.pi.Pi` for more information on available
+  properties and methods.
+* See the :doc:`recipes` page for more ideas showing what you can do with this module.

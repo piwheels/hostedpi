@@ -66,8 +66,7 @@ Output the IPv4 SSH config for multiple Pis:
 
 .. note::
 
-    If no names of Pis are given, the SSH commands will be shown for all Pis in
-    the account
+    If no names of Pis are given, the SSH commands will be shown for all Pis in the account
 
 Save (append) the IPv4 SSH config for all Pis in the account into your SSH
 config file:

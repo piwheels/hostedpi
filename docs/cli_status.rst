@@ -44,5 +44,4 @@ Get the provision status of multiple Pis:
 
 .. note::
     
-    If no names of Pis are given, the provision status will be shown for all Pis
-    in the account
+    If no names of Pis are given, the provision status will be shown for all Pis in the account

@@ -11,8 +11,7 @@ all:
 	@echo "make develop - Install symlinks for development"
 	@echo "make build - Build sdist and bdist_wheel"
 	@echo "make clean - Remove all generated files"
-	@echo "make lint - Run linter"
-	@echo "make test - Run tests"
+	@echo "make fix - Format all Python code with black"
 	@echo "make doc - Build the docs as HTML"
 	@echo "make doc-serve - Serve the docs locally"
 	@echo "make release - Release to PyPI"
@@ -22,7 +21,7 @@ install:
 
 develop:
 	pip install -U pip
-	pip install twine
+	pip install twine black
 	pip install -e .[test,doc]
 
 clean:
@@ -31,12 +30,8 @@ clean:
 build: clean
 	python setup.py sdist bdist_wheel
 
-lint:
-	pylint -E $(NAME)
-
-test: lint
-	coverage run --rcfile coverage.cfg -m pytest -v tests
-	coverage report --rcfile coverage.cfg
+fix:
+	black .
 
 doc:
 	rm -rf docs/build/
@@ -47,5 +42,3 @@ doc-serve:
 
 release: build
 	twine upload dist/*
-
-.PHONY: all install develop build clean lint test doc doc-serve release

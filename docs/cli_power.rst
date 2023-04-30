@@ -45,5 +45,4 @@ Show the number of keys on multiple Pis:
 
 .. note::
     
-    If no names of Pis are given, the power status will be shown for all Pis in
-    the account
+    If no names of Pis are given, the power status will be shown for all Pis in the account
