@@ -1,11 +1,14 @@
 import os
 import sys
 import argparse
+from importlib.metadata import version
 
 from .picloud import PiCloud
 from .utils import read_ssh_key, ssh_import_id
 from .exc import HostedPiException
-from .__version__ import __version__
+
+
+hostedpi_version = version("hostedpi")
 
 
 class CLI:
@@ -72,7 +75,7 @@ class CLI:
                 "in the Mythic Beasts Pi Cloud"
             )
         )
-        parser.add_argument("--version", action="version", version=__version__)
+        parser.add_argument("--version", action="version", version=hostedpi_version)
         parser.set_defaults(func=self.do_help, cmd=None)
         commands = parser.add_subparsers(title=("commands"))
 

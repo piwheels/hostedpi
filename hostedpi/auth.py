@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta
+from importlib.metadata import version
 
 from requests import Session, HTTPError
 
 from .exc import MythicAuthenticationError
-from .__version__ import __version__
+
+
+hostedpi_version = version("hostedpi")
 
 
 class MythicAuth:
@@ -15,10 +18,8 @@ class MythicAuth:
         self._token_expiry = datetime.now()
         self._session = Session()
         self._session.headers = {
-            "User-Agent": f"python-hostedpi/{__version__}",
+            "User-Agent": f"python-hostedpi/{hostedpi_version}",
         }
-        # force the session to authenticate now
-        self.session
 
     def __repr__(self):
         return "<MythicAuth>"
@@ -38,9 +39,9 @@ class MythicAuth:
 
             try:
                 r.raise_for_status()
-            except HTTPError as e:
+            except HTTPError as exc:
                 print(r.text)
-                raise MythicAuthenticationError("Failed to authenticate") from e
+                raise MythicAuthenticationError("Failed to authenticate") from exc
 
             body = r.json()
             if "access_token" in body:
