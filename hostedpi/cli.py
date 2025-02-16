@@ -38,10 +38,7 @@ class CLI:
             API_ID = os.environ.get("HOSTEDPI_ID")
             API_SECRET = os.environ.get("HOSTEDPI_SECRET")
             if API_ID is None or API_SECRET is None:
-                print(
-                    "HOSTEDPI_ID and HOSTEDPI_SECRET environment variables "
-                    "must be set"
-                )
+                print("HOSTEDPI_ID and HOSTEDPI_SECRET environment variables " "must be set")
             self._cloud = PiCloud(API_ID, API_SECRET)
         return self._cloud
 
@@ -115,9 +112,7 @@ class CLI:
             description=(
                 "Retrieve the list of operating system images available for the given Pi model"
             ),
-            help=(
-                "Retrieve the list of operating system images available for the given Pi model"
-            ),
+            help=("Retrieve the list of operating system images available for the given Pi model"),
         )
         get_images_cmd.add_argument(
             "model",
@@ -337,9 +332,7 @@ class CLI:
             description=(
                 "Import SSH keys from GitHub or Launchpad and add them to one or more Pis"
             ),
-            help=(
-                "Import SSH keys from GitHub or Launchpad and add them to one or more Pis"
-            ),
+            help=("Import SSH keys from GitHub or Launchpad and add them to one or more Pis"),
         )
         ssh_import_id_cmd.add_argument(
             "names",
@@ -364,9 +357,7 @@ class CLI:
         ssh_command_cmd = commands.add_parser(
             "ssh-command",
             description=("Output the SSH command for one or more Pis in the account"),
-            help=(
-                "Output the SSH command for one or more Pis in the account"
-            ),
+            help=("Output the SSH command for one or more Pis in the account"),
         )
         ssh_command_cmd.add_argument(
             "names",
@@ -374,17 +365,13 @@ class CLI:
             nargs="*",
             help=("The names of the Pis to get SSH commands for"),
         )
-        ssh_command_cmd.add_argument(
-            "--ipv6", action="store_true", help=("Show IPv6 command")
-        )
+        ssh_command_cmd.add_argument("--ipv6", action="store_true", help=("Show IPv6 command"))
         ssh_command_cmd.set_defaults(func=self.do_ssh_command)
 
         ssh_config_cmd = commands.add_parser(
             "ssh-config",
             description=("Output the SSH config for one or more Pis in the account"),
-            help=(
-                "Output the SSH config for one or more Pis in the account"
-            ),
+            help=("Output the SSH config for one or more Pis in the account"),
         )
         ssh_config_cmd.add_argument(
             "names",
@@ -501,20 +488,16 @@ class CLI:
                 return
             elif len(pis_to_cancel) == 1:
                 pi = pis_to_cancel[0]
-                cancel_prompt = (
-                    f"Cancelling {pi}. Proceed? [Y/n] "
-                )
+                cancel_prompt = f"Cancelling {pi}. Proceed? [Y/n] "
             else:
-                cancel_prompt = (
-                    f"Cancelling {len(pis_to_cancel)} Pis: [{', '.join(pis_to_cancel)}]. Proceed? [Y/n] "
-                )
+                cancel_prompt = f"Cancelling {len(pis_to_cancel)} Pis: [{', '.join(pis_to_cancel)}]. Proceed? [Y/n] "
             try:
                 y = input(cancel_prompt)
             except KeyboardInterrupt:
                 print()
                 print("Not cancelled")
                 return
-            if y.lower() not in 'y':
+            if y.lower() not in "y":
                 print("Not cancelled")
                 return
         for name, pi in self.get_pis(self._args.names):

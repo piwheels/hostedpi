@@ -7,9 +7,7 @@ from requests.exceptions import HTTPError
 from .exc import HostedPiException
 
 
-def ssh_import_id(
-    *, github: Optional[str] = None, launchpad: Optional[str] = None
-) -> Set[str]:
+def ssh_import_id(*, github: Optional[str] = None, launchpad: Optional[str] = None) -> Set[str]:
     """
     Returns a set of SSH keys imported from GitHub or Launchpad
     """
