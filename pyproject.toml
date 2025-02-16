@@ -1,0 +1,51 @@
+[project]
+name = "hostedpi"
+version = "0.4.0"
+description = "Python interface to the Mythic Beasts Hosted Pi API"
+authors = [
+    {name = "Ben Nuttall", email = "ben@bennuttall.com"}
+]
+license = {text = "BSD 3-Clause License"}
+readme = "README.rst"
+requires-python = ">=3.9"
+keywords = ["raspberrypi", "piwheels", "mythicbeasts", "hostedpi", "picloud"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Developers",
+    "Topic :: Utilities",
+    "License :: OSI Approved :: BSD License",
+]
+
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)"
+]
+
+[project.urls]
+repository = "https://github.com/piwheels/hostedpi/issues"
+documentation = "https://hostedpi.readthedocs.io"
+"Bug Tracker" = "https://github.com/piwheels/hostedpi/issues"
+
+[project.scripts]
+hostedpi = 'hostedpi.cli:main'
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+sphinx = "*"
+sphinx-rtd-theme = "*"
+ipython = "*"
+twine = "*"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py39']

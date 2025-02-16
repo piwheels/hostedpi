@@ -1,5 +1,3 @@
-# vim: set noet sw=4 ts=4 fileencoding=utf-8:
-
 # Project-specific constants
 NAME=hostedpi
 DOC_HTML=docs/build/html
@@ -9,29 +7,34 @@ DOC_TREES=docs/build/doctrees
 all:
 	@echo "make install - Install on local system"
 	@echo "make develop - Install symlinks for development"
-	@echo "make build - Build sdist and bdist_wheel"
+	@echo "make format - Format all Python code with black"
 	@echo "make clean - Remove all generated files"
-	@echo "make fix - Format all Python code with black"
+	@echo "make build - Build the package release files"
+	@echo "make release - Release to PyPI"
 	@echo "make doc - Build the docs as HTML"
 	@echo "make doc-serve - Serve the docs locally"
-	@echo "make release - Release to PyPI"
 
 install:
 	pip install .
 
 develop:
 	pip install -U pip
-	pip install twine black
-	pip install -e .[test,doc]
+	pip install -U setuptools
+	pip install -U wheel
+	pip install -U poetry
+	poetry install --all-extras
+
+format:
+	black .
 
 clean:
-	rm -rf build/ dist/ $(NAME).egg-info/ docs/build/ .pytest_cache/ .coverage
+	rm -rf dist
 
 build: clean
-	python setup.py sdist bdist_wheel
+	poetry build -f sdist -f wheel
 
-fix:
-	black .
+release: build
+	twine upload dist/*
 
 doc:
 	rm -rf docs/build/
@@ -40,5 +43,4 @@ doc:
 doc-serve:
 	cd $(DOC_HTML) && python -m http.server
 
-release: build
-	twine upload dist/*
+.PHONY: all install develop format clean build release doc doc-serve
