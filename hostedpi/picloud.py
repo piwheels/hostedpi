@@ -1,6 +1,6 @@
 import os
 import string
-from typing import Optional, Union, Dict, List, Set
+from typing import Optional, Union
 
 from requests import Session, HTTPError
 
@@ -60,10 +60,10 @@ class PiCloud:
         api_id: Optional[str] = None,
         api_secret: Optional[str] = None,
         *,
-        ssh_keys: Optional[Union[List[str], Set[str]]] = None,
+        ssh_keys: Optional[Union[list[str], set[str]]] = None,
         ssh_key_path: Optional[str] = None,
-        ssh_import_github: Optional[Union[List[str], Set[str]]] = None,
-        ssh_import_launchpad: Optional[Union[List[str], Set[str]]] = None,
+        ssh_import_github: Optional[Union[list[str], set[str]]] = None,
+        ssh_import_launchpad: Optional[Union[list[str], set[str]]] = None,
     ):
         if api_id is None:
             api_id = os.environ.get("HOSTEDPI_ID")
@@ -97,7 +97,7 @@ class PiCloud:
         return self._auth.session
 
     @property
-    def pis(self) -> Dict[str, Pi]:
+    def pis(self) -> dict[str, Pi]:
         """
         A dictionary of :class:`~hostedpi.pi.Pi` objects keyed by their names
         """
@@ -144,10 +144,10 @@ class PiCloud:
         model: int = 3,
         disk_size: int = 10,
         os_image: Optional[str] = None,
-        ssh_keys: Optional[Union[List[str], Set[str]]] = None,
+        ssh_keys: Optional[Union[list[str], set[str]]] = None,
         ssh_key_path: Optional[str] = None,
-        ssh_import_github: Optional[Union[List[str], Set[str]]] = None,
-        ssh_import_launchpad: Optional[Union[List[str], Set[str]]] = None,
+        ssh_import_github: Optional[Union[list[str], set[str]]] = None,
+        ssh_import_launchpad: Optional[Union[list[str], set[str]]] = None,
     ) -> Pi:
         """
         Provision a new cloud Pi with the specified name, model, disk size and
@@ -259,10 +259,10 @@ class PiCloud:
         if disk_size < 10 or disk_size % 10 > 0:
             raise HostedPiException("Disk size must be a multiple of 10")
 
-    def get_operating_systems(self, *, model: int) -> Dict[str, str]:
+    def get_operating_systems(self, *, model: int) -> dict[str, str]:
         """
         Return a dict of operating systems supported by the given Pi *model* (3
-        or 4). Dict keys are identifiers (e.g. "rpi-buster-armhf") which can be
+        or 4). dict keys are identifiers (e.g. "rpi-buster-armhf") which can be
         used when provisioning a new Pi with
         :meth:`~hostedpi.picloud.PiCloud.create_pi`; dict values are text labels
         of the OS/distro names (e.g. "Raspberry Pi OS Bullseye (32 bit)").

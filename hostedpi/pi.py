@@ -1,6 +1,6 @@
 from ipaddress import IPv6Address, IPv6Network
 from time import sleep
-from typing import Optional, Union, List, Set, TYPE_CHECKING
+from typing import Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .picloud import PiCloud
@@ -301,7 +301,7 @@ SSH commands:
         """.strip()
 
     @property
-    def ssh_keys(self) -> Set[str]:
+    def ssh_keys(self) -> set[str]:
         """
         Retrieve the SSH keys on the Pi, or use assignment to update them.
         Property value is a set of strings. Assigned value should also be a set
@@ -324,7 +324,7 @@ SSH commands:
         return {key.strip() for key in keys.split("\n") if key.strip()}
 
     @ssh_keys.setter
-    def ssh_keys(self, ssh_keys: Union[Set[str], List[str]]):
+    def ssh_keys(self, ssh_keys: Union[set[str], list[str]]):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierssh-key
         url = f"{self._API_URL}/{self.name}/ssh-key"
         if ssh_keys:
@@ -454,9 +454,9 @@ SSH commands:
     def ssh_import_id(
         self,
         *,
-        github: Optional[Union[Set[str], List[str]]] = None,
-        launchpad: Optional[Union[Set[str], List[str]]] = None,
-    ) -> Set[str]:
+        github: Optional[Union[set[str], list[str]]] = None,
+        launchpad: Optional[Union[set[str], list[str]]] = None,
+    ) -> set[str]:
         """
         Import SSH keys from GitHub or Launchpad, and add them to the Pi. Return
         the set of keys added.

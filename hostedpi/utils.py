@@ -1,4 +1,4 @@
-from typing import Optional, Union, Set
+from typing import Optional, Union
 from pathlib import Path
 
 import requests
@@ -7,7 +7,7 @@ from requests.exceptions import HTTPError
 from .exc import HostedPiException
 
 
-def ssh_import_id(*, github: Optional[str] = None, launchpad: Optional[str] = None) -> Set[str]:
+def ssh_import_id(*, github: Optional[str] = None, launchpad: Optional[str] = None) -> set[str]:
     """
     Returns a set of SSH keys imported from GitHub or Launchpad
     """
@@ -27,7 +27,7 @@ def ssh_import_id(*, github: Optional[str] = None, launchpad: Optional[str] = No
     return keys
 
 
-def fetch_keys(url: str, sep: str) -> Set[str]:
+def fetch_keys(url: str, sep: str) -> set[str]:
     """
     Retrieve keys from *url* and return a set of keys
     """
@@ -49,11 +49,11 @@ def read_ssh_key(ssh_key_path: Path) -> str:
 
 
 def parse_ssh_keys(
-    ssh_keys: Optional[Set[str]] = None,
+    ssh_keys: Optional[set[str]] = None,
     ssh_key_path: Optional[Path] = None,
-    ssh_import_github: Optional[Union[Set[str], str]] = None,
-    ssh_import_launchpad: Optional[Union[Set[str], str]] = None,
-) -> Set[str]:
+    ssh_import_github: Optional[Union[set[str], str]] = None,
+    ssh_import_launchpad: Optional[Union[set[str], str]] = None,
+) -> set[str]:
     """
     Parse SSH keys from any of various sources
     """
