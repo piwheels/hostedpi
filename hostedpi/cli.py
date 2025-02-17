@@ -1,4 +1,3 @@
-import os
 import sys
 import argparse
 from importlib.metadata import version
@@ -35,11 +34,7 @@ class CLI:
     @property
     def cloud(self):
         if self._cloud is None:
-            API_ID = os.environ.get("HOSTEDPI_ID")
-            API_SECRET = os.environ.get("HOSTEDPI_SECRET")
-            if API_ID is None or API_SECRET is None:
-                print("HOSTEDPI_ID and HOSTEDPI_SECRET environment variables " "must be set")
-            self._cloud = PiCloud(API_ID, API_SECRET)
+            self._cloud = PiCloud()
         return self._cloud
 
     @property

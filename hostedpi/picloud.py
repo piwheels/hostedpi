@@ -1,4 +1,3 @@
-import os
 from typing import Union
 import urllib.parse
 
@@ -57,8 +56,6 @@ class PiCloud:
 
     def __init__(
         self,
-        api_id: Union[str, None] = None,
-        api_secret: Union[str, None] = None,
         *,
         ssh_keys: Union[list[str], set[str], None] = None,
         ssh_key_path: Union[str, None] = None,
@@ -67,26 +64,14 @@ class PiCloud:
     ):
         self._api_url = "https://api.mythic-beasts.com/beta/pi/"
 
-        if api_id is None:
-            api_id = os.environ.get("HOSTEDPI_ID")
-
-        if api_secret is None:
-            api_secret = os.environ.get("HOSTEDPI_SECRET")
-
-        if api_id is None or api_secret is None:
-            raise HostedPiException(
-                "Environment variables HOSTEDPI_ID and HOSTEDPI_SECRET must be "
-                "set or api_id and api_secret passed as arguments"
-            )
-
         self.ssh_keys = parse_ssh_keys(
             ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad
         )
 
-        self._auth = MythicAuth(api_id, api_secret)
+        self._auth = MythicAuth()
 
     def __repr__(self):
-        return "<PiCloud>"
+        return f"<PiCloud id={self._auth._settings.id}>"
 
     def __str__(self):
         """

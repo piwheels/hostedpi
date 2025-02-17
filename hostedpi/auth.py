@@ -6,16 +6,16 @@ from pydantic import ValidationError
 
 from .exc import MythicAuthenticationError
 from .models.responses import AuthResponse
+from .settings import get_settings
 
 
 hostedpi_version = version("hostedpi")
 
 
 class MythicAuth:
-    _LOGIN_URL = "https://auth.mythic-beasts.com/login"
-
-    def __init__(self, api_id: str, api_secret: str):
-        self._creds = (api_id, api_secret)
+    def __init__(self):
+        self._url = "https://auth.mythic-beasts.com/login"
+        self._settings = get_settings()
         self._token = None
         self._token_expiry = datetime.now()
         self._session = Session()
@@ -24,7 +24,7 @@ class MythicAuth:
         }
 
     def __repr__(self):
-        return "<MythicAuth>"
+        return f"<MythicAuth id={self._settings.id}>"
 
     @property
     def session(self) -> Session:
@@ -34,10 +34,10 @@ class MythicAuth:
     @property
     def token(self) -> str:
         if datetime.now() > self._token_expiry:
+            auth_session = Session()
             data = {"grant_type": "client_credentials"}
-            self._session.headers.pop("Authorization", None)
-            self._session.headers.pop("Content-Type", None)
-            response = self._session.post(self._LOGIN_URL, auth=self._creds, data=data)
+            creds = (self._settings.id, self._settings.secret.get_secret_value())
+            response = auth_session.post(self._url, auth=creds, data=data)
 
             try:
                 response.raise_for_status()
