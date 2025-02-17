@@ -23,7 +23,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "requests (>=2.32.3,<3.0.0)"
+    "requests (>=2.32.3,<3.0.0)",
+    "pydantic (>=2)"
 ]
 
 [project.urls]
@@ -33,6 +34,9 @@ documentation = "https://hostedpi.readthedocs.io"
 
 [project.scripts]
 hostedpi = 'hostedpi.cli:main'
+
+[project.optional-dependencies]
+cli = ["typer (>=0.15.1,<1.0.0)"]
 
 [tool.poetry]
 
