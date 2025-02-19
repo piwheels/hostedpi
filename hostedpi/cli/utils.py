@@ -5,10 +5,10 @@ from rich.table import Table
 from hostedpi.models.payloads import NewPi3ServerBody, NewPi4ServerBody
 
 
-def make_table(*headers: list[str]) -> Table:
+def make_table(*headers: str) -> Table:
     table = Table(show_header=True)
     for header in headers:
-        table.add_column(header, style="bold")
+        table.add_column(header)
     return table
 
 

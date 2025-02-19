@@ -29,7 +29,7 @@ class ProvisioningServer(BaseModel):
     provision_status: str = Field(alias="status")
 
 
-class PiInfoResponse(PiInfoBasic, ProvisioningServer):
+class PiInfo(PiInfoBasic, ProvisioningServer):
     model_full: Union[str, None] = None
     is_booting: bool
     boot_progress: Union[str, None] = None

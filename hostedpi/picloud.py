@@ -15,7 +15,7 @@ from .models.responses import (
     ErrorResponse,
     PiImagesResponse,
     ProvisioningServer,
-    PiInfoResponse,
+    PiInfo,
 )
 from .models.payloads import NewPi3ServerBody, NewPi4ServerBody, NewServer
 from .logger import log_request
@@ -108,7 +108,7 @@ class PiCloud:
         The contents could be added to an SSH config file for easy access to the
         Pis in the account.
         """
-        return "\n".join(pi.data.ipv4_ssh_config for pi in self.servers.values())
+        return "\n".join(pi.info.ipv4_ssh_config for pi in self.servers.values())
 
     @property
     def ipv6_ssh_config(self) -> str:
@@ -128,7 +128,7 @@ class PiCloud:
         ssh_key_path: Union[str, None] = None,
         ssh_import_github: Union[list[str], set[str], None] = None,
         ssh_import_launchpad: Union[list[str], set[str], None] = None,
-        wait_async: bool = False,
+        wait: bool = False,
     ) -> Pi | None:
         """
         Provision a new cloud Pi with the specified name, model, disk size and SSH keys. Return a
@@ -172,7 +172,7 @@ class PiCloud:
         ssh_keys_set = parse_ssh_keys(
             ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad
         )
-        spec.ssh_key = "\r\n".join(ssh_keys_set)
+        spec.ssh_key = "\r\n".join(ssh_keys_set) if ssh_keys_set else None
 
         if name is None:
             url = urllib.parse.urljoin(self._api_url, "servers")
@@ -203,7 +203,7 @@ class PiCloud:
                 raise HostedPiException(OUT_OF_STOCK) from exc
             raise HostedPiException(str(exc)) from exc
 
-        if response.status_code == 202 and "Location" in response.headers:
+        if wait:
             return self._wait_for_new_pi(response.headers["Location"])
         else:
             logger.info("Server creation request accepted", status_url=response.headers["Location"])
@@ -255,12 +255,12 @@ class PiCloud:
 
         return ServersResponse.model_validate(response.json())
 
-    def _parse_status(self, data: dict) -> ProvisioningServer | PiInfoResponse | None:
+    def _parse_status(self, data: dict) -> ProvisioningServer | PiInfo | None:
         """
         Get the status of an async server creation request
         """
         try:
-            return PiInfoResponse.model_validate(data)
+            return PiInfo.model_validate(data)
         except ValidationError:
             pass
 
@@ -279,10 +279,12 @@ class PiCloud:
             response = self.session.get(url)
             log_request(response)
             status = self._parse_status(response.json())
-            if type(status) is PiInfoResponse:
+            if type(status) is PiInfo:
                 server_name = response.request.url.split("/")[-1]
                 logger.info("Got server name", server_name=server_name)
-                return Pi(server_name, info=status, api_url=self._api_url, session=self.session)
+                return Pi.from_pi_info(
+                    server_name, info=status, api_url=self._api_url, session=self.session
+                )
             if type(status) is ProvisioningServer:
                 logger.info("Server creation in progress", status=status.provision_status)
             sleep(1)

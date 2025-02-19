@@ -1,14 +1,17 @@
 from time import sleep
 from typing import Union
 import urllib.parse
+from functools import cached_property
+from ipaddress import IPv6Address, IPv6Network
+from datetime import timezone, datetime
 
 from requests import Session, HTTPError
 
 from .utils import parse_ssh_keys
 from .exc import HostedPiException
-from .models.responses import PiInfoBasic, PiInfoResponse, SSHKeysResponse
+from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse
 from .models.payloads import SSHKeyBody
-from .piinfo import PiInfo
+from .logger import log_request
 
 
 NOT_AUTHORISED = "Not authorised to access server or server does not exist"
@@ -32,21 +35,27 @@ class Pi:
         The ``Pi`` class should not be initialised by the user, only internally within the module.
     """
 
-    def __init__(
-        self, name: str, *, info: PiInfoBasic | PiInfoResponse, api_url: str, session: Session
-    ):
+    def __init__(self, name: str, *, info: PiInfoBasic, api_url: str, session: Session):
         self._name = name
-        self._session = session
+        self._model = info.model
+        self._memory = info.memory
+        self._cpu_speed = info.cpu_speed
         self._api_url = urllib.parse.urljoin(api_url, "servers")
+        self._session = session
         self._cancelled = False
-        self._info_basic: PiInfoBasic
-        self._info: Union[PiInfoResponse, None] = None
+        self._info: Union[PiInfo, None] = None
+        self._last_fetched_info: datetime | None = None
 
-        if type(info) is PiInfoBasic:
-            self._info_basic = info
-        else:
-            self._info_basic = PiInfoBasic.model_validate(info)
-            self._info = info
+    @classmethod
+    def from_pi_info(cls, name: str, *, info: PiInfo, api_url: str, session: Session):
+        """
+        Construct a ``Pi`` object from a :class:`~hostedpi.models.responses.PiInfo` object
+        """
+        basic_info = PiInfoBasic.model_validate(info)
+        pi = cls(name, info=basic_info, api_url=api_url, session=session)
+        pi._info = info
+        pi._last_fetched_info = datetime.now(timezone.utc)
+        return pi
 
     def __repr__(self):
         if self._cancelled:
@@ -54,39 +63,215 @@ class Pi:
         else:
             if self._info is None:
                 return f"<Pi {self.name}>"
-            model = self._info.model_full if self._info.model_full else self._info.model
+            model = self.model_full if self.model_full else self.model
             return f"<Pi model {model} {self.name}>"
-
-    def _get_data(self):
-        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifier
-        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
-        response = self.session.get(url)
-
-        try:
-            response.raise_for_status()
-        except HTTPError as exc:
-            if response.status_code == 403:
-                raise HostedPiException(NOT_AUTHORISED) from exc
-            if response.status_code == 409:
-                raise HostedPiException(NOT_PROVISIONED) from exc
-            raise HostedPiException(str(exc)) from exc
-
-        data = PiInfoResponse.model_validate(response.json())
-        self._info = PiInfo(self._name, data)
 
     @property
     def session(self) -> Session:
+        """
+        The authenticated requests session used to communicate with the API
+        """
         return self._session
 
     @property
-    def data(self) -> PiInfoResponse:
+    def info(self) -> PiInfo:
+        """
+        The full Pi information as a :class:`~hostedpi.models.responses.PiInfo` object. Always fetch
+        the latest information from the API when this is called.
+        """
         if self._info is None:
-            self._get_data()
+            self._get_info()
         return self._info
 
     @property
     def name(self) -> str:
+        """
+        The name of the Pi
+        """
         return self._name
+
+    @property
+    def model(self) -> int:
+        """
+        The Pi's model (3 or 4)
+        """
+        return self._model
+
+    @cached_property
+    def model_full(self) -> Union[str, None]:
+        """
+        The Pi's model name (3B, 3B+ or 4B)
+        """
+        return self.info.model_full
+
+    @property
+    def memory(self) -> Union[int, None]:
+        """
+        The Pi's RAM size in MB
+        """
+        return self._memory
+
+    @property
+    def cpu_speed(self) -> Union[int, None]:
+        """
+        The Pi's CPU speed in MHz
+        """
+        return self._cpu_speed
+
+    @cached_property
+    def disk_size(self) -> Union[int, None]:
+        """
+        The Pi's disk size in GB
+        """
+        return self.info.disk_size
+
+    @cached_property
+    def nic_speed(self) -> Union[int, None]:
+        """
+        The Pi's NIC speed in MHz
+        """
+        return self.info.nic_speed
+
+    @property
+    def status(self) -> str:
+        """
+        A string representing the Pi's current status (provisioning, booting, live, powered on or
+        powered off).
+        """
+        if self.provision_status != "live":
+            return f"Provisioning: {self.provision_status}"
+        if self.info.boot_progress:
+            return f"Booting: {self.boot_progress}"
+        if self.power:
+            return "Powered on"
+        return "Powered off"
+
+    @property
+    def boot_progress(self) -> str:
+        """
+        A string representing the Pi's boot progress. Can be ``booted``, ``powered off`` or a
+        particular stage of the boot process if currently booting.
+        """
+        if self.info.boot_progress:
+            return self.info.boot_progress
+        return "booted" if self.power else "powered off"
+
+    @property
+    def initialised_keys(self) -> bool:
+        """
+        A boolean representing whether or not the Pi has been initialised with SSH keys
+        """
+        return self.info.initialised_keys
+
+    @cached_property
+    def ipv4_ssh_port(self) -> int:
+        """
+        The SSH port to use when connecting via the IPv4 proxy
+        """
+        return self.info.ssh_port
+
+    @cached_property
+    def ipv6_address(self) -> IPv6Address:
+        """
+        The Pi's IPv6 address as an :class:`~ipaddress.IPv6Address` object
+        """
+        return self.info.ipv6_address
+
+    @cached_property
+    def ipv6_network(self) -> IPv6Network:
+        """
+        The Pi's IPv6 network as an :class:`~ipaddress.IPv6Network` object
+        """
+        return self.info.ipv6_network
+
+    @property
+    def is_booting(self) -> bool:
+        """
+        A boolean representing whether or not the Pi is currently booting
+        """
+        return self.info.is_booting
+
+    @cached_property
+    def location(self) -> str:
+        """
+        The Pi's physical location (data centre)
+        """
+        return self.info.location
+
+    @property
+    def power(self) -> bool:
+        """
+        A boolean representing whether or not the Pi is currently powered on
+        """
+        return self.info.power
+
+    @property
+    def provision_status(self) -> str:
+        """
+        A string representing the provision status of the Pi. Can be "provisioning", "initialising"
+        or "live".
+        """
+        return self.info.provision_status
+
+    @property
+    def ipv4_ssh_command(self) -> str:
+        """
+        The SSH command required to connect to the Pi over IPv4
+        """
+        return f"ssh -p {self.ipv4_ssh_port} root@ssh.{self.name}.hostedpi.com"
+
+    @property
+    def ipv6_ssh_command(self) -> str:
+        """
+        The SSH command required to connect to the Pi over IPv6
+        """
+        return f"ssh root@[{self.ipv6_address}]"
+
+    @property
+    def ipv4_ssh_config(self) -> str:
+        """
+        A string containing the IPv4 SSH config for the Pi. The contents could be added to an SSH
+        config file for easy access to the Pi.
+        """
+        return f"""Host {self.name}
+    user root
+    port {self.ipv4_ssh_port}
+    hostname ssh.{self.name}.hostedpi.com
+        """.strip()
+
+    @property
+    def ipv6_ssh_config(self) -> str:
+        """
+        A string containing the IPv6 SSH config for the Pi. The contents could be added to an SSH
+        config file for easy access to the Pi.
+        """
+        return f"""Host {self.name}
+    user root
+    hostname {self.ipv6_address}
+        """.strip()
+
+    @property
+    def url(self) -> str:
+        """
+        The http version of the hostedpi.com URL of the Pi.
+
+        .. note::
+            Note that a web server must be installed on the Pi for the URL to be resolvable.
+        """
+        return f"http://www.{self.name}.hostedpi.com"
+
+    @property
+    def url_ssl(self) -> str:
+        """
+        The https version of the hostedpi.com URL of the Pi.
+
+        .. note::
+            Note that a web server must be installed on the Pi for the URL to be resolvable, and an
+            SSL certificate must be created.
+
+            See https://letsencrypt.org/
+        """
+        return f"https://www.{self.name}.hostedpi.com"
 
     @property
     def ssh_keys(self) -> set[str]:
@@ -121,24 +306,6 @@ class Pi:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 403:
-                raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(str(exc)) from exc
-
-    def _power_on_off(self, *, on: bool):
-        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierpower
-        url = urllib.parse.urljoin(self._api_url, f"{self.name}/power")
-        data = {
-            "power": on,
-        }
-        response = self.session.put(url, json=data)
-
-        try:
-            response.raise_for_status()
-        except HTTPError as exc:
-            if response.status_code == 400:
-                msg = "The server is already being rebooted"
-                raise HostedPiException(msg) from exc
             if response.status_code == 403:
                 raise HostedPiException(NOT_AUTHORISED) from exc
             raise HostedPiException(str(exc)) from exc
@@ -232,3 +399,46 @@ class Pi:
         )
         self.ssh_keys |= ssh_keys_set
         return ssh_keys_set
+
+    def _get_info(self):
+        """
+        Fetch the full Pi information from the API
+        """
+        now = datetime.now(timezone.utc)
+        if self._last_fetched_info is not None:
+            if (now - self._last_fetched_info).total_seconds() < 10:
+                return
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifier
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
+        response = self.session.get(url)
+        log_request(response)
+
+        try:
+            response.raise_for_status()
+        except HTTPError as exc:
+            if response.status_code == 403:
+                raise HostedPiException(NOT_AUTHORISED) from exc
+            if response.status_code == 409:
+                raise HostedPiException(NOT_PROVISIONED) from exc
+            raise HostedPiException(str(exc)) from exc
+
+        self._info = PiInfo.model_validate(response.json())
+
+    def _power_on_off(self, *, on: bool):
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierpower
+        url = urllib.parse.urljoin(self._api_url, f"{self.name}/power")
+        data = {
+            "power": on,
+        }
+        response = self.session.put(url, json=data)
+        log_request(response)
+
+        try:
+            response.raise_for_status()
+        except HTTPError as exc:
+            if response.status_code == 400:
+                msg = "The server is already being rebooted"
+                raise HostedPiException(msg) from exc
+            if response.status_code == 403:
+                raise HostedPiException(NOT_AUTHORISED) from exc
+            raise HostedPiException(str(exc)) from exc

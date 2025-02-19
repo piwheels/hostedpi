@@ -29,3 +29,10 @@ def disk_size(v: int) -> str:
     if v < 1024:
         return f"{v} GB"
     return f"{v / 1024:.1f} TB"
+
+
+def boolean(v: bool) -> str:
+    """
+    Format boolean to Yes or No
+    """
+    return "Yes" if v else "No"

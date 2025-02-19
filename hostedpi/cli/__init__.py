@@ -4,7 +4,7 @@ from typing_extensions import Annotated
 
 from typer import Typer, Argument
 from rich import print
-from rich.table import Table
+from rich.table import Table, Column
 from pydantic import ValidationError
 
 from ..picloud import PiCloud
@@ -79,9 +79,9 @@ def do_table():
     for name, data in sorted(cloud.servers.items()):
         table.add_row(
             name,
-            str(data.data.model),
-            format.memory(data.data.memory),
-            format.cpu_speed(data.data.cpu_speed),
+            str(data.model),
+            format.memory(data.memory),
+            format.cpu_speed(data.cpu_speed),
         )
     print(table)
 
@@ -94,8 +94,7 @@ def do_create(
     memory: options.memory = None,
     cpu_speed: options.cpu_speed = None,
     os_image: options.os_image = None,
-    wait_for_dns: options.wait_for_dns = False,
-    wait_async: options.wait_async = False,
+    wait: options.wait_async = False,
     ssh_key_path: options.ssh_key_path = None,
 ):
     """
@@ -110,7 +109,6 @@ def do_create(
         "memory": memory,
         "cpu_speed": cpu_speed,
         "os_image": os_image,
-        "wait_for_dns": wait_for_dns,
     }
     data = {k: v for k, v in data.items() if v is not None}
 
@@ -121,7 +119,7 @@ def do_create(
         return 1
 
     try:
-        pi = cloud.create_pi(name=name, spec=spec, wait_async=wait_async)
+        pi = cloud.create_pi(name=name, spec=spec, wait=wait)
     except HostedPiException as exc:
         print(f"hostedpi error: {exc}")
         return 1
@@ -138,13 +136,30 @@ def do_show_pi(name: arguments.server_name):
     """
     cloud = get_picloud()
     pi = cloud.servers.get(name)
-    table = Table("Name", pi.name)
-    table.add_row("Model", pi.data.model_full)
-    table.add_row("Memory", format.memory(pi.data.memory))
-    table.add_row("CPU Speed", format.cpu_speed(pi.data.cpu_speed))
-    table.add_row("NIC Speed", format.nic_speed(pi.data.nic_speed))
-    table.add_row("Disk size", format.disk_size(pi.data.disk_size))
+    table = Table(pi.name)
+    table.add_row("Model", pi.model_full)
+    table.add_row("Memory", format.memory(pi.memory))
+    table.add_row("CPU Speed", format.cpu_speed(pi.cpu_speed))
+    table.add_row("NIC Speed", format.nic_speed(pi.nic_speed))
+    table.add_row("Disk size", format.disk_size(pi.disk_size))
+    table.add_row("Status", pi.status)
+    table.add_row("Initialised keys", format.boolean(pi.disk_size))
+    table.add_row("IPv4 SSH port", str(pi.disk_size))
     print(table)
+
+
+@app.command("status")
+def do_status(name: arguments.server_name):
+    """
+    Get the current status of a Raspberry Pi server
+    """
+    cloud = get_picloud()
+    pi = cloud.servers.get(name)
+    try:
+        print(pi.status)
+    except HostedPiException as exc:
+        print(f"hostedpi error: {exc}")
+        return 1
 
 
 @app.command("rm", hidden=True)
