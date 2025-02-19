@@ -3,6 +3,7 @@ from importlib.metadata import version
 
 from requests import Session, HTTPError
 from pydantic import ValidationError
+from structlog import get_logger
 
 from .exc import MythicAuthenticationError
 from .models.responses import AuthResponse
@@ -10,6 +11,7 @@ from .settings import get_settings
 
 
 hostedpi_version = version("hostedpi")
+logger = get_logger()
 
 
 class MythicAuth:
@@ -37,19 +39,22 @@ class MythicAuth:
             auth_session = Session()
             data = {"grant_type": "client_credentials"}
             creds = (self._settings.id, self._settings.secret.get_secret_value())
+            logger.debug("Authenticating", client_id=self._settings.id)
             response = auth_session.post(self._url, auth=creds, data=data)
 
             try:
                 response.raise_for_status()
             except HTTPError as exc:
-                print(response.text)
+                logger.debug("Failed to authenticate", error=str(exc))
                 raise MythicAuthenticationError("Failed to authenticate") from exc
 
             try:
                 body = AuthResponse.model_validate(response.json())
             except ValidationError as exc:
-                raise MythicAuthenticationError("No access token in response")
+                logger.debug("Failed to validate auth response", error=str(exc))
+                raise MythicAuthenticationError("Failed to validate auth response") from exc
 
             self._token = body.access_token
             self._token_expiry = datetime.now() + timedelta(seconds=body.expires_in)
+            logger.debug("Got token", expires_in=body.expires_in, expires_at=self._token_expiry)
         return self._token

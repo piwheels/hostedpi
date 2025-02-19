@@ -1,11 +1,11 @@
 from ipaddress import IPv6Address, IPv6Network
 from typing import Union
 
-from .models.responses import ServerResponse
+from .models.responses import PiInfoResponse
 
 
-class PiData:
-    def __init__(self, name: str, data: ServerResponse):
+class PiInfo:
+    def __init__(self, name: str, data: PiInfoResponse):
         self.name = name
         self.data = data
 
@@ -25,6 +25,27 @@ class PiData:
         The Pi's disk size in GB
         """
         return self.data.disk_size
+
+    @property
+    def memory(self) -> Union[int, None]:
+        """
+        The Pi's RAM size in MB
+        """
+        return self.data.memory
+
+    @property
+    def cpu_speed(self) -> Union[int, None]:
+        """
+        The Pi's CPU speed in MHz
+        """
+        return self.data.cpu_speed
+
+    @property
+    def nic_speed(self) -> Union[int, None]:
+        """
+        The Pi's NIC speed in MHz
+        """
+        return self.data.nic_speed
 
     @property
     def initialised_keys(self) -> bool:

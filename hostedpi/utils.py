@@ -3,8 +3,13 @@ from pathlib import Path
 
 import requests
 from requests.exceptions import HTTPError
+from structlog import get_logger
 
 from .exc import HostedPiException
+from .logger import log_request
+
+
+logger = get_logger()
 
 
 def ssh_import_id(
@@ -35,14 +40,15 @@ def fetch_keys(url: str, sep: str) -> set[str]:
     """
     Retrieve keys from *url* and return a set of keys
     """
-    r = requests.get(url)
+    response = requests.get(url)
+    log_request(response)
 
     try:
-        r.raise_for_status()
-    except HTTPError as e:
-        raise HostedPiException(e) from e
+        response.raise_for_status()
+    except HTTPError as exc:
+        raise HostedPiException(str(exc)) from exc
 
-    return set(r.text.strip().split(sep))
+    return set(response.text.strip().split(sep))
 
 
 def read_ssh_key(ssh_key_path: Path) -> str:

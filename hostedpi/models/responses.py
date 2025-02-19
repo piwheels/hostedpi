@@ -1,7 +1,7 @@
 from typing import Union
 from ipaddress import IPv6Address, IPv6Network
 
-from pydantic import BaseModel, RootModel, Field, model_validator
+from pydantic import BaseModel, RootModel, Field, ConfigDict, model_validator
 
 
 class AuthResponse(BaseModel):
@@ -9,35 +9,37 @@ class AuthResponse(BaseModel):
     expires_in: int
 
 
-class Server(BaseModel):
+class PiInfoBasic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     model: int
     memory: int
     cpu_speed: int
 
 
 class ServersResponse(BaseModel):
-    servers: dict[str, Server]
+    servers: dict[str, PiInfoBasic]
 
 
 class ErrorResponse(BaseModel):
     error: str = ""
 
 
-class ServerResponse(BaseModel):
-    ipv6_address: IPv6Address = Field(alias="ip")
-    ipv6_network: IPv6Network = Field(alias="ip_routed")
+class ProvisioningServer(BaseModel):
+    provision_status: str = Field(alias="status")
+
+
+class PiInfoResponse(PiInfoBasic, ProvisioningServer):
+    model_full: Union[str, None] = None
+    is_booting: bool
     boot_progress: Union[str, None] = None
     power: bool
-    is_booting: bool
-    initialised_keys: bool
-    provision_status: str = Field(alias="status")
-    model: int
-    model_full: Union[str, None] = None
-    disk_size: Union[int, None] = None
     ssh_port: int
-    cpu_speed: int
+    disk_size: Union[int, None] = None
     nic_speed: int
-    memory: int
+    ipv6_address: IPv6Address = Field(alias="ip")
+    ipv6_network: IPv6Network = Field(alias="ip_routed")
+    initialised_keys: bool
     location: str
 
 

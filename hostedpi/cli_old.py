@@ -40,7 +40,7 @@ class CLI:
     @property
     def pis(self):
         if self._pis is None:
-            self._pis = self.cloud.pis
+            self._pis = self.cloud.servers
         return self._pis
 
     @property

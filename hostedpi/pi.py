@@ -6,9 +6,9 @@ from requests import Session, HTTPError
 
 from .utils import parse_ssh_keys
 from .exc import HostedPiException
-from .models.responses import ServerResponse, SSHKeysResponse
+from .models.responses import PiInfoBasic, PiInfoResponse, SSHKeysResponse
 from .models.payloads import SSHKeyBody
-from .pidata import PiData
+from .piinfo import PiInfo
 
 
 NOT_AUTHORISED = "Not authorised to access server or server does not exist"
@@ -32,73 +32,34 @@ class Pi:
         The ``Pi`` class should not be initialised by the user, only internally within the module.
     """
 
-    def __init__(self, *, name: str, api_url: str, session: Session):
+    def __init__(
+        self, name: str, *, info: PiInfoBasic | PiInfoResponse, api_url: str, session: Session
+    ):
         self._name = name
         self._session = session
         self._api_url = urllib.parse.urljoin(api_url, "servers")
-        self._data: Union[PiData, None] = None
+        self._cancelled = False
+        self._info_basic: PiInfoBasic
+        self._info: Union[PiInfoResponse, None] = None
+
+        if type(info) is PiInfoBasic:
+            self._info_basic = info
+        else:
+            self._info_basic = PiInfoBasic.model_validate(info)
+            self._info = info
 
     def __repr__(self):
         if self._cancelled:
             return f"<Pi {self.name} cancelled>"
         else:
-            model = self._data.model_full if self._data.model_full else self._data.model
+            if self._info is None:
+                return f"<Pi {self.name}>"
+            model = self._info.model_full if self._info.model_full else self._info.model
             return f"<Pi model {model} {self.name}>"
-
-    def __str__(self):
-        """
-        A multi-line string of the information about the Pi
-        """
-        self._get_data()
-        if self._data.provision_status == "live":
-            if self._data.is_booting:
-                boot_progress = f"booting ({self._data.boot_progress})"
-            else:
-                boot_progress = "live"
-            num_keys = len(self.ssh_keys)
-            power = "on" if self._data.power else "off"
-            initialised_keys = "yes" if self._data.initialised_keys else "no"
-            lines = [
-                f"Name: {self.name}",
-                f"Model: Raspberry Pi {self._data.model_full}",
-                f"Disk size: {self._data.disk_size}GB",
-                f"Status: {boot_progress}",
-                f"Power: {power}",
-                f"IPv6 address: {self._data.ipv6_address}",
-                f"IPv6 network: {self._data.ipv6_network}",
-                f"Initialised keys: {initialised_keys}",
-                f"SSH keys: {num_keys}",
-                f"IPv4 SSH port: {self._data.ipv4_ssh_port}",
-                f"Location: {self._data.location}",
-                f"URLs:",
-                f"{self._data.url}",
-                f"{self._data.url_ssl}",
-                f"SSH commands:",
-                f"{self._data.ipv4_ssh_command}  # IPv4",
-                f"{self._data.ipv6_ssh_command}  # IPv6",
-            ]
-        else:
-            lines = [
-                f"Name: {self.name}",
-                f"Model: Raspberry Pi {self._data.model}",
-                f"Disk size: {self._data.disk_size}GB",
-                f"Status: {self._data.provision_status}",
-                f"IPv6 address: {self._data.ipv6_address}",
-                f"IPv6 network: {self._data.ipv6_network}",
-                f"SSH port: {self._data.ipv4_ssh_port}",
-                f"Location: {self._data.location}",
-                f"URLs:",
-                f"{self._data.url}",
-                f"{self._data.url_ssl}",
-                f"SSH commands:",
-                f"{self._data.ipv4_ssh_command}  # IPv4",
-                f"{self._data.ipv6_ssh_command}  # IPv6",
-            ]
-        return "\n".join(lines)
 
     def _get_data(self):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifier
-        url = urllib.parse.urljoin(self._api_url, self.name)
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
         response = self.session.get(url)
 
         try:
@@ -108,16 +69,20 @@ class Pi:
                 raise HostedPiException(NOT_AUTHORISED) from exc
             if response.status_code == 409:
                 raise HostedPiException(NOT_PROVISIONED) from exc
-            raise HostedPiException(exc) from exc
+            raise HostedPiException(str(exc)) from exc
 
-        print(response.text)
-
-        data = ServerResponse.model_validate(response.json())
-        self._data = PiData(self._name, data)
+        data = PiInfoResponse.model_validate(response.json())
+        self._info = PiInfo(self._name, data)
 
     @property
     def session(self) -> Session:
         return self._session
+
+    @property
+    def data(self) -> PiInfoResponse:
+        if self._info is None:
+            self._get_data()
+        return self._info
 
     @property
     def name(self) -> str:
@@ -138,9 +103,7 @@ class Pi:
         except HTTPError as exc:
             if response.status_code == 403:
                 raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(exc) from exc
-
-        print(response.text)
+            raise HostedPiException(str(exc)) from exc
 
         data = SSHKeysResponse.model_validate(response.json())
 
@@ -160,7 +123,7 @@ class Pi:
         except HTTPError as exc:
             if response.status_code == 403:
                 raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(exc) from exc
+            raise HostedPiException(str(exc)) from exc
 
     def _power_on_off(self, *, on: bool):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierpower
@@ -178,7 +141,7 @@ class Pi:
                 raise HostedPiException(msg) from exc
             if response.status_code == 403:
                 raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(exc) from exc
+            raise HostedPiException(str(exc)) from exc
 
     def on(self, *, wait: bool = False) -> Union[bool, None]:
         """
@@ -188,7 +151,7 @@ class Pi:
         """
         self._power_on_off(on=True)
         if wait:
-            while self._data.is_booting:
+            while self._info.is_booting:
                 sleep(2)
             return self.power
 
@@ -221,10 +184,10 @@ class Pi:
             if response.status_code == 409:
                 # The server is already being rebooted
                 pass
-            raise HostedPiException(exc) from exc
+            raise HostedPiException(str(exc)) from exc
 
         if wait:
-            while self._data.is_booting:
+            while self._info.is_booting:
                 sleep(2)
             return self.power
 
@@ -233,7 +196,7 @@ class Pi:
         Cancel the Pi service
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
-        url = urllib.parse.urljoin(self._api_url, f"{self.name}")
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
         response = self.session.delete(url)
 
         try:
@@ -241,7 +204,7 @@ class Pi:
         except HTTPError as exc:
             if response.status_code == 403:
                 raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(exc) from exc
+            raise HostedPiException(str(exc)) from exc
 
         self._cancelled = True
 

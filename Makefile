@@ -23,6 +23,7 @@ develop:
 	pip install -U wheel
 	pip install -U poetry
 	poetry install --all-extras
+	hostedpi --install-completion
 
 format:
 	black .
