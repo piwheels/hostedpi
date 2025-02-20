@@ -4,10 +4,11 @@ from typing_extensions import Annotated
 
 from typer import Typer, Argument
 from rich import print
-from rich.table import Table, Column
+from rich.table import Table
 from pydantic import ValidationError
 
 from ..picloud import PiCloud
+from ..pi import Pi
 from .utils import make_table, validate_server_body
 from .. import utils
 from . import options, arguments, format
@@ -23,6 +24,11 @@ app = Typer(name="hostedpi", no_args_is_help=True)
 @cache
 def get_picloud() -> PiCloud:
     return PiCloud()
+
+
+def get_pi(name: str) -> Pi:
+    cloud = get_picloud()
+    return cloud.servers.get(name)
 
 
 @app.command("connect", hidden=True)
@@ -134,8 +140,7 @@ def do_show_pi(name: arguments.server_name):
     """
     Show details of a Raspberry Pi server
     """
-    cloud = get_picloud()
-    pi = cloud.servers.get(name)
+    pi = get_pi(name)
     table = Table(pi.name)
     table.add_row("Model", pi.model_full)
     table.add_row("Memory", format.memory(pi.memory))
@@ -153,8 +158,7 @@ def do_status(name: arguments.server_name):
     """
     Get the current status of a Raspberry Pi server
     """
-    cloud = get_picloud()
-    pi = cloud.servers.get(name)
+    pi = get_pi(name)
     try:
         print(pi.status)
     except HostedPiException as exc:
@@ -168,11 +172,81 @@ def do_cancel(name: arguments.server_name):
     """
     Unprovision a Raspberry Pi server
     """
-    cloud = get_picloud()
-    pi = cloud.servers.get(name)
+    pi = get_pi(name)
     try:
         pi.cancel()
     except HostedPiException as exc:
         print(f"hostedpi error: {exc}")
         return 1
     print(f"Cancelled {name}")
+
+
+@app.command("on")
+def do_on(name: arguments.server_name):
+    """
+    Power on a Raspberry Pi server
+    """
+    pi = get_pi(name)
+    try:
+        pi.on()
+    except HostedPiException as exc:
+        print(f"hostedpi error: {exc}")
+        return 1
+
+
+@app.command("off")
+def do_off(name: arguments.server_name):
+    """
+    Power off a Raspberry Pi server
+    """
+    pi = get_pi(name)
+    try:
+        pi.off()
+    except HostedPiException as exc:
+        print(f"hostedpi error: {exc}")
+        return 1
+
+
+@app.command("reboot")
+def do_reboot(name: arguments.server_name):
+    """
+    Reboot a Raspberry Pi server
+    """
+    pi = get_pi(name)
+    try:
+        pi.reboot()
+    except HostedPiException as exc:
+        print(f"hostedpi error: {exc}")
+        return 1
+
+
+@app.command("ssh-command")
+def do_ssh_command(name: arguments.server_name, ipv6: options.ipv6 = False):
+    """
+    Get the SSH command to connect to a Raspberry Pi server
+    """
+    pi = get_pi(name)
+    try:
+        if ipv6:
+            print(pi.ipv6_ssh_command)
+        else:
+            print(pi.ipv4_ssh_command)
+    except HostedPiException as exc:
+        print(f"hostedpi error: {exc}")
+        return 1
+
+
+@app.command("ssh-config")
+def do_ssh_config(name: arguments.server_name, ipv6: options.ipv6 = False):
+    """
+    Get the SSH config to connect to a Raspberry Pi server
+    """
+    pi = get_pi(name)
+    try:
+        if ipv6:
+            print(pi.ipv6_ssh_config)
+        else:
+            print(pi.ipv4_ssh_config)
+    except HostedPiException as exc:
+        print(f"hostedpi error: {exc}")
+        return 1

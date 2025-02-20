@@ -15,3 +15,4 @@ wait_async = Annotated[
     bool, Option(help="Wait and poll for status to be available before returning")
 ]
 ssh_key_path = Annotated[Union[Path, None], Option(help="Path to the SSH key to install on the Pi")]
+ipv6 = Annotated[bool, Option(help="Use the IPv6 connection method")]
