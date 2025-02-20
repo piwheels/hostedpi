@@ -1,34 +1,25 @@
 from importlib.metadata import version
-from functools import cache
 from typing_extensions import Annotated
 
 from typer import Typer, Argument
-from rich import print
+import rich
 from rich.table import Table
 from pydantic import ValidationError
 
-from ..picloud import PiCloud
-from ..pi import Pi
-from .utils import make_table, validate_server_body
+from .utils import get_picloud, get_pi, make_table, validate_server_body
 from .. import utils
 from . import options, arguments, format
 from ..exc import HostedPiException
+from .ssh import ssh_app
+from .keys import keys_app
 
 
 hostedpi_version = version("hostedpi")
 
 
 app = Typer(name="hostedpi", no_args_is_help=True)
-
-
-@cache
-def get_picloud() -> PiCloud:
-    return PiCloud()
-
-
-def get_pi(name: str) -> Pi:
-    cloud = get_picloud()
-    return cloud.servers.get(name)
+app.add_typer(ssh_app, name="ssh", no_args_is_help=True, help="SSH access management commands")
+app.add_typer(keys_app, name="keys", no_args_is_help=True, help="SSH key management commands")
 
 
 @app.command("connect", hidden=True)
@@ -60,7 +51,7 @@ def do_images(
     table = make_table("ID", "Name")
     for id, name in images.items():
         table.add_row(id, name)
-    print(table)
+    rich.print(table)
 
 
 @app.command("ls", hidden=True)
@@ -89,7 +80,7 @@ def do_table():
             format.memory(data.memory),
             format.cpu_speed(data.cpu_speed),
         )
-    print(table)
+    rich.print(table)
 
 
 @app.command("create")
@@ -150,7 +141,7 @@ def do_show_pi(name: arguments.server_name):
     table.add_row("Status", pi.status)
     table.add_row("Initialised keys", format.boolean(pi.disk_size))
     table.add_row("IPv4 SSH port", str(pi.disk_size))
-    print(table)
+    rich.print(table)
 
 
 @app.command("status")
@@ -215,38 +206,6 @@ def do_reboot(name: arguments.server_name):
     pi = get_pi(name)
     try:
         pi.reboot()
-    except HostedPiException as exc:
-        print(f"hostedpi error: {exc}")
-        return 1
-
-
-@app.command("ssh-command")
-def do_ssh_command(name: arguments.server_name, ipv6: options.ipv6 = False):
-    """
-    Get the SSH command to connect to a Raspberry Pi server
-    """
-    pi = get_pi(name)
-    try:
-        if ipv6:
-            print(pi.ipv6_ssh_command)
-        else:
-            print(pi.ipv4_ssh_command)
-    except HostedPiException as exc:
-        print(f"hostedpi error: {exc}")
-        return 1
-
-
-@app.command("ssh-config")
-def do_ssh_config(name: arguments.server_name, ipv6: options.ipv6 = False):
-    """
-    Get the SSH config to connect to a Raspberry Pi server
-    """
-    pi = get_pi(name)
-    try:
-        if ipv6:
-            print(pi.ipv6_ssh_config)
-        else:
-            print(pi.ipv4_ssh_config)
     except HostedPiException as exc:
         print(f"hostedpi error: {exc}")
         return 1

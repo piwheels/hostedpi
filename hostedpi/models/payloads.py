@@ -11,7 +11,7 @@ class SSHKeyBody(BaseModel):
     @classmethod
     def validate_ssh_key(cls, v):
         if v is None or v == "":
-            return None  # Ensure empty strings are converted to None
+            return "\n"
         return v
 
 

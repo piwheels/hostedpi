@@ -40,7 +40,7 @@ class Pi:
         self._model = info.model
         self._memory = info.memory
         self._cpu_speed = info.cpu_speed
-        self._api_url = urllib.parse.urljoin(api_url, "servers")
+        self._api_url = urllib.parse.urljoin(api_url, "servers/")
         self._session = session
         self._cancelled = False
         self._info: Union[PiInfo, None] = None
@@ -277,11 +277,12 @@ class Pi:
     def ssh_keys(self) -> set[str]:
         """
         Retrieve the SSH keys on the Pi, or use assignment to update them. Property value is a set
-        of strings. Assigned value should also be a set of strings.
+        of strings. Assigned value should also be a set of strings, or None to unset.
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifierssh-key
         url = urllib.parse.urljoin(self._api_url, f"{self.name}/ssh-key")
         response = self.session.get(url)
+        log_request(response)
 
         try:
             response.raise_for_status()
@@ -295,13 +296,14 @@ class Pi:
         return data.keys
 
     @ssh_keys.setter
-    def ssh_keys(self, ssh_keys: Union[set[str], list[str]]):
+    def ssh_keys(self, ssh_keys: Union[set[str], list[str], None]):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierssh-key
         url = urllib.parse.urljoin(self._api_url, f"{self.name}/ssh-key")
-        ssh_keys_str = "\n".join(ssh_keys)
+        ssh_keys_str = "\n".join(ssh_keys) if ssh_keys else None
         data = SSHKeyBody(ssh_key=ssh_keys_str)
 
         response = self.session.put(url, json=data.model_dump())
+        log_request(response)
 
         try:
             response.raise_for_status()
@@ -363,7 +365,7 @@ class Pi:
         Cancel the Pi service
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
-        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
+        url = urllib.parse.urljoin(self._api_url, self.name)
         response = self.session.delete(url)
 
         try:
@@ -409,7 +411,7 @@ class Pi:
             if (now - self._last_fetched_info).total_seconds() < 10:
                 return
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifier
-        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
+        url = urllib.parse.urljoin(self._api_url, self.name)
         response = self.session.get(url)
         log_request(response)
 
