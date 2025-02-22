@@ -2,29 +2,26 @@ from typing import Union
 import urllib.parse
 from time import sleep
 
-from requests import Session, HTTPError
+from requests import Session, HTTPError, ConnectionError
 from pydantic import ValidationError
 from structlog import get_logger
 
 from .auth import MythicAuth
 from .pi import Pi
-from .utils import parse_ssh_keys
+from .utils import parse_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import (
     ServersResponse,
-    ErrorResponse,
     PiImagesResponse,
     ProvisioningServer,
     PiInfo,
+    PiInfoBasic,
 )
 from .models.payloads import NewPi3ServerBody, NewPi4ServerBody, NewServer
 from .logger import log_request
 
 
 logger = get_logger()
-
-
-OUT_OF_STOCK = "No servers with the required specification are available"
 
 
 class PiCloud:
@@ -98,7 +95,7 @@ class PiCloud:
         servers = self._get_servers()
         return {
             name: Pi(name, info=info, api_url=self._api_url, session=self.session)
-            for name, info in servers.servers.items()
+            for name, info in sorted(servers.servers.items())
         }
 
     @property
@@ -129,7 +126,7 @@ class PiCloud:
         ssh_import_github: Union[list[str], set[str], None] = None,
         ssh_import_launchpad: Union[list[str], set[str], None] = None,
         wait: bool = False,
-    ) -> Pi | None:
+    ) -> Pi:
         """
         Provision a new cloud Pi with the specified name, model, disk size and SSH keys. Return a
         new :class:`~hostedpi.pi.Pi` instance.
@@ -192,21 +189,15 @@ class PiCloud:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 400:
-                error = ErrorResponse.model_validate(response.json()).error
-                raise HostedPiException(error) from exc
-            if response.status_code == 403:
-                raise HostedPiException("Not authorised to provision server") from exc
-            if response.status_code == 409:
-                raise HostedPiException("Server name already exists") from exc
-            if response.status_code == 503:
-                raise HostedPiException(OUT_OF_STOCK) from exc
-            raise HostedPiException(str(exc)) from exc
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
 
         if wait:
             return self._wait_for_new_pi(response.headers["Location"])
         else:
             logger.info("Server creation request accepted", status_url=response.headers["Location"])
+            info = PiInfoBasic.model_validate(spec)
+            return Pi(name, info=info, api_url=self._api_url, session=self.session)
 
     def get_operating_systems(self, *, model: int) -> dict[str, str]:
         """
@@ -229,10 +220,8 @@ class PiCloud:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 400:
-                error = ErrorResponse.model_validate(response.json()).error
-                raise HostedPiException(error) from exc
-            raise HostedPiException(str(exc)) from exc
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
 
         return PiImagesResponse.model_validate(response.json()).root
 
@@ -249,9 +238,8 @@ class PiCloud:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 403:
-                raise HostedPiException("Not authorised") from exc
-            raise HostedPiException(str(exc)) from exc
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
 
         return ServersResponse.model_validate(response.json())
 
@@ -276,8 +264,16 @@ class PiCloud:
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-queuepitask
         while True:
-            response = self.session.get(url)
+            try:
+                response = self.session.get(url)
+                response.raise_for_status()
+            except (HTTPError, ConnectionError) as exc:
+                logger.warn("Error getting server creation status", exc=str(exc))
+                sleep(5)
+                continue
+
             log_request(response)
+
             status = self._parse_status(response.json())
             if type(status) is PiInfo:
                 server_name = response.request.url.split("/")[-1]
@@ -287,4 +283,4 @@ class PiCloud:
                 )
             if type(status) is ProvisioningServer:
                 logger.info("Server creation in progress", status=status.provision_status)
-            sleep(1)
+            sleep(5)

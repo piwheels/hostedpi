@@ -7,6 +7,7 @@ from structlog import get_logger
 
 from .exc import HostedPiException
 from .logger import log_request
+from .models.responses import ErrorResponse
 
 
 logger = get_logger()
@@ -51,13 +52,6 @@ def fetch_keys(url: str, sep: str) -> set[str]:
     return set(response.text.strip().split(sep))
 
 
-def read_ssh_key(ssh_key_path: Path) -> str:
-    """
-    Read the SSH key from the given path and return the file contents
-    """
-    return ssh_key_path.read_text()
-
-
 def parse_ssh_keys(
     ssh_keys: set[str, None] = None,
     ssh_key_path: Union[Path, None] = None,
@@ -76,7 +70,7 @@ def parse_ssh_keys(
     if ssh_keys:
         ssh_keys_set |= ssh_keys
     if ssh_key_path:
-        ssh_keys_set |= {read_ssh_key(ssh_key_path)}
+        ssh_keys_set |= {ssh_key_path.read_text()}
     if ssh_import_github:
         for username in ssh_import_github:
             ssh_keys_set |= ssh_import_id(github=username)
@@ -84,3 +78,20 @@ def parse_ssh_keys(
         for username in ssh_import_launchpad:
             ssh_keys_set |= ssh_import_id(launchpad=username)
     return ssh_keys_set
+
+
+def get_error_message(exc: HTTPError) -> Union[str, None]:
+    """
+    Try to retrieve an error message from the response
+    """
+    try:
+        data = exc.response.json()
+    except Exception:
+        if exc.response.text:
+            return f"Error {exc.response.status_code}: {exc.response.text}"
+        return f"Error {exc.response}"
+
+    try:
+        return ErrorResponse.model_validate(data).error
+    except Exception:
+        return

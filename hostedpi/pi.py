@@ -7,15 +7,11 @@ from datetime import timezone, datetime
 
 from requests import Session, HTTPError
 
-from .utils import parse_ssh_keys
+from .utils import parse_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse
 from .models.payloads import SSHKeyBody
 from .logger import log_request
-
-
-NOT_AUTHORISED = "Not authorised to access server or server does not exist"
-NOT_PROVISIONED = "Server is not fully provisioned"
 
 
 class Pi:
@@ -59,12 +55,12 @@ class Pi:
 
     def __repr__(self):
         if self._cancelled:
-            return f"<Pi {self.name} cancelled>"
+            return f"""<Pi name="{self.name}" cancelled>"""
         else:
             if self._info is None:
-                return f"<Pi {self.name}>"
+                return f"""<Pi name="{self.name}">"""
             model = self.model_full if self.model_full else self.model
-            return f"<Pi model {model} {self.name}>"
+            return f"""<Pi name="{self.name}" model="{model}">"""
 
     @property
     def session(self) -> Session:
@@ -287,9 +283,8 @@ class Pi:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 403:
-                raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(str(exc)) from exc
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
 
         data = SSHKeysResponse.model_validate(response.json())
 
@@ -308,9 +303,8 @@ class Pi:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 403:
-                raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(str(exc)) from exc
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
 
     def on(self, *, wait: bool = False) -> Union[bool, None]:
         """
@@ -321,7 +315,7 @@ class Pi:
         self._power_on_off(on=True)
         if wait:
             while self._info.is_booting:
-                sleep(2)
+                sleep(5)
             return self.power
 
     def off(self):
@@ -344,20 +338,21 @@ class Pi:
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifierreboot
         url = urllib.parse.urljoin(self._api_url, f"{self.name}/reboot")
         response = self.session.post(url)
+        log_request(response)
 
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 403:
-                raise HostedPiException(NOT_AUTHORISED) from exc
             if response.status_code == 409:
                 # The server is already being rebooted
                 pass
-            raise HostedPiException(str(exc)) from exc
+            else:
+                error = get_error_message(exc)
+                raise HostedPiException(error) from exc
 
         if wait:
             while self._info.is_booting:
-                sleep(2)
+                sleep(5)
             return self.power
 
     def cancel(self):
@@ -367,13 +362,13 @@ class Pi:
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
         url = urllib.parse.urljoin(self._api_url, self.name)
         response = self.session.delete(url)
+        log_request(response)
 
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 403:
-                raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(str(exc)) from exc
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
 
         self._cancelled = True
 
@@ -418,11 +413,8 @@ class Pi:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 403:
-                raise HostedPiException(NOT_AUTHORISED) from exc
-            if response.status_code == 409:
-                raise HostedPiException(NOT_PROVISIONED) from exc
-            raise HostedPiException(str(exc)) from exc
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
 
         self._info = PiInfo.model_validate(response.json())
 
@@ -438,9 +430,5 @@ class Pi:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 400:
-                msg = "The server is already being rebooted"
-                raise HostedPiException(msg) from exc
-            if response.status_code == 403:
-                raise HostedPiException(NOT_AUTHORISED) from exc
-            raise HostedPiException(str(exc)) from exc
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc

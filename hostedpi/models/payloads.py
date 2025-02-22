@@ -21,7 +21,7 @@ class NewServerSpec(SSHKeyBody):
     memory: int
     cpu_speed: int
     os_image: Union[str, None] = None
-    wait_for_dns: bool = False
+    # wait_for_dns: bool = False
 
     @field_validator("disk", mode="after")
     @classmethod
