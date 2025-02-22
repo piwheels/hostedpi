@@ -34,3 +34,8 @@ def get_pi(name: str) -> Pi:
         return cloud.servers[name]
     except KeyError:
         raise HostedPiException(f"Pi not found: {name}")
+
+
+def get_all_pis() -> dict[str, Pi]:
+    cloud = get_picloud()
+    return cloud.servers

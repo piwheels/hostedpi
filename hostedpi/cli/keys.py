@@ -1,11 +1,15 @@
 from typer import Typer
+import rich
+from rich.live import Live
+from rich.console import Console
 
-from .utils import get_pi
+from .utils import get_pi, get_all_pis, make_table
 from ..exc import HostedPiException
 from . import arguments
 
 
 keys_app = Typer()
+console = Console()
 
 
 @keys_app.command("count")
@@ -84,3 +88,18 @@ def do_add(name: arguments.server_name, ssh_key_path: arguments.ssh_key_path):
         print(f"hostedpi error: {exc}")
         return 1
     print(f"Added key {ssh_key_path} to {name}")
+
+
+@keys_app.command("table")
+def do_table(names: arguments.server_names_optional = None):
+    """
+    Display the number of SSH keys on a Raspberry Pi server as a table
+    """
+    table = make_table("Name", "Keys")
+    with Live(table, console=console, refresh_per_second=4):
+        if names is None:
+            names = get_all_pis()
+        for name in sorted(names):
+            pi = get_pi(name)
+            table.add_row(name, str(len(pi.ssh_keys)))
+        rich.print(table)

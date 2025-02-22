@@ -1,5 +1,4 @@
-from typing import Union
-from typing_extensions import Annotated
+from typing import Union, Annotated
 from pathlib import Path
 
 from typer import Option

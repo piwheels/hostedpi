@@ -1,12 +1,12 @@
 from importlib.metadata import version
-from typing_extensions import Annotated
+from typing import Annotated
 
 from typer import Typer, Argument
 import rich
 from rich.table import Table
 from pydantic import ValidationError
 
-from .utils import get_picloud, get_pi, make_table, validate_server_body
+from .utils import get_picloud, get_pi, get_all_pis, make_table, validate_server_body
 from .. import utils
 from . import options, arguments, format
 from ..exc import HostedPiException
@@ -159,17 +159,24 @@ def do_status(name: arguments.server_name):
 
 @app.command("rm", hidden=True)
 @app.command("cancel")
-def do_cancel(name: arguments.server_name):
+def do_cancel(names: arguments.server_names):
     """
-    Unprovision a Raspberry Pi server
+    Unprovision one or more Raspberry Pi servers
     """
-    pi = get_pi(name)
-    try:
-        pi.cancel()
-    except HostedPiException as exc:
-        print(f"hostedpi error: {exc}")
+    all_pis = get_all_pis()
+    pis = {name for name in all_pis if name in names}
+    pis_str = ", ".join(pis)
+    yn = input(f"Are you sure you want to cancel {pis_str}? [y/N] ")
+    if yn.lower() != "y":
         return 1
-    print(f"Cancelled {name}")
+    for name in pis:
+        pi = get_pi(name)
+        try:
+            pi.cancel()
+        except HostedPiException as exc:
+            print(f"hostedpi error: {exc}")
+            return 1
+        print(f"Cancelled {name}")
 
 
 @app.command("on")
