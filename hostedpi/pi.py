@@ -59,12 +59,12 @@ class Pi:
 
     def __repr__(self):
         if self._cancelled:
-            return f"""<Pi name="{self.name}" cancelled>"""
+            return f"<Pi name={self.name} cancelled>"
         else:
             if self._info is None:
-                return f"""<Pi name="{self.name}">"""
+                return f"<Pi name={self.name}>"
             model = self.model_full if self.model_full else self.model
-            return f"""<Pi name="{self.name}" model="{model}">"""
+            return f"<Pi name={self.name} model={model}>"
 
     @property
     def session(self) -> Session:
