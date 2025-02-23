@@ -164,6 +164,7 @@ def do_status(names: arguments.server_names = None, filter: options.filter_patte
                 table.add_row(pi.name, pi.status)
             except HostedPiException as exc:
                 utils.print_exc(exc)
+                table.add_row(pi.name, "Error")
                 continue
 
 
@@ -180,6 +181,7 @@ def do_on(names: arguments.server_names = None, filter: options.filter_pattern =
                 pi.on()
             except HostedPiException as exc:
                 utils.print_exc(exc)
+                table.add_row(pi.name, "Error")
                 continue
             table.add_row(pi.name, "Powering on")
 
@@ -197,6 +199,7 @@ def do_off(names: arguments.server_names = None, filter: options.filter_pattern 
                 pi.off()
             except HostedPiException as exc:
                 utils.print_exc(exc)
+                table.add_row(pi.name, "Error")
                 continue
             table.add_row(pi.name, "Powering off")
 
