@@ -13,11 +13,11 @@ console = Console()
 
 
 @keys_app.command("count")
-def do_count(names: arguments.server_names = None):
+def do_count(names: arguments.server_names = None, filter: options.filter_pattern = None):
     """
     Count the number of SSH keys on one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
     table = utils.make_table("Name", "Keys")
     with Live(table, console=console, refresh_per_second=4):
         for pi in pis:
@@ -45,11 +45,15 @@ def do_show(name: arguments.server_name):
 
 
 @keys_app.command("add")
-def do_add(names: arguments.server_names, ssh_key_path: arguments.ssh_key_path):
+def do_add(
+    ssh_key_path: arguments.ssh_key_path,
+    names: arguments.server_names = None,
+    filter: options.filter_pattern = None,
+):
     """
-    Add an SSH key to a Raspberry Pi server
+    Add an SSH key to one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
     for pi in pis:
         try:
             pi.ssh_keys = {ssh_key_path.read_text()}
@@ -85,11 +89,11 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
 
 @keys_app.command("rm", hidden=True)
 @keys_app.command("remove")
-def do_remove(names: arguments.server_names):
+def do_remove(names: arguments.server_names = None, filter: options.filter_pattern = None):
     """
     Remove the SSH keys from one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
     for pi in pis:
         try:
             pi.ssh_keys = None
@@ -101,14 +105,18 @@ def do_remove(names: arguments.server_names):
 
 @keys_app.command("import")
 def do_import(
-    names: arguments.server_names,
+    names: arguments.server_names = None,
+    filter: options.filter_pattern = None,
     github: options.ssh_import_github = None,
     launchpad: options.ssh_import_launchpad = None,
 ):
     """
     Import SSH keys from one or more files to one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    if not github and not launchpad:
+        utils.print_error("You must specify at least one source to import from")
+        return 1
+    pis = utils.get_pis(names, filter)
     ssh_keys = parse_ssh_keys(
         ssh_import_github=github,
         ssh_import_launchpad=launchpad,

@@ -22,6 +22,6 @@ ssh_import_launchpad = Annotated[
 ]
 ipv6 = Annotated[bool, Option(help="Use the IPv6 connection method")]
 yes = Annotated[bool, Option("--yes", "-y", help="Proceed without confirmation")]
-number = Annotated[Union[int, None], Option(help="Number of Raspbery Pi servers to create", min=1)]
+number = Annotated[Union[int, None], Option(help="Number of Raspberry Pi servers to create", min=1)]
 full_table = Annotated[bool, Option(help="Show full table of Raspberry Pi server info")]
 filter_pattern = Annotated[Union[str, None], Option(help="Search pattern for filtering results")]

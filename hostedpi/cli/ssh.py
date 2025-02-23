@@ -27,11 +27,15 @@ def do_command(name: arguments.server_name, ipv6: options.ipv6 = False):
 
 
 @ssh_app.command("config")
-def do_config(names: arguments.server_names = None, ipv6: options.ipv6 = False):
+def do_config(
+    names: arguments.server_names = None,
+    filter: options.filter_pattern = None,
+    ipv6: options.ipv6 = False,
+):
     """
     Get the SSH config to connect to one or more Raspberry Pi servers
     """
-    pis = get_pis(names)
+    pis = get_pis(names, filter)
     for pi in pis:
         try:
             if ipv6:
