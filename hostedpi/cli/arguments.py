@@ -9,3 +9,6 @@ server_names = Annotated[Union[list[str], None], Argument(help="Names of the Ras
 ssh_key_path = Annotated[
     Path, Argument(help="Path to the SSH key to install on the Raspberry Pi server")
 ]
+images_model = Annotated[
+    int, Argument(help="Model of Raspberry Pi server to list images for", min=3, max=4)
+]

@@ -21,9 +21,6 @@ def ssh_import_id(
     """
     Returns a set of SSH keys imported from GitHub or Launchpad
     """
-    if github is None and launchpad is None:
-        raise HostedPiException("GitHub or Launchpad username must be provided")
-
     keys = set()
     if github is not None:
         url = f"https://github.com/{github}.keys"
@@ -53,19 +50,15 @@ def fetch_keys(url: str, sep: str) -> set[str]:
 
 
 def parse_ssh_keys(
-    ssh_keys: set[str, None] = None,
+    *,
+    ssh_keys: Union[set[str], None] = None,
     ssh_key_path: Union[Path, None] = None,
-    ssh_import_github: Union[set[str], str, None] = None,
-    ssh_import_launchpad: Union[set[str], str, None] = None,
+    ssh_import_github: Union[set[str], None] = None,
+    ssh_import_launchpad: Union[set[str], None] = None,
 ) -> set[str]:
     """
     Parse SSH keys from any of various sources
     """
-    if type(ssh_import_github) is str:
-        ssh_import_github = {ssh_import_github}
-    if type(ssh_import_launchpad) is str:
-        ssh_import_launchpad = {ssh_import_launchpad}
-
     ssh_keys_set = set()
     if ssh_keys:
         ssh_keys_set |= ssh_keys
@@ -78,6 +71,25 @@ def parse_ssh_keys(
         for username in ssh_import_launchpad:
             ssh_keys_set |= ssh_import_id(launchpad=username)
     return ssh_keys_set
+
+
+def parse_ssh_keys_to_str(
+    *,
+    ssh_keys: Union[set[str], None] = None,
+    ssh_key_path: Union[Path, None] = None,
+    ssh_import_github: Union[set[str], None] = None,
+    ssh_import_launchpad: Union[set[str], None] = None,
+) -> str:
+    """
+    Parse SSH keys from any of various sources and return a string
+    """
+    ssh_keys_set = parse_ssh_keys(
+        ssh_keys=ssh_keys,
+        ssh_key_path=ssh_key_path,
+        ssh_import_github=ssh_import_github,
+        ssh_import_launchpad=ssh_import_launchpad,
+    )
+    return "\r\n".join(ssh_keys_set) if ssh_keys_set else None
 
 
 def get_error_message(exc: HTTPError) -> Union[str, None]:

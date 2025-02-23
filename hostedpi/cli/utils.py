@@ -14,6 +14,7 @@ from ..picloud import PiCloud
 from ..pi import Pi
 from ..exc import HostedPiException
 from . import format
+from ..utils import parse_ssh_keys_to_str
 
 
 logger = get_logger()
@@ -107,6 +108,7 @@ def full_table(names: Union[list[str], None]):
 
 
 def create_pi(
+    *,
     model: int,
     disk: int,
     memory: int,
@@ -114,15 +116,20 @@ def create_pi(
     os_image: str,
     wait: bool,
     ssh_key_path: Union[Path, None],
+    ssh_import_github: Union[set[str], None],
+    ssh_import_launchpad: Union[set[str], None],
     full: bool,
-    *,
     name: str | None = None,
 ):
-    cloud = get_picloud()
+    ssh_keys = parse_ssh_keys_to_str(
+        ssh_key_path=ssh_key_path,
+        ssh_import_github=ssh_import_github,
+        ssh_import_launchpad=ssh_import_launchpad,
+    )
 
     data = {
         "disk": disk,
-        "ssh_key": ssh_key_path.read_text() if ssh_key_path else None,
+        "ssh_key": ssh_keys,
         "model": model,
         "memory": memory,
         "cpu_speed": cpu_speed,
@@ -135,7 +142,15 @@ def create_pi(
     except ValidationError as exc:
         raise HostedPiException(f"Invalid server spec: {exc}") from exc
 
-    pi = cloud.create_pi(name=name, spec=spec, wait=wait)
+    cloud = get_picloud()
+    pi = cloud.create_pi(
+        name=name,
+        spec=spec,
+        wait=wait,
+        ssh_key_path=ssh_key_path,
+        ssh_import_github=ssh_import_github,
+        ssh_import_launchpad=ssh_import_launchpad,
+    )
 
     if full:
         full_table(names=[pi.name])

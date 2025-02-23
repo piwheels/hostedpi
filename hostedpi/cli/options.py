@@ -14,6 +14,12 @@ wait = Annotated[bool, Option(help="Wait and poll for status to be available bef
 ssh_key_path = Annotated[
     Union[Path, None], Option(help="Path to the SSH key to install on the Raspberry Pi server")
 ]
+ssh_import_github = Annotated[
+    Union[list[str], None], Option(help="Usernames to import SSH keys from GitHub")
+]
+ssh_import_launchpad = Annotated[
+    Union[list[str], None], Option(help="Usernames to import SSH keys from Launchpad")
+]
 ipv6 = Annotated[bool, Option(help="Use the IPv6 connection method")]
 yes = Annotated[bool, Option("--yes", "-y", help="Proceed without confirmation")]
 number = Annotated[Union[int, None], Option(help="Number of Raspbery Pi servers to create", min=1)]

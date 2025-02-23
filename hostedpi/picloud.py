@@ -1,6 +1,7 @@
 from typing import Union
 import urllib.parse
 from time import sleep
+from pathlib import Path
 
 from requests import Session, HTTPError, ConnectionError
 from pydantic import ValidationError
@@ -8,7 +9,7 @@ from structlog import get_logger
 
 from .auth import MythicAuth
 from .pi import Pi
-from .utils import parse_ssh_keys, get_error_message
+from .utils import parse_ssh_keys_to_str, get_error_message
 from .exc import HostedPiException
 from .models.responses import (
     ServersResponse,
@@ -28,19 +29,7 @@ class PiCloud:
     """
     A connection to the Mythic Beasts Pi Cloud API for creating and managing cloud Pi services.
 
-    Set up API keys at https://www.mythic-beasts.com/customer/api-users
-
-    :type api_id: str or None
-    :param api_id:
-        Your Mythic Beasts API ID (alternatively, the environment variable ``HOSTEDPI_ID`` can be
-        used)
-
-    :type api_secret: str or None
-    :param api_secret:
-        Your Mythic Beasts API secret (alternatively, the environment variable ``HOSTEDPI_SECRET``
-        can be used)
-
-    :type ssh_keys: list or set or None
+    :type ssh_keys: set[str] or None
     :param ssh_keys:
         A list/set of SSH key strings (keyword-only argument)
 
@@ -48,11 +37,11 @@ class PiCloud:
     :param ssh_key_path:
         The path to your SSH public key (keyword-only argument)
 
-    :type ssh_import_github: list or set or None
+    :type ssh_import_github: set[str] or None
     :param ssh_import_github:
         A list/set of GitHub usernames to import SSH keys from (keyword-only argument)
 
-    :type ssh_import_launchpad: list or set or None
+    :type ssh_import_launchpad: set[str] or None
     :param ssh_import_launchpad:
         A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
 
@@ -66,15 +55,18 @@ class PiCloud:
     def __init__(
         self,
         *,
-        ssh_keys: Union[list[str], set[str], None] = None,
-        ssh_key_path: Union[str, None] = None,
-        ssh_import_github: Union[list[str], set[str], None] = None,
-        ssh_import_launchpad: Union[list[str], set[str], None] = None,
+        ssh_keys: Union[set[str], None] = None,
+        ssh_key_path: Union[Path, None] = None,
+        ssh_import_github: Union[set[str], None] = None,
+        ssh_import_launchpad: Union[set[str], None] = None,
     ):
         self._api_url = "https://api.mythic-beasts.com/beta/pi/"
 
-        self.ssh_keys = parse_ssh_keys(
-            ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad
+        self.ssh_keys = parse_ssh_keys_to_str(
+            ssh_keys=ssh_keys,
+            ssh_key_path=ssh_key_path,
+            ssh_import_github=ssh_import_github,
+            ssh_import_launchpad=ssh_import_launchpad,
         )
 
         self._auth = MythicAuth()
@@ -121,10 +113,10 @@ class PiCloud:
         *,
         name: Union[str, None] = None,
         spec: Union[NewPi3ServerBody, NewPi4ServerBody],
-        ssh_keys: Union[list[str], set[str], None] = None,
-        ssh_key_path: Union[str, None] = None,
-        ssh_import_github: Union[list[str], set[str], None] = None,
-        ssh_import_launchpad: Union[list[str], set[str], None] = None,
+        ssh_keys: Union[set[str], None] = None,
+        ssh_key_path: Union[Path, None] = None,
+        ssh_import_github: Union[set[str], None] = None,
+        ssh_import_launchpad: Union[set[str], None] = None,
         wait: bool = False,
     ) -> Pi:
         """
@@ -141,7 +133,7 @@ class PiCloud:
         :param spec:
             The spec of the Raspberry Pi to provision
 
-        :type ssh_keys: list or set or None
+        :type ssh_keys: set[str] or None
         :param ssh_keys:
             A list/set of SSH key strings (keyword-only argument)
 
@@ -149,11 +141,11 @@ class PiCloud:
         :param ssh_key_path:
             The path to your SSH public key (keyword-only argument)
 
-        :type ssh_import_github: list or set or None
+        :type ssh_import_github: set[str] or None
         :param ssh_import_github:
             A list/set of GitHub usernames to import SSH keys from (keyword-only argument)
 
-        :type ssh_import_launchpad: list or set or None
+        :type ssh_import_launchpad: set[str] or None
         :param ssh_import_launchpad:
             A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
 
@@ -166,10 +158,16 @@ class PiCloud:
             request a particular model beyond 3 or 4.
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
-        ssh_keys_set = parse_ssh_keys(
-            ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad
-        )
-        spec.ssh_key = "\r\n".join(ssh_keys_set) if ssh_keys_set else None
+        keys = [ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad]
+        if any(key is not None for key in keys):
+            spec.ssh_key = parse_ssh_keys_to_str(
+                ssh_keys=ssh_keys,
+                ssh_key_path=ssh_key_path,
+                ssh_import_github=ssh_import_github,
+                ssh_import_launchpad=ssh_import_launchpad,
+            )
+        elif self.ssh_keys:
+            spec.ssh_key = self.ssh_keys
 
         if name is None:
             url = urllib.parse.urljoin(self._api_url, "servers")

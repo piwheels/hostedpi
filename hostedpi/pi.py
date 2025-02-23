@@ -291,7 +291,7 @@ class Pi:
         return data.keys
 
     @ssh_keys.setter
-    def ssh_keys(self, ssh_keys: Union[set[str], list[str], None]):
+    def ssh_keys(self, ssh_keys: Union[set[str], None]):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierssh-key
         url = urllib.parse.urljoin(self._api_url, f"{self.name}/ssh-key")
         ssh_keys_str = "\n".join(ssh_keys) if ssh_keys else None
@@ -375,18 +375,18 @@ class Pi:
     def ssh_import_id(
         self,
         *,
-        github: Union[set[str], list[str], None] = None,
-        launchpad: Union[set[str], list[str], None] = None,
+        github: Union[set[str], None] = None,
+        launchpad: Union[set[str], None] = None,
     ) -> set[str]:
         """
         Import SSH keys from GitHub or Launchpad, and add them to the Pi. Return the set of keys
         added.
 
-        :type ssh_import_github: list or set or None
+        :type ssh_import_github: set[str] or None
         :param ssh_import_github:
             A list/set of GitHub usernames to import SSH keys from (keyword-only argument)
 
-        :type ssh_import_launchpad: list or set or None
+        :type ssh_import_launchpad: set[str] or None
         :param ssh_import_launchpad:
             A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
         """
