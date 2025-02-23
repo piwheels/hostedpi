@@ -57,7 +57,8 @@ def get_pis(names: Union[list[str], None], filter: Union[str, None] = None) -> l
     all_pis = get_all_pis()
     if not names:
         return filter_pis(all_pis, filter)
-    pis_not_found = [name for name in names if name not in all_pis]
+    all_pi_names = {pi.name for pi in all_pis}
+    pis_not_found = [name for name in names if name not in all_pi_names]
     for pi in pis_not_found:
         logger.warn("Pi server not found", name=pi)
     pis_found = [pi for pi in all_pis if pi.name in names]

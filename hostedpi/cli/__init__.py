@@ -1,5 +1,7 @@
 from typer import Typer
 import rich
+from rich.live import Live
+from rich.console import Console
 
 from . import options, arguments, utils
 from .ssh import ssh_app
@@ -8,6 +10,7 @@ from ..exc import HostedPiException
 
 app = Typer(name="hostedpi", no_args_is_help=True)
 app.add_typer(ssh_app, name="ssh", no_args_is_help=True, help="SSH access management commands")
+console = Console()
 
 
 @app.command("connect", hidden=True)
@@ -154,12 +157,14 @@ def do_status(names: arguments.server_names = None, filter: options.filter_patte
     Get the current status of one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    for pi in pis:
-        try:
-            print(f"{pi.name}: {pi.status}")
-        except HostedPiException as exc:
-            utils.print_exc(exc)
-            continue
+    table = utils.make_table("Name", "Status")
+    with Live(table, console=console, refresh_per_second=4):
+        for pi in pis:
+            try:
+                table.add_row(pi.name, pi.status)
+            except HostedPiException as exc:
+                utils.print_exc(exc)
+                continue
 
 
 @app.command("on")
@@ -168,13 +173,15 @@ def do_on(names: arguments.server_names = None, filter: options.filter_pattern =
     Power on one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    for pi in pis:
-        try:
-            pi.on()
-        except HostedPiException as exc:
-            utils.print_exc(exc)
-            continue
-        utils.print_success(f"Powered on {pi.name}")
+    table = utils.make_table("Name", "Status")
+    with Live(table, console=console, refresh_per_second=4):
+        for pi in pis:
+            try:
+                pi.on()
+            except HostedPiException as exc:
+                utils.print_exc(exc)
+                continue
+            table.add_row(pi.name, "Powering on")
 
 
 @app.command("off")
@@ -183,13 +190,15 @@ def do_off(names: arguments.server_names = None, filter: options.filter_pattern 
     Power off one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    for pi in pis:
-        try:
-            pi.off()
-        except HostedPiException as exc:
-            utils.print_exc(exc)
-            continue
-        utils.print_success(f"Powered off {pi.name}")
+    table = utils.make_table("Name", "Status")
+    with Live(table, console=console, refresh_per_second=4):
+        for pi in pis:
+            try:
+                pi.off()
+            except HostedPiException as exc:
+                utils.print_exc(exc)
+                continue
+            table.add_row(pi.name, "Powering off")
 
 
 @app.command("reboot")
@@ -198,13 +207,15 @@ def do_reboot(names: arguments.server_names = None, filter: options.filter_patte
     Reboot one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    for pi in pis:
-        try:
-            pi.reboot()
-        except HostedPiException as exc:
-            utils.print_exc(exc)
-            continue
-        utils.print_success(f"Rebooted {pi.name}")
+    table = utils.make_table("Name", "Status")
+    with Live(table, console=console, refresh_per_second=4):
+        for pi in pis:
+            try:
+                pi.reboot()
+            except HostedPiException as exc:
+                utils.print_exc(exc)
+                continue
+            table.add_row(pi.name, "Rebooting")
 
 
 @app.command("rm", hidden=True)
@@ -218,6 +229,7 @@ def do_cancel(
     Unprovision one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
+    table = utils.make_table("Name", "Status")
     pis_str = ", ".join(pis)
     if len(pis) == 0:
         utils.print_error("No servers to cancel")
@@ -226,10 +238,11 @@ def do_cancel(
         yn = input(f"Are you sure you want to cancel {pis_str}? [y/N] ")
         if yn.lower() != "y":
             return 1
-    for pi in pis:
-        try:
-            pi.cancel()
-        except HostedPiException as exc:
-            utils.print_exc(exc)
-            continue
-        utils.print_success(f"Cancelled {pi.name}")
+    with Live(table, console=console, refresh_per_second=4):
+        for pi in pis:
+            try:
+                pi.cancel()
+            except HostedPiException as exc:
+                utils.print_exc(exc)
+                continue
+            table.add_row(pi.name, "Cancelled")
