@@ -21,7 +21,7 @@ def do_test():
         cloud._auth.token
         utils.print_success("Connected to the Mythic Beasts API")
     except Exception:
-        utils.print_exc("Failed to authenticate")
+        utils.print_error("Failed to authenticate")
         return 2
 
 
