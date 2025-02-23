@@ -20,13 +20,13 @@ def do_count(names: arguments.server_names = None):
     pis = utils.get_pis(names)
     table = utils.make_table("Name", "Keys")
     with Live(table, console=console, refresh_per_second=4):
-        for name, pi in pis.items():
+        for pi in pis:
             try:
                 n = len(pi.ssh_keys)
             except HostedPiException as exc:
                 utils.print_exc(f"hostedpi error: {exc}")
                 continue
-            table.add_row(name, str(n))
+            table.add_row(pi.name, str(n))
 
 
 @keys_app.command("cat", hidden=True)
@@ -50,13 +50,13 @@ def do_add(names: arguments.server_names, ssh_key_path: arguments.ssh_key_path):
     Add an SSH key to a Raspberry Pi server
     """
     pis = utils.get_pis(names)
-    for name, pi in pis.items():
+    for pi in pis:
         try:
             pi.ssh_keys = {ssh_key_path.read_text()}
         except HostedPiException as exc:
             utils.print_exc(f"hostedpi error: {exc}")
             continue
-        utils.print_success(f"Added key {ssh_key_path} to {name}")
+        utils.print_success(f"Added key {ssh_key_path} to {pi.name}")
 
 
 @keys_app.command("cp", hidden=True)
@@ -69,7 +69,7 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
     dest_pis = utils.get_pis(dests)
     ssh_keys = src_pi.ssh_keys
 
-    for dest, dest_pi in dest_pis.items():
+    for dest_pi in dest_pis:
         num_keys_before = len(dest_pi.ssh_keys)
 
         try:
@@ -80,7 +80,7 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
 
         num_keys_after = len(dest_pi.ssh_keys)
         num_keys_copied = num_keys_after - num_keys_before
-        utils.print_success(f"Copied {num_keys_copied} keys from {src} to {dest}")
+        utils.print_success(f"Copied {num_keys_copied} keys from {src_pi.name} to {dest_pi.name}")
 
 
 @keys_app.command("rm", hidden=True)
@@ -90,13 +90,13 @@ def do_remove(names: arguments.server_names):
     Remove the SSH keys from one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names)
-    for name, pi in pis.items():
+    for pi in pis:
         try:
             pi.ssh_keys = None
         except HostedPiException as exc:
             utils.print_exc(f"hostedpi error: {exc}")
             continue
-        utils.print_success(f"Removed keys from {name}")
+        utils.print_success(f"Removed keys from {pi.name}")
 
 
 @keys_app.command("import")
@@ -113,10 +113,10 @@ def do_import(
         ssh_import_github=github,
         ssh_import_launchpad=launchpad,
     )
-    for name, pi in pis.items():
+    for pi in pis:
         try:
             pi.ssh_keys = ssh_keys
         except HostedPiException as exc:
             utils.print_exc(f"hostedpi error: {exc}")
             continue
-        utils.print_success(f"Imported {len(ssh_keys)} keys to {name}")
+        utils.print_success(f"Imported {len(ssh_keys)} keys to {pi.name}")

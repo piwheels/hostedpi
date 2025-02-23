@@ -51,8 +51,8 @@ def do_list(
     """
     pis = utils.get_pis(names, filter)
 
-    for name in pis:
-        print(name)
+    for pi in pis:
+        print(pi.name)
 
 
 @app.command("tab", hidden=True)
@@ -68,9 +68,9 @@ def do_table(
     pis = utils.get_pis(names, filter)
 
     if full:
-        utils.full_table(pis.keys())
+        utils.full_table(pis)
     else:
-        utils.short_table(pis.keys())
+        utils.short_table(pis)
 
 
 @app.command(
@@ -154,9 +154,9 @@ def do_status(names: arguments.server_names = None, filter: options.filter_patte
     Get the current status of one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    for name, pi in pis.items():
+    for pi in pis:
         try:
-            print(f"{name}: {pi.status}")
+            print(f"{pi.name}: {pi.status}")
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
@@ -168,13 +168,13 @@ def do_on(names: arguments.server_names = None, filter: options.filter_pattern =
     Power on one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    for name, pi in pis.items():
+    for pi in pis:
         try:
             pi.on()
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
-        utils.print_success(f"Powered on {name}")
+        utils.print_success(f"Powered on {pi.name}")
 
 
 @app.command("off")
@@ -183,13 +183,13 @@ def do_off(names: arguments.server_names = None, filter: options.filter_pattern 
     Power off one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    for name, pi in pis.items():
+    for pi in pis:
         try:
             pi.off()
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
-        utils.print_success(f"Powered off {name}")
+        utils.print_success(f"Powered off {pi.name}")
 
 
 @app.command("reboot")
@@ -198,13 +198,13 @@ def do_reboot(names: arguments.server_names = None, filter: options.filter_patte
     Reboot one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    for name, pi in pis.items():
+    for pi in pis:
         try:
             pi.reboot()
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
-        utils.print_success(f"Rebooted {name}")
+        utils.print_success(f"Rebooted {pi.name}")
 
 
 @app.command("rm", hidden=True)
@@ -226,11 +226,10 @@ def do_cancel(
         yn = input(f"Are you sure you want to cancel {pis_str}? [y/N] ")
         if yn.lower() != "y":
             return 1
-    for name in pis:
-        pi = utils.get_pi(name)
+    for pi in pis:
         try:
             pi.cancel()
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
-        utils.print_success(f"Cancelled {name}")
+        utils.print_success(f"Cancelled {pi.name}")

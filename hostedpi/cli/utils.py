@@ -43,39 +43,37 @@ def get_picloud() -> PiCloud:
 def get_pi(name: str) -> Pi:
     cloud = get_picloud()
     try:
-        return cloud.pis[name]
+        return {name: pi for pi in cloud.pis}[name]
     except KeyError:
         raise HostedPiException(f"Pi not found: {name}")
 
 
-def get_all_pis() -> dict[str, Pi]:
+def get_all_pis() -> list[Pi]:
     cloud = get_picloud()
     return cloud.pis
 
 
-def get_pis(names: Union[list[str], None], filter: Union[str, None] = None) -> dict[str, Pi]:
+def get_pis(names: Union[list[str], None], filter: Union[str, None] = None) -> list[Pi]:
     all_pis = get_all_pis()
     if not names:
         return filter_pis(all_pis, filter)
-    pis_not_found = sorted(set(names) - set(all_pis))
+    pis_not_found = [name for name in names if name not in all_pis]
     for pi in pis_not_found:
         logger.warn("Pi server not found", name=pi)
-    return filter_pis({name: pi for name, pi in all_pis.items() if name in names}, filter)
+    pis_found = [pi for pi in all_pis if pi.name in names]
+    return filter_pis(pis_found, filter)
 
 
-def filter_pis(pis: dict[str, Pi], filter: Union[str, None]) -> dict[str, Pi]:
-    return {
-        name: pi for name, pi in pis.items() if filter is None or filter.lower() in name.lower()
-    }
+def filter_pis(pis: list[Pi], filter: Union[str, None]) -> list[Pi]:
+    return [pi for pi in pis if filter is None or filter.lower() in pi.name.lower()]
 
 
-def short_table(names: Union[list[str], None]):
-    pis = get_pis(names)
+def short_table(pis: list[Pi]):
     table = make_table("Name", "Model", "Memory", "CPU Speed")
 
-    for name, pi in sorted(pis.items()):
+    for pi in pis:
         table.add_row(
-            name,
+            pi.name,
             str(pi.model),
             format.memory(pi.memory),
             format.cpu_speed(pi.cpu_speed),
@@ -83,8 +81,7 @@ def short_table(names: Union[list[str], None]):
     rich.print(table)
 
 
-def full_table(names: Union[list[str], None]):
-    pis = get_pis(names)
+def full_table(pis: list[Pi]):
     headers = [
         "Name",
         "Model",
@@ -99,9 +96,9 @@ def full_table(names: Union[list[str], None]):
     table = Table(*headers)
 
     with Live(table, console=console, refresh_per_second=4):
-        for name, pi in pis.items():
+        for pi in pis:
             table.add_row(
-                name,
+                pi.name,
                 pi.model_full,
                 format.memory(pi.memory),
                 format.cpu_speed(pi.cpu_speed),
@@ -159,9 +156,9 @@ def create_pi(
     )
 
     if full:
-        full_table(names=[pi.name])
+        full_table([pi])
     elif wait:
-        short_table(names=[pi.name])
+        short_table([pi])
     else:
         print_success("Server creation request accepted")
 

@@ -79,16 +79,17 @@ class PiCloud:
         return self._auth.session
 
     @property
-    def pis(self) -> dict[str, Pi]:
+    def pis(self) -> list[Pi]:
         """
-        A dictionary of all Pis associated with the account, with the server name as the key and
-        the :class:`~hostedpi.pi.Pi` instance as the value.
+        A list of all Raspberry Pi servers associated with the account, as :class:`~hostedpi.pi.Pi`
+        instances
         """
         servers = self._get_servers()
-        return {
-            name: Pi(name, info=info, api_url=self._api_url, session=self.session)
-            for name, info in sorted(servers.servers.items())
-        }
+        pis = [
+            Pi(name, info=info, api_url=self._api_url, session=self.session)
+            for name, info in servers.servers.items()
+        ]
+        return sorted(pis, key=lambda pi: pi.name)
 
     @property
     def ipv4_ssh_config(self) -> str:
@@ -97,7 +98,7 @@ class PiCloud:
         The contents could be added to an SSH config file for easy access to the
         Pis in the account.
         """
-        return "\n".join(pi.info.ipv4_ssh_config for pi in self.pis.values())
+        return "\n".join(pi.info.ipv4_ssh_config for pi in self.pis)
 
     @property
     def ipv6_ssh_config(self) -> str:
@@ -106,7 +107,7 @@ class PiCloud:
         The contents could be added to an SSH config file for easy access to the
         Pis in the account.
         """
-        return "\n".join(pi.ipv6_ssh_config for pi in self.pis.values())
+        return "\n".join(pi.ipv6_ssh_config for pi in self.pis)
 
     def create_pi(
         self,
