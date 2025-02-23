@@ -4,7 +4,8 @@ from rich.console import Console
 
 from . import utils
 from ..exc import HostedPiException
-from . import arguments
+from . import arguments, options
+from ..utils import parse_ssh_keys
 
 
 keys_app = Typer()
@@ -17,6 +18,7 @@ def do_count(names: arguments.server_names = None):
     Count the number of SSH keys on one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names)
+    print(len(pis))
     table = utils.make_table("Name", "Keys")
     with Live(table, console=console, refresh_per_second=4):
         for name, pi in pis.items():
@@ -96,3 +98,26 @@ def do_remove(names: arguments.server_names):
             utils.print_exc(f"hostedpi error: {exc}")
             return 1
         utils.print_success(f"Removed keys from {name}")
+
+
+@keys_app.command("import")
+def do_import(
+    names: arguments.server_names,
+    github: options.ssh_import_github = None,
+    launchpad: options.ssh_import_launchpad = None,
+):
+    """
+    Import SSH keys from one or more files to one or more Raspberry Pi servers
+    """
+    pis = utils.get_pis(names)
+    ssh_keys = parse_ssh_keys(
+        ssh_import_github=github,
+        ssh_import_launchpad=launchpad,
+    )
+    for name, pi in pis.items():
+        try:
+            pi.ssh_keys = ssh_keys
+        except HostedPiException as exc:
+            utils.print_exc(f"hostedpi error: {exc}")
+            return 1
+        utils.print_success(f"Imported {len(ssh_keys)} keys to {name}")
