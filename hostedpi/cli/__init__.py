@@ -76,11 +76,7 @@ def do_table(
         utils.short_table(pis)
 
 
-@app.command(
-    "create",
-    short_help="Provision a new Raspberry Pi server",
-    help="Provision a new Raspberry Pi server...",
-)
+@app.command("create")
 def do_create(
     model: options.model,
     names: arguments.server_names = None,
@@ -95,6 +91,9 @@ def do_create(
     ssh_import_launchpad: options.ssh_import_launchpad = None,
     full: options.full_table = False,
 ):
+    """
+    Provision one or more new Raspberry Pi servers
+    """
     if names and number:
         utils.print_error("You can't specify both names and a number")
         return 1
