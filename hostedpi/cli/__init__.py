@@ -42,11 +42,14 @@ def do_images(
 
 @app.command("ls", hidden=True)
 @app.command("list")
-def do_list(names: arguments.server_names = None):
+def do_list(
+    names: arguments.server_names = None,
+    filter: options.filter_pattern = None,
+):
     """
     List Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
 
     for name in pis:
         print(name)
@@ -54,11 +57,15 @@ def do_list(names: arguments.server_names = None):
 
 @app.command("tab", hidden=True)
 @app.command("table")
-def do_table(names: arguments.server_names = None, full: options.full_table = False):
+def do_table(
+    names: arguments.server_names = None,
+    filter: options.filter_pattern = None,
+    full: options.full_table = False,
+):
     """
     List Raspberry Pi server information in a table
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
 
     if full:
         utils.full_table(pis.keys())
@@ -119,7 +126,7 @@ def do_create(
                 )
             except HostedPiException as exc:
                 utils.print_exc(exc)
-                return 1
+                continue
 
     if number:
         for n in range(number):
@@ -138,75 +145,79 @@ def do_create(
                 )
             except HostedPiException as exc:
                 utils.print_exc(exc)
-                return 1
+                continue
 
 
 @app.command("status")
-def do_status(names: arguments.server_names = None):
+def do_status(names: arguments.server_names = None, filter: options.filter_pattern = None):
     """
     Get the current status of one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
-    for pi in pis.values():
+    pis = utils.get_pis(names, filter)
+    for name, pi in pis.items():
         try:
-            print(pi.status)
+            print(f"{name}: {pi.status}")
         except HostedPiException as exc:
             utils.print_exc(exc)
-            return 1
+            continue
 
 
 @app.command("on")
-def do_on(names: arguments.server_names = None):
+def do_on(names: arguments.server_names = None, filter: options.filter_pattern = None):
     """
     Power on one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
     for name, pi in pis.items():
         try:
             pi.on()
         except HostedPiException as exc:
             utils.print_exc(exc)
-            return 1
+            continue
         utils.print_success(f"Powered on {name}")
 
 
 @app.command("off")
-def do_off(names: arguments.server_names = None):
+def do_off(names: arguments.server_names = None, filter: options.filter_pattern = None):
     """
     Power off one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
     for name, pi in pis.items():
         try:
             pi.off()
         except HostedPiException as exc:
             utils.print_exc(exc)
-            return 1
+            continue
         utils.print_success(f"Powered off {name}")
 
 
 @app.command("reboot")
-def do_reboot(names: arguments.server_names = None):
+def do_reboot(names: arguments.server_names = None, filter: options.filter_pattern = None):
     """
     Reboot one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
     for name, pi in pis.items():
         try:
             pi.reboot()
         except HostedPiException as exc:
             utils.print_exc(exc)
-            return 1
+            continue
         utils.print_success(f"Rebooted {name}")
 
 
 @app.command("rm", hidden=True)
 @app.command("cancel")
-def do_cancel(names: arguments.server_names, yes: options.yes = False):
+def do_cancel(
+    names: arguments.server_names = None,
+    filter: options.filter_pattern = None,
+    yes: options.yes = False,
+):
     """
     Unprovision one or more Raspberry Pi servers
     """
-    pis = utils.get_pis(names)
+    pis = utils.get_pis(names, filter)
     pis_str = ", ".join(pis)
     if len(pis) == 0:
         utils.print_error("No servers to cancel")
@@ -221,5 +232,5 @@ def do_cancel(names: arguments.server_names, yes: options.yes = False):
             pi.cancel()
         except HostedPiException as exc:
             utils.print_exc(exc)
-            return 1
+            continue
         utils.print_success(f"Cancelled {name}")

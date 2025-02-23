@@ -43,24 +43,30 @@ def get_picloud() -> PiCloud:
 def get_pi(name: str) -> Pi:
     cloud = get_picloud()
     try:
-        return cloud.servers[name]
+        return cloud.pis[name]
     except KeyError:
         raise HostedPiException(f"Pi not found: {name}")
 
 
 def get_all_pis() -> dict[str, Pi]:
     cloud = get_picloud()
-    return cloud.servers
+    return cloud.pis
 
 
-def get_pis(names: list[str] | None) -> dict[str, Pi]:
+def get_pis(names: Union[list[str], None], filter: Union[str, None] = None) -> dict[str, Pi]:
     all_pis = get_all_pis()
     if not names:
-        return all_pis
+        return filter_pis(all_pis, filter)
     pis_not_found = sorted(set(names) - set(all_pis))
     for pi in pis_not_found:
         logger.warn("Pi server not found", name=pi)
-    return {name: pi for name, pi in all_pis.items() if name in names}
+    return filter_pis({name: pi for name, pi in all_pis.items() if name in names}, filter)
+
+
+def filter_pis(pis: dict[str, Pi], filter: Union[str, None]) -> dict[str, Pi]:
+    return {
+        name: pi for name, pi in pis.items() if filter is None or filter.lower() in name.lower()
+    }
 
 
 def short_table(names: Union[list[str], None]):

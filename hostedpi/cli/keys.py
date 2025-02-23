@@ -18,7 +18,6 @@ def do_count(names: arguments.server_names = None):
     Count the number of SSH keys on one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names)
-    print(len(pis))
     table = utils.make_table("Name", "Keys")
     with Live(table, console=console, refresh_per_second=4):
         for name, pi in pis.items():
@@ -26,7 +25,7 @@ def do_count(names: arguments.server_names = None):
                 n = len(pi.ssh_keys)
             except HostedPiException as exc:
                 utils.print_exc(f"hostedpi error: {exc}")
-                return 1
+                continue
             table.add_row(name, str(n))
 
 
@@ -37,12 +36,12 @@ def do_show(name: arguments.server_name):
     List the SSH keys on a Raspberry Pi server
     """
     pi = utils.get_pi(name)
-    try:
-        for key in pi.ssh_keys:
+    for key in pi.ssh_keys:
+        try:
             print(key)
-    except HostedPiException as exc:
-        utils.print_exc(f"hostedpi error: {exc}")
-        return 1
+        except HostedPiException as exc:
+            utils.print_exc(f"hostedpi error: {exc}")
+            continue
 
 
 @keys_app.command("add")
@@ -56,7 +55,7 @@ def do_add(names: arguments.server_names, ssh_key_path: arguments.ssh_key_path):
             pi.ssh_keys = {ssh_key_path.read_text()}
         except HostedPiException as exc:
             utils.print_exc(f"hostedpi error: {exc}")
-            return 1
+            continue
         utils.print_success(f"Added key {ssh_key_path} to {name}")
 
 
@@ -77,7 +76,7 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
             dest_pi.ssh_keys = ssh_keys
         except HostedPiException as exc:
             utils.print_exc(f"hostedpi error: {exc}")
-            return 1
+            continue
 
         num_keys_after = len(dest_pi.ssh_keys)
         num_keys_copied = num_keys_after - num_keys_before
@@ -96,7 +95,7 @@ def do_remove(names: arguments.server_names):
             pi.ssh_keys = None
         except HostedPiException as exc:
             utils.print_exc(f"hostedpi error: {exc}")
-            return 1
+            continue
         utils.print_success(f"Removed keys from {name}")
 
 
@@ -119,5 +118,5 @@ def do_import(
             pi.ssh_keys = ssh_keys
         except HostedPiException as exc:
             utils.print_exc(f"hostedpi error: {exc}")
-            return 1
+            continue
         utils.print_success(f"Imported {len(ssh_keys)} keys to {name}")

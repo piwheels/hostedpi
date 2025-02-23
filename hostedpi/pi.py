@@ -6,12 +6,16 @@ from ipaddress import IPv6Address, IPv6Network
 from datetime import timezone, datetime
 
 from requests import Session, HTTPError
+from structlog import get_logger
 
 from .utils import parse_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse
 from .models.payloads import SSHKeyBody
 from .logger import log_request
+
+
+logger = get_logger()
 
 
 class Pi:
@@ -283,8 +287,13 @@ class Pi:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            if response.status_code == 500:
+                logger.debug(
+                    "Failed to fetch SSH keys, maybe the Pi is initialising", name=self.name
+                )
+            else:
+                error = get_error_message(exc)
+                raise HostedPiException(error) from exc
 
         data = SSHKeysResponse.model_validate(response.json())
 
