@@ -123,7 +123,7 @@ def create_pi(
     ssh_import_github: Union[set[str], None],
     ssh_import_launchpad: Union[set[str], None],
     full: bool,
-    name: str | None = None,
+    name: Union[str, None] = None,
 ):
     ssh_keys = parse_ssh_keys_to_str(
         ssh_key_path=ssh_key_path,

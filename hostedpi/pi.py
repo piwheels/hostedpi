@@ -44,7 +44,7 @@ class Pi:
         self._session = session
         self._cancelled = False
         self._info: Union[PiInfo, None] = None
-        self._last_fetched_info: datetime | None = None
+        self._last_fetched_info: Union[datetime, None] = None
 
     @classmethod
     def from_pi_info(cls, name: str, *, info: PiInfo, api_url: str, session: Session):

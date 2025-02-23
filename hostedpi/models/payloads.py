@@ -46,7 +46,7 @@ class NewPi4ServerBody(NewServerSpec):
 
 
 class NewServer(BaseModel):
-    name: str | None = None
+    name: Union[str, None] = None
     spec: Union[NewPi3ServerBody, NewPi4ServerBody]
 
     @field_validator("name", mode="after")

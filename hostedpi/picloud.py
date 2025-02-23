@@ -242,7 +242,7 @@ class PiCloud:
 
         return ServersResponse.model_validate(response.json())
 
-    def _parse_status(self, data: dict) -> ProvisioningServer | PiInfo | None:
+    def _parse_status(self, data: dict) -> Union[ProvisioningServer, PiInfo, None]:
         """
         Get the status of an async server creation request
         """
