@@ -6,10 +6,10 @@ from typer import Option
 
 server_name = Annotated[Union[str, None], Option(help="Name of the new Raspberry Pi server")]
 model = Annotated[int, Option(help="Raspberry Pi Model", min=3, max=4)]
-disk_size = Annotated[Union[int, None], Option(help="Disk size in GB", min=10)]
+disk_size = Annotated[int, Option(help="Disk size in GB", min=10)]
 memory = Annotated[Union[int, None], Option(help="Memory in MB", min=1024)]
 cpu_speed = Annotated[Union[int, None], Option(help="CPU speed in MHz", min=1500)]
-os_image = Annotated[str, Option(help="Operating system image")]
+os_image = Annotated[Union[str, None], Option(help="Operating system image")]
 wait = Annotated[bool, Option(help="Wait and poll for status to be available before returning")]
 ssh_key_path = Annotated[
     Union[Path, None], Option(help="Path to the SSH key to install on the Raspberry Pi server")

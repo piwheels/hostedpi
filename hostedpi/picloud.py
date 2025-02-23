@@ -98,7 +98,7 @@ class PiCloud:
         The contents could be added to an SSH config file for easy access to the
         Pis in the account.
         """
-        return "\n".join(pi.info.ipv4_ssh_config for pi in self.pis)
+        return "\n".join(pi.ipv4_ssh_config for pi in self.pis)
 
     @property
     def ipv6_ssh_config(self) -> str:
@@ -169,6 +169,7 @@ class PiCloud:
             )
         elif self.ssh_keys:
             spec.ssh_key = self.ssh_keys
+        spec.model_rebuild()
 
         if name is None:
             url = urllib.parse.urljoin(self._api_url, "servers")
@@ -176,7 +177,7 @@ class PiCloud:
             url = urllib.parse.urljoin(self._api_url, f"servers/{name}")
 
         try:
-            data = NewServer(name=name, spec=spec.model_dump())
+            data = NewServer(name=name, spec=spec)
         except ValidationError as exc:
             logger.error(f"Invalid server name or spec: {exc}")
             raise HostedPiException(f"Invalid server name or spec") from exc

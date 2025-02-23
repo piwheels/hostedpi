@@ -24,7 +24,7 @@ def do_count(names: arguments.server_names = None, filter: options.filter_patter
             try:
                 n = len(pi.ssh_keys)
             except HostedPiException as exc:
-                utils.print_exc(f"hostedpi error: {exc}")
+                utils.print_exc(exc)
                 continue
             table.add_row(pi.name, str(n))
 
@@ -40,7 +40,7 @@ def do_show(name: arguments.server_name):
         try:
             print(key)
         except HostedPiException as exc:
-            utils.print_exc(f"hostedpi error: {exc}")
+            utils.print_exc(exc)
             continue
 
 
@@ -58,7 +58,7 @@ def do_add(
         try:
             pi.ssh_keys = {ssh_key_path.read_text()}
         except HostedPiException as exc:
-            utils.print_exc(f"hostedpi error: {exc}")
+            utils.print_exc(exc)
             continue
         utils.print_success(f"Added key {ssh_key_path} to {pi.name}")
 
@@ -79,7 +79,7 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
         try:
             dest_pi.ssh_keys = ssh_keys
         except HostedPiException as exc:
-            utils.print_exc(f"hostedpi error: {exc}")
+            utils.print_exc(exc)
             continue
 
         num_keys_after = len(dest_pi.ssh_keys)
@@ -98,7 +98,7 @@ def do_remove(names: arguments.server_names = None, filter: options.filter_patte
         try:
             pi.ssh_keys = None
         except HostedPiException as exc:
-            utils.print_exc(f"hostedpi error: {exc}")
+            utils.print_exc(exc)
             continue
         utils.print_success(f"Removed keys from {pi.name}")
 
@@ -118,13 +118,13 @@ def do_import(
         return 1
     pis = utils.get_pis(names, filter)
     ssh_keys = parse_ssh_keys(
-        ssh_import_github=github,
-        ssh_import_launchpad=launchpad,
+        ssh_import_github=set(github) if github else None,
+        ssh_import_launchpad=set(launchpad) if launchpad else None,
     )
     for pi in pis:
         try:
             pi.ssh_keys = ssh_keys
         except HostedPiException as exc:
-            utils.print_exc(f"hostedpi error: {exc}")
+            utils.print_exc(exc)
             continue
         utils.print_success(f"Imported {len(ssh_keys)} keys to {pi.name}")

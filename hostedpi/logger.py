@@ -21,7 +21,7 @@ def log_request(response: Response):
         url=response.url,
         method=response.request.method,
         status_code=response.status_code,
-        body=json.loads(response.request.body.decode("utf-8")) if response.request.body else "",
+        body=json.loads(_get_response_body(response)) if response.request.body else "",
     )
 
     try:
@@ -29,3 +29,11 @@ def log_request(response: Response):
     except Exception:
         response_body = response.text
     logger.debug("Received response", body=response_body)
+
+
+def _get_response_body(response: Response) -> str:
+    if response.request.body:
+        if isinstance(response.request.body, bytes):
+            return response.request.body.decode("utf-8")
+        return response.request.body
+    return ""

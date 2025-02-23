@@ -35,7 +35,7 @@ class Pi:
         The ``Pi`` class should not be initialised by the user, only internally within the module.
     """
 
-    def __init__(self, name: str, *, info: PiInfoBasic, api_url: str, session: Session):
+    def __init__(self, name: str | None, *, info: PiInfoBasic, api_url: str, session: Session):
         self._name = name
         self._model = info.model
         self._memory = info.memory
@@ -323,7 +323,7 @@ class Pi:
         """
         self._power_on_off(on=True)
         if wait:
-            while self._info.is_booting:
+            while self.info.is_booting:
                 sleep(5)
             return self.power
 
@@ -360,7 +360,7 @@ class Pi:
                 raise HostedPiException(error) from exc
 
         if wait:
-            while self._info.is_booting:
+            while self.info.is_booting:
                 sleep(5)
             return self.power
 

@@ -105,10 +105,8 @@ def do_create(
         if not ssh_key_path.exists():
             utils.print_error(f"SSH key file not found: {ssh_key_path}")
             return 1
-    if ssh_import_github is not None:
-        ssh_import_github = set(ssh_import_github)
-    if ssh_import_launchpad is not None:
-        ssh_import_launchpad = set(ssh_import_launchpad)
+    ssh_import_gh_set = set(ssh_import_github) if ssh_import_github is not None else None
+    ssh_import_lp_set = set(ssh_import_launchpad) if ssh_import_launchpad is not None else None
 
     if names:
         for name in names:
@@ -122,8 +120,8 @@ def do_create(
                     os_image=os_image,
                     wait=wait,
                     ssh_key_path=ssh_key_path,
-                    ssh_import_github=ssh_import_github,
-                    ssh_import_launchpad=ssh_import_launchpad,
+                    ssh_import_github=ssh_import_gh_set,
+                    ssh_import_launchpad=ssh_import_lp_set,
                     full=full,
                 )
             except HostedPiException as exc:
@@ -141,8 +139,8 @@ def do_create(
                     os_image=os_image,
                     wait=wait,
                     ssh_key_path=ssh_key_path,
-                    ssh_import_github=ssh_import_github,
-                    ssh_import_launchpad=ssh_import_launchpad,
+                    ssh_import_github=ssh_import_gh_set,
+                    ssh_import_launchpad=ssh_import_lp_set,
                     full=full,
                 )
             except HostedPiException as exc:
@@ -232,7 +230,7 @@ def do_cancel(
     """
     pis = utils.get_pis(names, filter)
     table = utils.make_table("Name", "Status")
-    pis_str = ", ".join(pis)
+    pis_str = ", ".join([pis.name for pis in pis])
     if len(pis) == 0:
         utils.print_error("No servers to cancel")
         return 1
