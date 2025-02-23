@@ -5,12 +5,13 @@ from functools import cached_property
 from ipaddress import IPv6Address, IPv6Network
 from datetime import timezone, datetime
 
-from requests import Session, HTTPError
+from requests import Session, HTTPError, ConnectionError
 from structlog import get_logger
+from pydantic import ValidationError
 
 from .utils import parse_ssh_keys, get_error_message
 from .exc import HostedPiException
-from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse
+from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse, ProvisioningServer
 from .models.payloads import SSHKeyBody
 from .logger import log_request
 
@@ -40,11 +41,12 @@ class Pi:
         self._model = info.model
         self._memory = info.memory
         self._cpu_speed = info.cpu_speed
-        self._api_url = urllib.parse.urljoin(api_url, "servers/")
+        self._api_url = api_url
         self._session = session
         self._cancelled = False
         self._info: Union[PiInfo, None] = None
         self._last_fetched_info: Union[datetime, None] = None
+        self._status_url: Union[str, None] = None
 
     @classmethod
     def from_pi_info(cls, name: str, *, info: PiInfo, api_url: str, session: Session):
@@ -55,6 +57,18 @@ class Pi:
         pi = cls(name, info=basic_info, api_url=api_url, session=session)
         pi._info = info
         pi._last_fetched_info = datetime.now(timezone.utc)
+        return pi
+
+    @classmethod
+    def from_no_name(cls, *, info: PiInfo, api_url: str, session: Session, url: str):
+        """
+        Construct a ``Pi`` object from a :class:`~hostedpi.models.responses.PiInfo` object
+        """
+        basic_info = PiInfoBasic.model_validate(info)
+        pi = cls(name=None, info=basic_info, api_url=api_url, session=session)
+        pi._info = info
+        pi._last_fetched_info = datetime.now(timezone.utc)
+        pi._status_url = url
         return pi
 
     def __repr__(self):
@@ -280,7 +294,7 @@ class Pi:
         of strings. Assigned value should also be a set of strings, or None to unset.
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifierssh-key
-        url = urllib.parse.urljoin(self._api_url, f"{self.name}/ssh-key")
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}/ssh-key")
         response = self.session.get(url)
         log_request(response)
 
@@ -302,7 +316,7 @@ class Pi:
     @ssh_keys.setter
     def ssh_keys(self, ssh_keys: Union[set[str], None]):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierssh-key
-        url = urllib.parse.urljoin(self._api_url, f"{self.name}/ssh-key")
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}/ssh-key")
         ssh_keys_str = "\n".join(ssh_keys) if ssh_keys else None
         data = SSHKeyBody(ssh_key=ssh_keys_str)
 
@@ -345,7 +359,7 @@ class Pi:
             :attr:`~hostedpi.pi.Pi.boot_progress`.
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifierreboot
-        url = urllib.parse.urljoin(self._api_url, f"{self.name}/reboot")
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}/reboot")
         response = self.session.post(url)
         log_request(response)
 
@@ -369,7 +383,7 @@ class Pi:
         Cancel the Pi service
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
-        url = urllib.parse.urljoin(self._api_url, self.name)
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
         response = self.session.delete(url)
         log_request(response)
 
@@ -406,16 +420,58 @@ class Pi:
         self.ssh_keys |= ssh_keys_set
         return ssh_keys_set
 
+    def wait_until_provisioned(self, url: str):
+        """
+        Wait for the new Pi to be provisioned
+        """
+        while True:
+            pi_info = self.get_provision_status(url)
+            if type(pi_info) is PiInfo:
+                self._info = pi_info
+                self._last_fetched_info = datetime.now(timezone.utc)
+                return
+            sleep(5)
+
+    def get_provision_status(self, url: str) -> Union[ProvisioningServer, PiInfo, None]:
+        """
+        Send a request to the server creation status endpoint and return the status as either a
+        :class:`~hostedpi.models.responses.ProvisioningServer` or
+        :class:`~hostedpi.models.responses.PiInfo` or ``None`` if the status is not yet available.
+        """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-queuepitask
+        try:
+            response = self.session.get(url)
+            response.raise_for_status()
+        except ConnectionError as exc:
+            logger.warn("Error getting server creation status", exc=str(exc))
+            return
+        except HTTPError as exc:
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
+
+        log_request(response)
+
+        status = self._parse_status(response.json())
+        if type(status) is ProvisioningServer:
+            logger.info("Server creation in progress", status=status.provision_status)
+            return status
+        if type(status) is PiInfo:
+            self._name = response.request.url.split("/")[-1]
+            logger.info("Got server name", server_name=self._name)
+            return status
+
     def _get_info(self):
         """
         Fetch the full Pi information from the API
         """
+        if self.name is None:
+            raise HostedPiException("Cannot fetch info for a Pi without a name")
         now = datetime.now(timezone.utc)
         if self._last_fetched_info is not None:
             if (now - self._last_fetched_info).total_seconds() < 10:
                 return
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifier
-        url = urllib.parse.urljoin(self._api_url, self.name)
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
         response = self.session.get(url)
         log_request(response)
 
@@ -429,7 +485,7 @@ class Pi:
 
     def _power_on_off(self, *, on: bool):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierpower
-        url = urllib.parse.urljoin(self._api_url, f"{self.name}/power")
+        url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}/power")
         data = {
             "power": on,
         }
@@ -441,3 +497,18 @@ class Pi:
         except HTTPError as exc:
             error = get_error_message(exc)
             raise HostedPiException(error) from exc
+
+    def _parse_status(self, data: dict) -> Union[ProvisioningServer, PiInfo, None]:
+        """
+        Get the status of an async server creation request
+        """
+        try:
+            return PiInfo.model_validate(data)
+        except ValidationError:
+            pass
+
+        try:
+            return ProvisioningServer.model_validate(data)
+        except ValidationError:
+            logger.warn("Unexpected response from server creation status endpoint")
+            return

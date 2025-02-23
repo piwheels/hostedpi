@@ -229,7 +229,6 @@ def do_cancel(
     Unprovision one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
-    table = utils.make_table("Name", "Status")
     pis_str = ", ".join([pis.name for pis in pis])
     if len(pis) == 0:
         utils.print_error("No servers to cancel")
@@ -238,11 +237,13 @@ def do_cancel(
         yn = input(f"Are you sure you want to cancel {pis_str}? [y/N] ")
         if yn.lower() != "y":
             return 1
+    table = utils.make_table("Name", "Status")
     with Live(table, console=console, refresh_per_second=4):
         for pi in pis:
             try:
                 pi.cancel()
             except HostedPiException as exc:
+                table.add_row(pi.name, "Failed to cancel")
                 utils.print_exc(exc)
                 continue
             table.add_row(pi.name, "Cancelled")

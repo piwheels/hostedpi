@@ -28,11 +28,11 @@ def make_table(*headers: str) -> Table:
     return table
 
 
-def validate_server_body(model: Literal[3, 4], data: dict) -> NewPi3ServerBody | NewPi4ServerBody:
+def validate_server_body(model: Literal[3, 4], data: dict) -> dict:
     if model == 3:
-        return NewPi3ServerBody.model_validate(data)
+        return NewPi3ServerBody.model_validate(data).model_dump()
     else:
-        return NewPi4ServerBody.model_validate(data)
+        return NewPi4ServerBody.model_validate(data).model_dump()
 
 
 @cache
@@ -157,16 +157,17 @@ def create_pi(
     )
 
     if full:
+        print_success("Server provisioned")
         full_table([pi])
     elif wait:
+        print_success("Server provisioned")
         short_table([pi])
     else:
-        print_success("Server creation request accepted")
+        print_success("Server provision request accepted")
 
 
 def print_exc(exc: Exception):
-    logger.debug("hostedpi error", exc_info=exc)
-    console.print(f"[red]hostedpi error: {exc}[/red]")
+    logger.debug(f"hostedpi error: {exc}", exc_info=exc)
 
 
 def print_error(error: str):

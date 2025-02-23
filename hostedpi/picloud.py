@@ -1,23 +1,16 @@
-from typing import Union
+from typing import Union, Any
 import urllib.parse
-from time import sleep
 from pathlib import Path
 
-from requests import Session, HTTPError, ConnectionError
+from requests import Session, HTTPError
 from pydantic import ValidationError
 from structlog import get_logger
 
 from .auth import MythicAuth
 from .pi import Pi
-from .utils import parse_ssh_keys_to_str, get_error_message
+from .utils import parse_ssh_keys, get_error_message
 from .exc import HostedPiException
-from .models.responses import (
-    ServersResponse,
-    PiImagesResponse,
-    ProvisioningServer,
-    PiInfo,
-    PiInfoBasic,
-)
+from .models.responses import ServersResponse, PiImagesResponse, PiInfoBasic
 from .models.payloads import NewPi3ServerBody, NewPi4ServerBody, NewServer
 from .logger import log_request
 
@@ -27,13 +20,13 @@ logger = get_logger()
 
 class PiCloud:
     """
-    A connection to the Mythic Beasts Pi Cloud API for creating and managing cloud Pi services.
+    A connection to the Mythic Beasts Pi Cloud API for creating and managing cloud Pi servers.
 
     :type ssh_keys: set[str] or None
     :param ssh_keys:
         A list/set of SSH key strings (keyword-only argument)
 
-    :type ssh_key_path: str or None
+    :type ssh_key_path: Path or str or None
     :param ssh_key_path:
         The path to your SSH public key (keyword-only argument)
 
@@ -62,7 +55,7 @@ class PiCloud:
     ):
         self._api_url = "https://api.mythic-beasts.com/beta/pi/"
 
-        self.ssh_keys = parse_ssh_keys_to_str(
+        self.ssh_keys = parse_ssh_keys(
             ssh_keys=ssh_keys,
             ssh_key_path=ssh_key_path,
             ssh_import_github=ssh_import_github,
@@ -94,18 +87,16 @@ class PiCloud:
     @property
     def ipv4_ssh_config(self) -> str:
         """
-        A string containing the IPv4 SSH config for all Pis within the account.
-        The contents could be added to an SSH config file for easy access to the
-        Pis in the account.
+        A string containing the IPv4 SSH config for all Pis within the account. The contents could
+        be added to an SSH config file for easy access to the Pis in the account.
         """
         return "\n".join(pi.ipv4_ssh_config for pi in self.pis)
 
     @property
     def ipv6_ssh_config(self) -> str:
         """
-        A string containing the IPv6 SSH config for all Pis within the account.
-        The contents could be added to an SSH config file for easy access to the
-        Pis in the account.
+        A string containing the IPv6 SSH config for all Pis within the account. The contents could
+        be added to an SSH config file for easy access to the Pis in the account.
         """
         return "\n".join(pi.ipv6_ssh_config for pi in self.pis)
 
@@ -113,9 +104,9 @@ class PiCloud:
         self,
         *,
         name: Union[str, None] = None,
-        spec: Union[NewPi3ServerBody, NewPi4ServerBody],
+        spec: dict[str, Any],
         ssh_keys: Union[set[str], None] = None,
-        ssh_key_path: Union[Path, None] = None,
+        ssh_key_path: Union[Path, str, None] = None,
         ssh_import_github: Union[set[str], None] = None,
         ssh_import_launchpad: Union[set[str], None] = None,
         wait: bool = False,
@@ -130,15 +121,17 @@ class PiCloud:
             and must consist only of alphanumeric characters and hyphens. If not provided, a server
             name will be automatically generated.
 
-        :type spec: NewPi3ServerBody or NewPi4ServerBody
+        :type spec: dict
         :param spec:
-            The spec of the Raspberry Pi to provision
+            The spec of the Raspberry Pi to provision - must be compatible with the
+            :class:`~hostedpi.models.NewPi3ServerBody` or
+            :class:`~hostedpi.models.NewPi4ServerBody` models.
 
         :type ssh_keys: set[str] or None
         :param ssh_keys:
             A list/set of SSH key strings (keyword-only argument)
 
-        :type ssh_key_path: str or None
+        :type ssh_key_path: Path or str or None
         :param ssh_key_path:
             The path to your SSH public key (keyword-only argument)
 
@@ -149,6 +142,15 @@ class PiCloud:
         :type ssh_import_launchpad: set[str] or None
         :param ssh_import_launchpad:
             A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
+
+        :type wait: bool
+        :param wait:
+            If True, the method will return immediately after the server creation request is
+            accepted, without waiting for the server to be provisioned. The returned
+            :class:`~hostedpi.pi.Pi` instance will not be fully initialised and will not be able to
+            perform actions until the server is ready. If False, the method will wait for the server
+            to be provisioned before returning the :class:`~hostedpi.pi.Pi` instance. Default is
+            False.
 
         .. note::
             If any SSH keys are provided on class initialisation, they will be used here but are
@@ -161,15 +163,21 @@ class PiCloud:
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
         keys = [ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad]
         if any(key is not None for key in keys):
-            spec.ssh_key = parse_ssh_keys_to_str(
+            spec["ssh_key"] = parse_ssh_keys(
                 ssh_keys=ssh_keys,
-                ssh_key_path=ssh_key_path,
+                ssh_key_path=Path(ssh_key_path) if ssh_key_path else None,
                 ssh_import_github=ssh_import_github,
                 ssh_import_launchpad=ssh_import_launchpad,
             )
         elif self.ssh_keys:
             spec.ssh_key = self.ssh_keys
-        spec.model_rebuild()
+
+        if spec["model"] == 3:
+            validated_spec = NewPi3ServerBody.model_validate(spec)
+        elif spec["model"] == 4:
+            validated_spec = NewPi4ServerBody.model_validate(spec)
+        else:
+            raise TypeError("Model must be 3 or 4")
 
         if name is None:
             url = urllib.parse.urljoin(self._api_url, "servers")
@@ -177,12 +185,12 @@ class PiCloud:
             url = urllib.parse.urljoin(self._api_url, f"servers/{name}")
 
         try:
-            data = NewServer(name=name, spec=spec)
+            data = NewServer(name=name, spec=validated_spec)
         except ValidationError as exc:
             logger.error(f"Invalid server name or spec: {exc}")
             raise HostedPiException(f"Invalid server name or spec") from exc
 
-        logger.info("Creating new server", name=name, spec=spec)
+        logger.info("Creating new server", name=name, spec=validated_spec)
         response = self.session.post(url, json=data.spec.model_dump(exclude_none=True))
         log_request(response)
 
@@ -192,12 +200,13 @@ class PiCloud:
             error = get_error_message(exc)
             raise HostedPiException(error) from exc
 
+        logger.info("Server creation request accepted", status_url=response.headers["Location"])
+        info = PiInfoBasic.model_validate(validated_spec)
+        pi = Pi(name, info=info, api_url=self._api_url, session=self.session)
+
         if wait:
-            return self._wait_for_new_pi(response.headers["Location"])
-        else:
-            logger.info("Server creation request accepted", status_url=response.headers["Location"])
-            info = PiInfoBasic.model_validate(spec)
-            return Pi(name, info=info, api_url=self._api_url, session=self.session)
+            pi.wait_until_provisioned(response.headers["Location"])
+        return pi
 
     def get_operating_systems(self, *, model: int) -> dict[str, str]:
         """
@@ -242,45 +251,3 @@ class PiCloud:
             raise HostedPiException(error) from exc
 
         return ServersResponse.model_validate(response.json())
-
-    def _parse_status(self, data: dict) -> Union[ProvisioningServer, PiInfo, None]:
-        """
-        Get the status of an async server creation request
-        """
-        try:
-            return PiInfo.model_validate(data)
-        except ValidationError:
-            pass
-
-        try:
-            return ProvisioningServer.model_validate(data)
-        except ValidationError:
-            logger.warn("Unexpected response from server creation status endpoint")
-            return
-
-    def _wait_for_new_pi(self, url: str) -> Pi:
-        """
-        Wait for a new Pi to be provisioned
-        """
-        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-queuepitask
-        while True:
-            try:
-                response = self.session.get(url)
-                response.raise_for_status()
-            except (HTTPError, ConnectionError) as exc:
-                logger.warn("Error getting server creation status", exc=str(exc))
-                sleep(5)
-                continue
-
-            log_request(response)
-
-            status = self._parse_status(response.json())
-            if type(status) is PiInfo:
-                server_name = response.request.url.split("/")[-1]
-                logger.info("Got server name", server_name=server_name)
-                return Pi.from_pi_info(
-                    server_name, info=status, api_url=self._api_url, session=self.session
-                )
-            if type(status) is ProvisioningServer:
-                logger.info("Server creation in progress", status=status.provision_status)
-            sleep(5)
