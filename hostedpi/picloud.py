@@ -202,7 +202,15 @@ class PiCloud:
 
         logger.info("Server creation request accepted", status_url=response.headers["Location"])
         info = PiInfoBasic.model_validate(validated_spec)
-        pi = Pi(name, info=info, api_url=self._api_url, session=self.session)
+        if name is None:
+            pi = Pi.from_status_url(
+                info=info,
+                api_url=self._api_url,
+                session=self.session,
+                status_url=response.headers["Location"],
+            )
+        else:
+            pi = Pi(name, info=info, api_url=self._api_url, session=self.session)
 
         if wait:
             pi.wait_until_provisioned(response.headers["Location"])

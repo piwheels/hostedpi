@@ -60,15 +60,13 @@ class Pi:
         return pi
 
     @classmethod
-    def from_no_name(cls, *, info: PiInfo, api_url: str, session: Session, url: str):
+    def from_status_url(cls, *, info: PiInfo, api_url: str, session: Session, status_url: str):
         """
         Construct a ``Pi`` object from a :class:`~hostedpi.models.responses.PiInfo` object
         """
         basic_info = PiInfoBasic.model_validate(info)
         pi = cls(name=None, info=basic_info, api_url=api_url, session=session)
-        pi._info = info
-        pi._last_fetched_info = datetime.now(timezone.utc)
-        pi._status_url = url
+        pi._status_url = status_url
         return pi
 
     def __repr__(self):
@@ -382,6 +380,16 @@ class Pi:
         """
         Cancel the Pi service
         """
+        if self._cancelled:
+            logger.warn("This Pi server is already cancelled", name=self.name)
+            return
+
+        # check if the server is still provisioning
+        status = self.get_provision_status()
+        if type(status) is not PiInfo:
+            logger.warn("Cannot cancel a server that is still provisioning", name=self.name)
+            return
+
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
         url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
         response = self.session.delete(url)
@@ -420,30 +428,31 @@ class Pi:
         self.ssh_keys |= ssh_keys_set
         return ssh_keys_set
 
-    def wait_until_provisioned(self, url: str):
+    def wait_until_provisioned(self):
         """
         Wait for the new Pi to be provisioned
         """
         while True:
-            pi_info = self.get_provision_status(url)
+            pi_info = self.get_provision_status()
             if type(pi_info) is PiInfo:
-                self._info = pi_info
-                self._last_fetched_info = datetime.now(timezone.utc)
                 return
             sleep(5)
 
-    def get_provision_status(self, url: str) -> Union[ProvisioningServer, PiInfo, None]:
+    def get_provision_status(self) -> Union[str, PiInfo, None]:
         """
         Send a request to the server creation status endpoint and return the status as either a
-        :class:`~hostedpi.models.responses.ProvisioningServer` or
-        :class:`~hostedpi.models.responses.PiInfo` or ``None`` if the status is not yet available.
+        string or :class:`~hostedpi.models.responses.PiInfo` or ``None`` if the status is not yet
+        available.
         """
+        if self._status_url is None:
+            return self.info
+
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-queuepitask
         try:
-            response = self.session.get(url)
+            response = self.session.get(self._status_url)
             response.raise_for_status()
         except ConnectionError as exc:
-            logger.warn("Error getting server creation status", exc=str(exc))
+            logger.warn("Error getting server provisioning status", exc=str(exc))
             return
         except HTTPError as exc:
             error = get_error_message(exc)
@@ -453,10 +462,13 @@ class Pi:
 
         status = self._parse_status(response.json())
         if type(status) is ProvisioningServer:
-            logger.info("Server creation in progress", status=status.provision_status)
-            return status
+            logger.info("Server provisioning in progress", status=status.provision_status)
+            return status.provision_status
         if type(status) is PiInfo:
             self._name = response.request.url.split("/")[-1]
+            self._info = status
+            self._last_fetched_info = datetime.now(timezone.utc)
+            self._status_url = None
             logger.info("Got server name", server_name=self._name)
             return status
 
