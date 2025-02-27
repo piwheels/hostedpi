@@ -36,7 +36,9 @@ class Pi:
         The ``Pi`` class should not be initialised by the user, only internally within the module.
     """
 
-    def __init__(self, name: str | None, *, info: PiInfoBasic, api_url: str, session: Session):
+    def __init__(
+        self, name: Union[str, None], *, info: PiInfoBasic, api_url: str, session: Session
+    ):
         self._name = name
         self._model = info.model
         self._memory = info.memory
