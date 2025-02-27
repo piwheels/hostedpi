@@ -77,7 +77,7 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
         num_keys_before = len(dest_pi.ssh_keys)
 
         try:
-            dest_pi.ssh_keys = ssh_keys
+            dest_pi.ssh_keys |= ssh_keys
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
@@ -123,7 +123,7 @@ def do_import(
     )
     for pi in pis:
         try:
-            pi.ssh_keys = ssh_keys
+            pi.ssh_keys |= ssh_keys
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
