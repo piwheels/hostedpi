@@ -38,7 +38,7 @@ hostedpi = 'hostedpi.cli:app'
 
 [project.optional-dependencies]
 cli = ["typer (>=0.15.1,<1.0.0)", "rich (>=13.9.4,<14.0.0)"]
-test = ["pytest (>=8.4.1,<9.0.0)"]
+test = ["pytest (>=8.4.1,<9.0.0)", "pytest-cov (>=6.2.1,<7.0.0)"]
 
 [tool.poetry]
 include = ["LICENSE.txt", "README.rst"]
@@ -56,3 +56,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 line-length = 100
 target-version = ['py39']
+
+[tool.pytest.ini_options]
+addopts = "--cov=hostedpi" 
