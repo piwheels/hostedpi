@@ -34,7 +34,11 @@ class PiCloud:
 
     def __init__(self, ssh_keys: Union[SSHKeySources, None] = None):
         self._api_url = "https://api.mythic-beasts.com/beta/pi/"
-        self.ssh_keys = ssh_keys.collect() if ssh_keys else None
+        self.ssh_keys = None
+        if ssh_keys is not None:
+            if not isinstance(ssh_keys, SSHKeySources):
+                raise TypeError("ssh_keys must be an instance of SSHKeySources or None")
+            self.ssh_keys = ssh_keys.collect()
         self._auth = MythicAuth()
 
     def __repr__(self):
@@ -95,10 +99,11 @@ class PiCloud:
         :param spec:
             The spec of the Raspberry Pi to provision
 
-        :type ssh_keys: :class:`~hostedpi.models.sshkeys.SSHKeys` or None
+        :type ssh_keys: :class:`~hostedpi.models.sshkeys.SSHKeySources` or None
         :param ssh_keys:
-            An instance of :class:`~hostedpi.models.sshkeys.SSHKeys` containing sources of SSH keys
-            to use when creating a new Pi. If not provided, no SSH keys will be added on creation.
+            An instance of :class:`~hostedpi.models.sshkeys.SSHKeySources` containing sources of SSH
+            keys to use when creating a new Pi. If not provided, no SSH keys will be added on
+            creation.
 
         :type wait: bool
         :param wait:
@@ -124,7 +129,12 @@ class PiCloud:
             # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
             url = urllib.parse.urljoin(self._api_url, f"servers/{name}")
 
+        if not isinstance(spec, (Pi3ServerSpec, Pi4ServerSpec)):
+            raise TypeError("spec must be an instance of Pi3ServerSpec or Pi4ServerSpec")
+
         if ssh_keys is not None:
+            if not isinstance(ssh_keys, SSHKeySources):
+                raise TypeError("ssh_keys must be an instance of SSHKeySources or None")
             ssh_keys = ssh_keys.collect()
         else:
             ssh_keys = self.ssh_keys
@@ -133,7 +143,7 @@ class PiCloud:
             data = NewServer(name=name, spec=spec, ssh_keys=ssh_keys)
         except ValidationError as exc:
             logger.error(f"Invalid server name or spec: {exc}")
-            raise HostedPiException(f"Invalid server name or spec") from exc
+            raise HostedPiException("Invalid server name or spec") from exc
 
         num_ssh_keys = len(ssh_keys) if ssh_keys else 0
         logger.info("Creating new server", name=name, spec=spec, ssh_keys=num_ssh_keys)

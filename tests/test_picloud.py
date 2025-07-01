@@ -3,8 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from hostedpi.picloud import PiCloud
-from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec
-from hostedpi.exc import HostedPiException
+from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources
 
 
 @pytest.fixture(autouse=True)
@@ -60,9 +59,7 @@ def collected_ssh_keys():
 
 @pytest.fixture(autouse=True)
 def ssh_keys(collected_ssh_keys):
-    mock = Mock()
-    mock.collect.return_value = collected_ssh_keys
-    return mock
+    return SSHKeySources(ssh_keys=collected_ssh_keys)
 
 
 @pytest.fixture
@@ -140,6 +137,14 @@ def test_picloud_init_with_ssh_keys(ssh_keys, collected_ssh_keys):
     assert cloud.ssh_keys == collected_ssh_keys
 
 
+def test_picloud_init_with_bad_ssh_keys():
+    with pytest.raises(TypeError):
+        PiCloud(ssh_keys={})
+
+    with pytest.raises(TypeError):
+        PiCloud(ssh_keys="foo")
+
+
 def test_get_pi3_operating_systems(mock_session, pi3_images_response):
     cloud = PiCloud()
     mock_session.get.return_value = Mock(
@@ -189,7 +194,7 @@ def test_get_pis(mock_session, pis_response):
 def test_new_pi_bad_name():
     cloud = PiCloud()
     for name in ["pi 3", "pi_3", "pi3@server", "pi3#server", "pi3.hostedpi.com"]:
-        with pytest.raises(HostedPiException):
+        with pytest.raises(TypeError):
             cloud.create_pi(name=name, spec=default_pi3_spec)
 
 
@@ -307,3 +312,20 @@ def test_create_pi_with_ssh_keys(
     for key in collected_ssh_keys:
         assert key in called_json["ssh_key"]
     assert called_json["ssh_key"].count("\r\n") == len(collected_ssh_keys) - 1
+
+
+def test_create_pi_bad_spec():
+    cloud = PiCloud()
+
+    with pytest.raises(TypeError):
+        cloud.create_pi(name="pi3", spec={})
+
+
+def test_create_pi_bad_ssh_keys():
+    cloud = PiCloud()
+
+    with pytest.raises(TypeError):
+        cloud.create_pi(name="pi3", spec=default_pi3_spec, ssh_keys={})
+
+    with pytest.raises(TypeError):
+        cloud.create_pi(name="pi3", spec=default_pi3_spec, ssh_keys="foo")
