@@ -4,18 +4,24 @@ import pytest
 
 from hostedpi.utils import (
     ssh_import_id,
-    fetch_keys,
-    parse_ssh_keys,
-    parse_ssh_keys_to_str,
+    fetch_keys_from_url,
+    collect_ssh_keys,
+    collect_ssh_keys_to_str,
     get_error_message,
 )
+
+
+@pytest.fixture(autouse=True)
+def patch_log_request():
+    with patch("hostedpi.utils.log_request"):
+        yield
 
 
 @pytest.fixture
 def mock_github_response():
     mock = Mock()
     mock.status_code = 200
-    mock.text = "ssh-rsa foo\n" "ssh-rsa bar"
+    mock.text = "ssh-rsa foo\nssh-rsa bar"
     return mock
 
 
@@ -27,29 +33,26 @@ def mock_launchpad_response():
     return mock
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_fetch_keys_github(mock_get, mock_log_request, mock_github_response):
+def test_fetch_keys_github(mock_get, mock_github_response):
     mock_get.return_value = mock_github_response
     url = "https://example.com/keys"
     sep = "\n"
-    keys = fetch_keys(url, sep)
+    keys = fetch_keys_from_url(url, sep)
     assert keys == {"ssh-rsa foo", "ssh-rsa bar"}
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_fetch_keys_launchpad(mock_get, mock_log_request, mock_launchpad_response):
+def test_fetch_keys_launchpad(mock_get, mock_launchpad_response):
     mock_get.return_value = mock_launchpad_response
     url = "https://example.com/keys"
     sep = "\r\n\n"
-    keys = fetch_keys(url, sep)
+    keys = fetch_keys_from_url(url, sep)
     assert keys == {"ssh-rsa foobar", "ssh-rsa barfoo"}
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_ssh_import_id_github(mock_get, mock_log_request, mock_github_response):
+def test_ssh_import_id_github(mock_get, mock_github_response):
     gh_user = "testuser"
     mock_get.return_value = mock_github_response
     keys = ssh_import_id(github=gh_user)
@@ -58,10 +61,8 @@ def test_ssh_import_id_github(mock_get, mock_log_request, mock_github_response):
     assert keys == {"ssh-rsa foo", "ssh-rsa bar"}
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_ssh_import_id_launchpad(mock_get, mock_log_request, mock_launchpad_response):
-    gh_user = "testuser"
+def test_ssh_import_id_launchpad(mock_get, mock_launchpad_response):
     lp_user = "testuser2"
     mock_get.return_value = mock_launchpad_response
     keys = ssh_import_id(launchpad=lp_user)
@@ -70,11 +71,8 @@ def test_ssh_import_id_launchpad(mock_get, mock_log_request, mock_launchpad_resp
     assert keys == {"ssh-rsa foobar", "ssh-rsa barfoo"}
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_ssh_import_id_both(
-    mock_get, mock_log_request, mock_github_response, mock_launchpad_response
-):
+def test_ssh_import_id_both(mock_get, mock_github_response, mock_launchpad_response):
     gh_user = "testuser"
     lp_user = "testuser2"
     mock_get.side_effect = [mock_github_response, mock_launchpad_response]
@@ -85,44 +83,39 @@ def test_ssh_import_id_both(
     assert keys == {"ssh-rsa foo", "ssh-rsa bar", "ssh-rsa foobar", "ssh-rsa barfoo"}
 
 
-def test_parse_ssh_keys_set():
-    keys = parse_ssh_keys(ssh_keys={"ssh-rsa foo", "ssh-rsa bar"})
+def test_collect_ssh_keys_set():
+    keys = collect_ssh_keys(ssh_keys={"ssh-rsa foo", "ssh-rsa bar"})
     assert keys == {"ssh-rsa foo", "ssh-rsa bar"}
 
 
-def test_parse_ssh_keys_path(tmp_path):
+def test_collect_ssh_keys_path(tmp_path):
     key_path = tmp_path / "id_rsa.pub"
     key_path.write_text("ssh-rsa foo")
-    keys = parse_ssh_keys(ssh_key_path=key_path)
+    keys = collect_ssh_keys(ssh_key_path=key_path)
     assert keys == {"ssh-rsa foo"}
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_parse_ssh_keys_github(mock_get, mock_log_request, mock_github_response):
+def test_collect_ssh_keys_github(mock_get, mock_github_response):
     mock_get.return_value = mock_github_response
-    keys = parse_ssh_keys(ssh_import_github={"testuser"})
+    keys = collect_ssh_keys(ssh_import_github={"testuser"})
     assert keys == {"ssh-rsa foo", "ssh-rsa bar"}
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_parse_ssh_keys_launchpad(mock_get, mock_log_request, mock_launchpad_response):
+def test_collect_ssh_keys_launchpad(mock_get, mock_launchpad_response):
     mock_get.return_value = mock_launchpad_response
-    keys = parse_ssh_keys(ssh_import_launchpad={"testuser"})
+    keys = collect_ssh_keys(ssh_import_launchpad={"testuser"})
     assert keys == {"ssh-rsa foobar", "ssh-rsa barfoo"}
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_parse_ssh_keys_all(
-    mock_get, mock_log_request, mock_github_response, mock_launchpad_response, tmp_path
-):
+def test_collect_ssh_keys_all(mock_get, mock_github_response, mock_launchpad_response, tmp_path):
     mock_get.side_effect = [mock_github_response, mock_launchpad_response]
     key_path = tmp_path / "id_rsa.pub"
     key_path.write_text("ssh-rsa localkey")
 
-    keys = parse_ssh_keys(
+    keys = collect_ssh_keys(
         ssh_keys={"ssh-rsa foo"},
         ssh_key_path=key_path,
         ssh_import_github={"testuser"},
@@ -138,50 +131,47 @@ def test_parse_ssh_keys_all(
     }
 
 
-def test_parse_ssh_keys_to_str_set():
-    keys = parse_ssh_keys_to_str(ssh_keys={"ssh-rsa foo", "ssh-rsa bar"})
+def test_collect_ssh_keys_to_str_set():
+    keys = collect_ssh_keys_to_str(ssh_keys={"ssh-rsa foo", "ssh-rsa bar"})
     assert "ssh-rsa bar" in keys
     assert "ssh-rsa foo" in keys
     assert keys.count("\r\n") == 1
 
 
-def test_parse_ssh_keys_to_str_path(tmp_path):
+def test_collect_ssh_keys_to_str_path(tmp_path):
     key_path = tmp_path / "id_rsa.pub"
     key_path.write_text("ssh-rsa foo")
-    keys = parse_ssh_keys_to_str(ssh_key_path=key_path)
+    keys = collect_ssh_keys_to_str(ssh_key_path=key_path)
     assert keys == "ssh-rsa foo"
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_parse_ssh_keys_to_str_github(mock_get, mock_log_request, mock_github_response):
+def test_collect_ssh_keys_to_str_github(mock_get, mock_github_response):
     mock_get.return_value = mock_github_response
-    keys = parse_ssh_keys_to_str(ssh_import_github={"testuser"})
+    keys = collect_ssh_keys_to_str(ssh_import_github={"testuser"})
     assert "ssh-rsa bar" in keys
     assert "ssh-rsa foo" in keys
     assert keys.count("\r\n") == 1
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_parse_ssh_keys_to_str_launchpad(mock_get, mock_log_request, mock_launchpad_response):
+def test_collect_ssh_keys_to_str_launchpad(mock_get, mock_launchpad_response):
     mock_get.return_value = mock_launchpad_response
-    keys = parse_ssh_keys_to_str(ssh_import_launchpad={"testuser"})
+    keys = collect_ssh_keys_to_str(ssh_import_launchpad={"testuser"})
     assert "ssh-rsa foobar" in keys
     assert "ssh-rsa barfoo" in keys
     assert keys.count("\r\n") == 1
 
 
-@patch("hostedpi.utils.log_request")
 @patch("hostedpi.utils.requests.get")
-def test_parse_ssh_keys_to_str_all(
-    mock_get, mock_log_request, mock_github_response, mock_launchpad_response, tmp_path
+def test_collect_ssh_keys_to_str_all(
+    mock_get, mock_github_response, mock_launchpad_response, tmp_path
 ):
     mock_get.side_effect = [mock_github_response, mock_launchpad_response]
     key_path = tmp_path / "id_rsa.pub"
     key_path.write_text("ssh-rsa localkey")
 
-    keys = parse_ssh_keys_to_str(
+    keys = collect_ssh_keys_to_str(
         ssh_keys={"ssh-rsa foo"},
         ssh_key_path=key_path,
         ssh_import_github={"testuser"},

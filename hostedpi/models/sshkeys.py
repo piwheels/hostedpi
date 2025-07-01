@@ -2,7 +2,7 @@ from typing import Union
 
 from pydantic import BaseModel, FilePath
 
-from ..utils import parse_ssh_keys
+from ..utils import collect_ssh_keys
 
 
 class SSHKeys(BaseModel):
@@ -11,8 +11,8 @@ class SSHKeys(BaseModel):
     ssh_import_github: Union[set[str], None] = None
     ssh_import_launchpad: Union[set[str], None] = None
 
-    def parse(self) -> Union[set[str], None]:
-        keys = parse_ssh_keys(
+    def collect(self) -> Union[set[str], None]:
+        keys = collect_ssh_keys(
             ssh_keys=self.ssh_keys,
             ssh_key_path=self.ssh_key_path,
             ssh_import_github=self.ssh_import_github,

@@ -7,6 +7,12 @@ from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec
 from hostedpi.exc import HostedPiException
 
 
+@pytest.fixture(autouse=True)
+def patch_log_request():
+    with patch("hostedpi.picloud.log_request"):
+        yield
+
+
 @pytest.fixture
 def mythic_servers_url():
     return "https://api.mythic-beasts.com/beta/pi/servers"
@@ -25,12 +31,6 @@ def default_pi3_spec():
 @pytest.fixture
 def default_pi4_spec():
     return Pi4ServerSpec()
-
-
-@pytest.fixture(autouse=True)
-def patch_log_request():
-    with patch("hostedpi.picloud.log_request"):
-        yield
 
 
 @pytest.fixture
@@ -54,14 +54,14 @@ def mock_session(mock_auth):
 
 
 @pytest.fixture(autouse=True)
-def parsed_ssh_keys():
+def collected_ssh_keys():
     return {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
 
 
 @pytest.fixture(autouse=True)
-def ssh_keys(parsed_ssh_keys):
+def ssh_keys(collected_ssh_keys):
     mock = Mock()
-    mock.parse.return_value = parsed_ssh_keys
+    mock.collect.return_value = collected_ssh_keys
     return mock
 
 
@@ -134,10 +134,10 @@ def test_picloud_init():
     assert cloud.ssh_keys is None
 
 
-def test_picloud_init_with_ssh_keys(ssh_keys, parsed_ssh_keys):
+def test_picloud_init_with_ssh_keys(ssh_keys, collected_ssh_keys):
     cloud = PiCloud(ssh_keys)
     assert repr(cloud) == "<PiCloud id=test_id>"
-    assert cloud.ssh_keys == parsed_ssh_keys
+    assert cloud.ssh_keys == collected_ssh_keys
 
 
 def test_get_pi3_operating_systems(mock_session, pi3_images_response):
@@ -269,7 +269,7 @@ def test_create_pi_with_default_ssh_keys(
     create_pi_response,
     default_pi3_spec,
     mythic_servers_url,
-    parsed_ssh_keys,
+    collected_ssh_keys,
 ):
     cloud = PiCloud(ssh_keys)
     mock_session.post.return_value = create_pi_response
@@ -281,9 +281,9 @@ def test_create_pi_with_default_ssh_keys(
     called_json = mock_session.post.call_args[1]["json"]
     assert "ssh_keys" in called_json
     assert type(called_json["ssh_keys"]) is str
-    for key in parsed_ssh_keys:
+    for key in collected_ssh_keys:
         assert key in called_json["ssh_keys"]
-    assert called_json["ssh_keys"].count("\n") == len(parsed_ssh_keys) - 1
+    assert called_json["ssh_keys"].count("\n") == len(collected_ssh_keys) - 1
 
 
 def test_create_pi_with_ssh_keys(
@@ -292,7 +292,7 @@ def test_create_pi_with_ssh_keys(
     create_pi_response,
     default_pi3_spec,
     mythic_servers_url,
-    parsed_ssh_keys,
+    collected_ssh_keys,
 ):
     cloud = PiCloud()
     mock_session.post.return_value = create_pi_response
@@ -304,6 +304,6 @@ def test_create_pi_with_ssh_keys(
     called_json = mock_session.post.call_args[1]["json"]
     assert "ssh_keys" in called_json
     assert type(called_json["ssh_keys"]) is str
-    for key in parsed_ssh_keys:
+    for key in collected_ssh_keys:
         assert key in called_json["ssh_keys"]
-    assert called_json["ssh_keys"].count("\n") == len(parsed_ssh_keys) - 1
+    assert called_json["ssh_keys"].count("\n") == len(collected_ssh_keys) - 1

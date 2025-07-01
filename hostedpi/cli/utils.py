@@ -14,7 +14,7 @@ from ..picloud import PiCloud
 from ..pi import Pi
 from ..exc import HostedPiException
 from . import format
-from ..utils import parse_ssh_keys_to_str
+from ..utils import collect_ssh_keys_to_str
 
 
 logger = get_logger()
@@ -125,7 +125,7 @@ def create_pi(
     full: bool,
     name: Union[str, None] = None,
 ):
-    ssh_keys = parse_ssh_keys_to_str(
+    ssh_keys = collect_ssh_keys_to_str(
         ssh_key_path=ssh_key_path,
         ssh_import_github=ssh_import_github,
         ssh_import_launchpad=ssh_import_launchpad,

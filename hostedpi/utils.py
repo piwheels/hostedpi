@@ -25,16 +25,16 @@ def ssh_import_id(
     if github is not None:
         url = f"https://github.com/{github}.keys"
         sep = "\n"
-        keys |= fetch_keys(url, sep)
+        keys |= fetch_keys_from_url(url, sep)
     if launchpad is not None:
         url = f"https://launchpad.net/~{launchpad}/+sshkeys"
         sep = "\r\n\n"
-        keys |= fetch_keys(url, sep)
+        keys |= fetch_keys_from_url(url, sep)
 
     return keys
 
 
-def fetch_keys(url: str, sep: str) -> set[str]:
+def fetch_keys_from_url(url: str, sep: str) -> set[str]:
     """
     Retrieve keys from *url* and return a set of keys
     """
@@ -49,7 +49,7 @@ def fetch_keys(url: str, sep: str) -> set[str]:
     return set(response.text.strip().split(sep))
 
 
-def parse_ssh_keys(
+def collect_ssh_keys(
     *,
     ssh_keys: Union[set[str], None] = None,
     ssh_key_path: Union[Path, None] = None,
@@ -57,13 +57,13 @@ def parse_ssh_keys(
     ssh_import_launchpad: Union[set[str], None] = None,
 ) -> set[str]:
     """
-    Parse SSH keys from any of various sources
+    Collect and combine SSH keys from any of various sources
     """
     ssh_keys_set = set()
     if ssh_keys:
         ssh_keys_set |= ssh_keys
     if ssh_key_path:
-        ssh_keys_set |= {ssh_key_path.read_text()}
+        ssh_keys_set |= {ssh_key_path.read_text().strip()}
     if ssh_import_github:
         for username in ssh_import_github:
             ssh_keys_set |= ssh_import_id(github=username)
@@ -73,7 +73,7 @@ def parse_ssh_keys(
     return ssh_keys_set
 
 
-def parse_ssh_keys_to_str(
+def collect_ssh_keys_to_str(
     *,
     ssh_keys: Union[set[str], None] = None,
     ssh_key_path: Union[Path, None] = None,
@@ -81,9 +81,9 @@ def parse_ssh_keys_to_str(
     ssh_import_launchpad: Union[set[str], None] = None,
 ) -> str:
     """
-    Parse SSH keys from any of various sources and return a string
+    Collect and combine SSH keys from any of various sources and return a string
     """
-    ssh_keys_set = parse_ssh_keys(
+    ssh_keys_set = collect_ssh_keys(
         ssh_keys=ssh_keys,
         ssh_key_path=ssh_key_path,
         ssh_import_github=ssh_import_github,

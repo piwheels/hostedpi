@@ -5,7 +5,7 @@ from rich.console import Console
 from . import utils
 from ..exc import HostedPiException
 from . import arguments, options
-from ..utils import parse_ssh_keys
+from ..utils import collect_ssh_keys
 
 
 keys_app = Typer()
@@ -117,7 +117,7 @@ def do_import(
         utils.print_error("You must specify at least one source to import from")
         return 1
     pis = utils.get_pis(names, filter)
-    ssh_keys = parse_ssh_keys(
+    ssh_keys = collect_ssh_keys(
         ssh_import_github=set(github) if github else None,
         ssh_import_launchpad=set(launchpad) if launchpad else None,
     )

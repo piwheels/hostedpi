@@ -34,7 +34,7 @@ class PiCloud:
 
     def __init__(self, ssh_keys: Union[SSHKeys, None] = None):
         self._api_url = "https://api.mythic-beasts.com/beta/pi/"
-        self.ssh_keys = ssh_keys.parse() if ssh_keys else None
+        self.ssh_keys = ssh_keys.collect() if ssh_keys else None
         self._auth = MythicAuth()
 
     def __repr__(self):
@@ -125,7 +125,7 @@ class PiCloud:
             url = urllib.parse.urljoin(self._api_url, f"servers/{name}")
 
         if ssh_keys is not None:
-            ssh_keys = ssh_keys.parse()
+            ssh_keys = ssh_keys.collect()
         else:
             ssh_keys = self.ssh_keys
 

@@ -9,7 +9,7 @@ from requests import Session, HTTPError, ConnectionError
 from structlog import get_logger
 from pydantic import ValidationError
 
-from .utils import parse_ssh_keys, get_error_message
+from .utils import collect_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse, ProvisioningServer
 from .logger import log_request
@@ -421,7 +421,7 @@ class Pi:
         :param ssh_import_launchpad:
             A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
         """
-        ssh_keys_set = parse_ssh_keys(
+        ssh_keys_set = collect_ssh_keys(
             ssh_import_github=github,
             ssh_import_launchpad=launchpad,
         )
