@@ -5,17 +5,17 @@ from pydantic import BaseModel, FilePath
 from ..utils import collect_ssh_keys
 
 
-class SSHKeys(BaseModel):
+class SSHKeySources(BaseModel):
     ssh_keys: Union[set[str], None] = None
     ssh_key_path: Union[FilePath, None] = None
-    ssh_import_github: Union[set[str], None] = None
-    ssh_import_launchpad: Union[set[str], None] = None
+    github_usernames: Union[set[str], None] = None
+    launchpad_usernames: Union[set[str], None] = None
 
     def collect(self) -> Union[set[str], None]:
         keys = collect_ssh_keys(
             ssh_keys=self.ssh_keys,
             ssh_key_path=self.ssh_key_path,
-            ssh_import_github=self.ssh_import_github,
-            ssh_import_launchpad=self.ssh_import_launchpad,
+            github_usernames=self.github_usernames,
+            launchpad_usernames=self.launchpad_usernames,
         )
         return keys if keys else None

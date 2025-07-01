@@ -9,7 +9,7 @@ from .auth import MythicAuth
 from .pi import Pi
 from .utils import get_error_message
 from .exc import HostedPiException
-from .models.sshkeys import SSHKeys
+from .models.sshkeys import SSHKeySources
 from .models.responses import ServersResponse, PiImagesResponse, PiInfoBasic
 from .models.payloads import NewServer, Pi3ServerSpec, Pi4ServerSpec
 from .logger import log_request
@@ -32,7 +32,7 @@ class PiCloud:
         but are overriden by any passed to the :meth:`~hostedpi.picloud.PiCloud.create_pi` method.
     """
 
-    def __init__(self, ssh_keys: Union[SSHKeys, None] = None):
+    def __init__(self, ssh_keys: Union[SSHKeySources, None] = None):
         self._api_url = "https://api.mythic-beasts.com/beta/pi/"
         self.ssh_keys = ssh_keys.collect() if ssh_keys else None
         self._auth = MythicAuth()
@@ -78,7 +78,7 @@ class PiCloud:
         *,
         name: Union[str, None] = None,
         spec: Union[Pi3ServerSpec, Pi4ServerSpec],
-        ssh_keys: Union[SSHKeys, None] = None,
+        ssh_keys: Union[SSHKeySources, None] = None,
         wait: bool = False,
     ) -> Pi:
         """

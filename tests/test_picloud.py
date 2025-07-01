@@ -306,4 +306,4 @@ def test_create_pi_with_ssh_keys(
     assert type(called_json["ssh_key"]) is str
     for key in collected_ssh_keys:
         assert key in called_json["ssh_key"]
-    assert called_json["ssh_key"].count("\n") == len(collected_ssh_keys) - 1
+    assert called_json["ssh_key"].count("\r\n") == len(collected_ssh_keys) - 1

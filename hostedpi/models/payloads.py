@@ -6,17 +6,6 @@ from pydantic import BaseModel, field_validator
 from .pi import Pi3ServerSpec, Pi4ServerSpec
 
 
-# class SSHKeyBody(BaseModel):
-#     ssh_key: Union[str, None] = None
-
-#     @field_validator("ssh_key", mode="before")
-#     @classmethod
-#     def validate_ssh_key(cls, v):
-#         if v is None or v == "":
-#             return "\n"
-#         return v
-
-
 class NewServer(BaseModel):
     name: Union[str, None] = None
     spec: Union[Pi3ServerSpec, Pi4ServerSpec]
@@ -44,5 +33,5 @@ class NewServer(BaseModel):
     def payload(self) -> dict:
         data = self.spec.model_dump(exclude_none=True)
         if self.ssh_keys is not None:
-            data["ssh_key"] = "\n".join(self.ssh_keys)
+            data["ssh_key"] = "\r\n".join(self.ssh_keys)
         return data

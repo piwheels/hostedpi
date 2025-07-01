@@ -422,8 +422,8 @@ class Pi:
             A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
         """
         ssh_keys_set = collect_ssh_keys(
-            ssh_import_github=github,
-            ssh_import_launchpad=launchpad,
+            github_usernames=github,
+            launchpad_usernames=launchpad,
         )
         self.ssh_keys |= ssh_keys_set
         return ssh_keys_set

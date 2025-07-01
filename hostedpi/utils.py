@@ -15,19 +15,19 @@ logger = get_logger()
 
 def ssh_import_id(
     *,
-    github: Union[str, None] = None,
-    launchpad: Union[str, None] = None,
+    github_username: Union[str, None] = None,
+    launchpad_username: Union[str, None] = None,
 ) -> set[str]:
     """
-    Returns a set of SSH keys imported from GitHub or Launchpad
+    Returns a set of SSH keys imported from GitHub and/or Launchpad
     """
     keys = set()
-    if github is not None:
-        url = f"https://github.com/{github}.keys"
+    if github_username is not None:
+        url = f"https://github.com/{github_username}.keys"
         sep = "\n"
         keys |= fetch_keys_from_url(url, sep)
-    if launchpad is not None:
-        url = f"https://launchpad.net/~{launchpad}/+sshkeys"
+    if launchpad_username is not None:
+        url = f"https://launchpad.net/~{launchpad_username}/+sshkeys"
         sep = "\r\n\n"
         keys |= fetch_keys_from_url(url, sep)
 
@@ -53,8 +53,8 @@ def collect_ssh_keys(
     *,
     ssh_keys: Union[set[str], None] = None,
     ssh_key_path: Union[Path, None] = None,
-    ssh_import_github: Union[set[str], None] = None,
-    ssh_import_launchpad: Union[set[str], None] = None,
+    github_usernames: Union[set[str], None] = None,
+    launchpad_usernames: Union[set[str], None] = None,
 ) -> set[str]:
     """
     Collect and combine SSH keys from any of various sources
@@ -64,12 +64,12 @@ def collect_ssh_keys(
         ssh_keys_set |= ssh_keys
     if ssh_key_path:
         ssh_keys_set |= {ssh_key_path.read_text().strip()}
-    if ssh_import_github:
-        for username in ssh_import_github:
-            ssh_keys_set |= ssh_import_id(github=username)
-    if ssh_import_launchpad:
-        for username in ssh_import_launchpad:
-            ssh_keys_set |= ssh_import_id(launchpad=username)
+    if github_usernames:
+        for username in github_usernames:
+            ssh_keys_set |= ssh_import_id(github_username=username)
+    if launchpad_usernames:
+        for username in launchpad_usernames:
+            ssh_keys_set |= ssh_import_id(launchpad_username=username)
     return ssh_keys_set
 
 

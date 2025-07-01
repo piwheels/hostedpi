@@ -118,8 +118,8 @@ def do_import(
         return 1
     pis = utils.get_pis(names, filter)
     ssh_keys = collect_ssh_keys(
-        ssh_import_github=set(github) if github else None,
-        ssh_import_launchpad=set(launchpad) if launchpad else None,
+        github_usernames=set(github) if github else None,
+        launchpad_usernames=set(launchpad) if launchpad else None,
     )
     for pi in pis:
         try:

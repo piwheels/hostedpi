@@ -49,7 +49,7 @@ def test_fetch_keys_launchpad(mock_get, mock_launchpad_response):
 def test_ssh_import_id_github(mock_get, mock_github_response):
     gh_user = "testuser"
     mock_get.return_value = mock_github_response
-    keys = ssh_import_id(github=gh_user)
+    keys = ssh_import_id(github_username=gh_user)
     assert mock_get.call_count == 1
     assert mock_get.call_args_list[0][0][0] == f"https://github.com/{gh_user}.keys"
     assert keys == {"ssh-rsa foo", "ssh-rsa bar"}
@@ -59,7 +59,7 @@ def test_ssh_import_id_github(mock_get, mock_github_response):
 def test_ssh_import_id_launchpad(mock_get, mock_launchpad_response):
     lp_user = "testuser2"
     mock_get.return_value = mock_launchpad_response
-    keys = ssh_import_id(launchpad=lp_user)
+    keys = ssh_import_id(launchpad_username=lp_user)
     assert mock_get.call_count == 1
     assert mock_get.call_args_list[0][0][0] == f"https://launchpad.net/~{lp_user}/+sshkeys"
     assert keys == {"ssh-rsa foobar", "ssh-rsa barfoo"}
@@ -70,7 +70,7 @@ def test_ssh_import_id_both(mock_get, mock_github_response, mock_launchpad_respo
     gh_user = "testuser"
     lp_user = "testuser2"
     mock_get.side_effect = [mock_github_response, mock_launchpad_response]
-    keys = ssh_import_id(github=gh_user, launchpad=lp_user)
+    keys = ssh_import_id(github_username=gh_user, launchpad_username=lp_user)
     assert mock_get.call_count == 2
     assert mock_get.call_args_list[0][0][0] == f"https://github.com/{gh_user}.keys"
     assert mock_get.call_args_list[1][0][0] == f"https://launchpad.net/~{lp_user}/+sshkeys"
@@ -92,14 +92,14 @@ def test_collect_ssh_keys_path(tmp_path):
 @patch("hostedpi.utils.requests.get")
 def test_collect_ssh_keys_github(mock_get, mock_github_response):
     mock_get.return_value = mock_github_response
-    keys = collect_ssh_keys(ssh_import_github={"testuser"})
+    keys = collect_ssh_keys(github_usernames={"testuser"})
     assert keys == {"ssh-rsa foo", "ssh-rsa bar"}
 
 
 @patch("hostedpi.utils.requests.get")
 def test_collect_ssh_keys_launchpad(mock_get, mock_launchpad_response):
     mock_get.return_value = mock_launchpad_response
-    keys = collect_ssh_keys(ssh_import_launchpad={"testuser"})
+    keys = collect_ssh_keys(launchpad_usernames={"testuser"})
     assert keys == {"ssh-rsa foobar", "ssh-rsa barfoo"}
 
 
@@ -112,8 +112,8 @@ def test_collect_ssh_keys_all(mock_get, mock_github_response, mock_launchpad_res
     keys = collect_ssh_keys(
         ssh_keys={"ssh-rsa foo"},
         ssh_key_path=key_path,
-        ssh_import_github={"testuser"},
-        ssh_import_launchpad={"testuser2"},
+        github_usernames={"testuser"},
+        launchpad_usernames={"testuser2"},
     )
 
     assert keys == {
