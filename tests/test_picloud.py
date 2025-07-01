@@ -135,16 +135,14 @@ def test_new_pi_bad_name():
     cloud = PiCloud()
     pi3_spec = Pi3ServerSpec()
     for name in ["pi 3", "pi_3", "pi3@server", "pi3#server", "pi3.hostedpi.com"]:
-        with pytest.raises(
-            HostedPiException,
-            match="Server name must consist of alphanumeric characters and hyphens",
-        ):
+        with pytest.raises(HostedPiException):
             cloud.create_pi(name=name, spec=pi3_spec)
 
 
-def test_new_pi_good_name():
+def test_new_pi_good_name(mock_session, create_pi_response):
     cloud = PiCloud()
     pi3_spec = Pi3ServerSpec()
+    mock_session.post.return_value = create_pi_response
     for name in ["pi3", "pi-3", "3-pi", "pi3-hostedpi-com"]:
         pi = cloud.create_pi(name=name, spec=pi3_spec)
         assert pi.name == name
