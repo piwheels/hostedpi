@@ -8,6 +8,7 @@ all:
 	@echo "make install - Install on local system"
 	@echo "make develop - Install symlinks for development"
 	@echo "make format - Format all Python code with black"
+	@echo "make test - Run tests"
 	@echo "make clean - Remove all generated files"
 	@echo "make build - Build the package release files"
 	@echo "make release - Release to PyPI"
@@ -28,6 +29,9 @@ develop:
 format:
 	black .
 
+test:
+	pytest
+
 clean:
 	rm -rf dist
 
@@ -44,4 +48,4 @@ doc:
 doc-serve:
 	cd $(DOC_HTML) && python -m http.server
 
-.PHONY: all install develop format clean build release doc doc-serve
+.PHONY: all install develop format test clean build release doc doc-serve

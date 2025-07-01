@@ -45,6 +45,14 @@ def pis_response_none():
 
 
 @pytest.fixture
+def create_pi_response():
+    response = Mock()
+    response.status_code = 202
+    response.headers = {"Location": MYTHIC_ASYNC_LOCATION}
+    return response
+
+
+@pytest.fixture
 def pis_response():
     mock = Mock()
     mock.status_code = 200
@@ -88,16 +96,12 @@ def test_get_pis(mock_session, pis_response):
     assert pi2.cpu_speed == 1500
 
 
-def test_create_pi3_with_name(mock_session):
+def test_create_pi3_with_name(mock_session, create_pi_response):
     cloud = PiCloud()
-
-    create_pi3_response = Mock()
-    create_pi3_response.status_code = 202
-    create_pi3_response.headers = {"Location": MYTHIC_ASYNC_LOCATION}
-
     pi3_spec = Pi3ServerSpec()
-    mock_session.post.return_value = create_pi3_response
+    mock_session.post.return_value = create_pi_response
     pi = cloud.create_pi(name="pi3", spec=pi3_spec)
+
     assert mock_session.post.called
     assert mock_session.post.call_args[0][0] == f"{MYTHIC_SERVERS}/pi3"
     assert pi.name == "pi3"
@@ -105,16 +109,39 @@ def test_create_pi3_with_name(mock_session):
     assert pi.cpu_speed == 1200
 
 
-def test_create_pi3_with_no_name(mock_session):
+def test_create_pi3_with_no_name(mock_session, create_pi_response):
     cloud = PiCloud()
-
-    create_pi3_response = Mock()
-    create_pi3_response.status_code = 202
-    create_pi3_response.headers = {"Location": MYTHIC_ASYNC_LOCATION}
-
     pi3_spec = Pi3ServerSpec()
-    mock_session.post.return_value = create_pi3_response
+    mock_session.post.return_value = create_pi_response
     pi = cloud.create_pi(spec=pi3_spec)
+
+    assert mock_session.post.called
+    assert mock_session.post.call_args[0][0] == MYTHIC_SERVERS
+    assert pi._status_url == MYTHIC_ASYNC_LOCATION
+    assert pi.name is None
+    assert pi.memory == 1024
+    assert pi.cpu_speed == 1200
+
+
+def test_create_pi4_with_name(mock_session, create_pi_response):
+    cloud = PiCloud()
+    pi4_spec = Pi4ServerSpec()
+    mock_session.post.return_value = create_pi_response
+    pi = cloud.create_pi(name="pi4", spec=pi4_spec)
+
+    assert mock_session.post.called
+    assert mock_session.post.call_args[0][0] == f"{MYTHIC_SERVERS}/pi4"
+    assert pi.name == "pi4"
+    assert pi.memory == 1024
+    assert pi.cpu_speed == 1200
+
+
+def test_create_pi4_with_no_name(mock_session, create_pi_response):
+    cloud = PiCloud()
+    pi4_spec = Pi4ServerSpec()
+    mock_session.post.return_value = create_pi_response
+    pi = cloud.create_pi(spec=pi4_spec)
+
     assert mock_session.post.called
     assert mock_session.post.call_args[0][0] == MYTHIC_SERVERS
     assert pi._status_url == MYTHIC_ASYNC_LOCATION

@@ -8,8 +8,9 @@ from structlog import get_logger
 
 from .auth import MythicAuth
 from .pi import Pi
-from .utils import parse_ssh_keys, get_error_message
+from .utils import get_error_message
 from .exc import HostedPiException
+from .models.sshkeys import SSHKeys
 from .models.responses import ServersResponse, PiImagesResponse, PiInfoBasic
 from .models.payloads import NewServer, Pi3ServerSpec, Pi4ServerSpec
 from .logger import log_request
@@ -22,46 +23,19 @@ class PiCloud:
     """
     A connection to the Mythic Beasts Pi Cloud API for creating and managing cloud Pi servers.
 
-    :type ssh_keys: set[str] or None
+    :type ssh_keys: :class:`~hostedpi.models.sshkeys.SSHKeys` or None
     :param ssh_keys:
-        A list/set of SSH key strings (keyword-only argument)
-
-    :type ssh_key_path: Path or str or None
-    :param ssh_key_path:
-        The path to your SSH public key (keyword-only argument)
-
-    :type ssh_import_github: set[str] or None
-    :param ssh_import_github:
-        A list/set of GitHub usernames to import SSH keys from (keyword-only argument)
-
-    :type ssh_import_launchpad: set[str] or None
-    :param ssh_import_launchpad:
-        A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
+        An instance of :class:`~hostedpi.models.sshkeys.SSHKeys` containing sources of SSH keys to
+        use when creating new Pis. If not provided, no SSH keys will be used by default.
 
     .. note::
         If any SSH keys are provided on class initialisation, they will be used when creating Pis
         but are overriden by any passed to the :meth:`~hostedpi.picloud.PiCloud.create_pi` method.
-
-        All SSH arguments provided will be used in combination.
     """
 
-    def __init__(
-        self,
-        *,
-        ssh_keys: Union[set[str], None] = None,
-        ssh_key_path: Union[Path, None] = None,
-        ssh_import_github: Union[set[str], None] = None,
-        ssh_import_launchpad: Union[set[str], None] = None,
-    ):
+    def __init__(self, ssh_keys: Union[SSHKeys, None] = None):
         self._api_url = "https://api.mythic-beasts.com/beta/pi/"
-
-        self.ssh_keys = parse_ssh_keys(
-            ssh_keys=ssh_keys,
-            ssh_key_path=ssh_key_path,
-            ssh_import_github=ssh_import_github,
-            ssh_import_launchpad=ssh_import_launchpad,
-        )
-
+        self.ssh_keys = ssh_keys.parse() if ssh_keys else None
         self._auth = MythicAuth()
 
     def __repr__(self):
@@ -105,10 +79,7 @@ class PiCloud:
         *,
         name: Union[str, None] = None,
         spec: Union[Pi3ServerSpec, Pi4ServerSpec],
-        ssh_keys: Union[set[str], None] = None,
-        ssh_key_path: Union[Path, str, None] = None,
-        ssh_import_github: Union[set[str], None] = None,
-        ssh_import_launchpad: Union[set[str], None] = None,
+        ssh_keys: Union[SSHKeys, None] = None,
         wait: bool = False,
     ) -> Pi:
         """
@@ -125,21 +96,10 @@ class PiCloud:
         :param spec:
             The spec of the Raspberry Pi to provision
 
-        :type ssh_keys: set[str] or None
+        :type ssh_keys: :class:`~hostedpi.models.sshkeys.SSHKeys` or None
         :param ssh_keys:
-            A list/set of SSH key strings (keyword-only argument)
-
-        :type ssh_key_path: Path or str or None
-        :param ssh_key_path:
-            The path to your SSH public key (keyword-only argument)
-
-        :type ssh_import_github: set[str] or None
-        :param ssh_import_github:
-            A list/set of GitHub usernames to import SSH keys from (keyword-only argument)
-
-        :type ssh_import_launchpad: set[str] or None
-        :param ssh_import_launchpad:
-            A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
+            An instance of :class:`~hostedpi.models.sshkeys.SSHKeys` containing sources of SSH keys
+            to use when creating a new Pi. If not provided, no SSH keys will be added on creation.
 
         :type wait: bool
         :param wait:
@@ -159,16 +119,6 @@ class PiCloud:
             request a particular model beyond 3 or 4.
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
-        # keys = [ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad]
-        # if any(key is not None for key in keys):
-        #     spec["ssh_key"] = parse_ssh_keys(
-        #         ssh_keys=ssh_keys,
-        #         ssh_key_path=Path(ssh_key_path) if ssh_key_path else None,
-        #         ssh_import_github=ssh_import_github,
-        #         ssh_import_launchpad=ssh_import_launchpad,
-        #     )
-        # elif self.ssh_keys:
-        #     spec.ssh_key = self.ssh_keys
 
         if name is None:
             url = urllib.parse.urljoin(self._api_url, "servers")
