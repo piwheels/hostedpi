@@ -21,7 +21,7 @@ develop:
 	pip install -U pip
 	pip install -U setuptools
 	pip install -U wheel
-	pip install -U poetry
+	pip install -U "poetry>2"
 	poetry install --all-extras
 	hostedpi --install-completion
 

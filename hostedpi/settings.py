@@ -6,7 +6,7 @@ from pydantic import SecretStr, field_validator
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="HOSTEDPI_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="hostedpi_", env_file=".env", extra="ignore")
 
     id: str
     secret: SecretStr

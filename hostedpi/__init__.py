@@ -3,4 +3,4 @@ from .pi import Pi
 from .auth import MythicAuth
 from . import logger
 
-del logger
+__all__ = ["PiCloud", "Pi", "MythicAuth"]

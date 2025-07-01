@@ -35,7 +35,7 @@ class MythicAuth:
 
     @property
     def token(self) -> str:
-        if datetime.now() > self._token_expiry:
+        if self._token is None or datetime.now() > self._token_expiry:
             auth_session = Session()
             data = {"grant_type": "client_credentials"}
             creds = (self._settings.id, self._settings.secret.get_secret_value())

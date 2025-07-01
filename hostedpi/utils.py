@@ -101,7 +101,7 @@ def get_error_message(exc: HTTPError) -> Union[str, None]:
     except Exception:
         if exc.response.text:
             return f"Error {exc.response.status_code}: {exc.response.text}"
-        return f"Error {exc.response}"
+        return f"Error {exc.response.status_code}"
 
     try:
         return ErrorResponse.model_validate(data).error
