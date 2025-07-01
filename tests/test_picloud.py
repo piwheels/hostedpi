@@ -18,6 +18,7 @@ def patch_log_request():
 def mock_auth():
     mock_auth_instance = Mock()
     mock_auth_instance._settings.id = "test_id"
+    mock_auth_instance.session.get = Mock()
     return mock_auth_instance
 
 
@@ -49,15 +50,16 @@ def pis_response():
     return mock
 
 
+@patch("hostedpi.picloud.parse_ssh_keys")
 def test_picloud_init(mock_parse_ssh_keys):
     mock_parse_ssh_keys.return_value = set()
     cloud = PiCloud()
     assert repr(cloud) == "<PiCloud id=test_id>"
 
 
-def test_get_pis_none(pis_response_none):
-    mock_auth.session.get.return_value = pis_response_none
+def test_get_pis_none(mock_auth, pis_response_none):
     cloud = PiCloud()
+    mock_auth.session.get.return_value = pis_response_none
     pis = cloud.pis
     assert mock_auth.session.get.called
     assert mock_auth.session.get.call_args[0][0] == MYTHIC_GET_SERVERS
@@ -65,8 +67,8 @@ def test_get_pis_none(pis_response_none):
 
 
 def test_get_pis(mock_auth, pis_response):
-    mock_auth.session.get.return_value = pis_response
     cloud = PiCloud()
+    mock_auth.session.get.return_value = pis_response
     pis = cloud.pis
 
     assert len(pis) == 2
