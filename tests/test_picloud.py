@@ -65,6 +65,40 @@ def pis_response():
     return mock
 
 
+@pytest.fixture
+def pi3_images_response():
+    return {
+        "rpi-buster-armhf": "Raspberry Pi OS Buster (32 bit)",
+        "rpi-bullseye-armhf": "Raspberry Pi OS Bullseye (32 bit)",
+        "rpi-bullseye-arm64": "Raspberry Pi OS Bullseye (64 bit)",
+        "rpi-focal-armhf": "Ubuntu 20.04 (Focal Fossa) (32 bit)",
+        "rpi-buster-arm64": "Raspberry Pi OS Buster (64 bit)",
+        "rpi-bookworm-arm64": "Raspberry Pi OS Bookworm (12) (64 bit)",
+        "rpi-jammy-arm64": "Ubuntu 22.04 (Jammy Jellyfish) (64 bit)",
+        "rpi-bookworm-armhf": "Raspberry Pi OS Bookworm (12) (32 bit)",
+        "rpi-bionic-arm64": "Ubuntu 18.04 (Bionic Beaver) (64 bit)",
+        "rpi-bullseye-arm64-vnc.2022-03-25T17:23:56+00:00": "Raspberry Pi OS Bullseye Desktop (64 bit, 1920x1080)",
+        "rpi-focal-arm64": "Ubuntu 20.04 (Focal Fossa) (64 bit)",
+    }
+
+
+@pytest.fixture
+def pi4_images_response():
+    return {
+        "rpi-buster-armhf": "Raspberry Pi OS Buster (32 bit)",
+        "rpi-bullseye-armhf": "Raspberry Pi OS Bullseye (32 bit)",
+        "rpi-bullseye-arm64": "Raspberry Pi OS Bullseye (64 bit)",
+        "rpi-focal-armhf": "Ubuntu 20.04 (Focal Fossa) (32 bit)",
+        "rpi-buster-arm64": "Raspberry Pi OS Buster (64 bit)",
+        "rpi-bookworm-armhf": "Raspberry Pi OS Bookworm (12) (32 bit)",
+        "rpi-jammy-arm64": "Ubuntu 22.04 (Jammy Jellyfish) (64 bit)",
+        "rpi-bookworm-arm64": "Raspberry Pi OS Bookworm (12) (64 bit)",
+        "rpi-bionic-arm64": "Ubuntu 18.04 (Bionic Beaver) (64 bit)",
+        "rpi-bullseye-arm64-vnc.2022-03-25T17:23:56+00:00": "Raspberry Pi OS Bullseye Desktop (64 bit, 1920x1080)",
+        "rpi-focal-arm64": "Ubuntu 20.04 (Focal Fossa) (64 bit)",
+    }
+
+
 def test_picloud_init():
     cloud = PiCloud()
     assert repr(cloud) == "<PiCloud id=test_id>"
@@ -148,3 +182,23 @@ def test_create_pi4_with_no_name(mock_session, create_pi_response):
     assert pi.name is None
     assert pi.memory == 4096
     assert pi.cpu_speed == 1500
+
+
+def test_get_pi3_operating_systems(mock_session, pi3_images_response):
+    cloud = PiCloud()
+    mock_session.get.return_value = Mock(
+        status_code=200,
+        json=Mock(return_value=pi3_images_response),
+    )
+    images = cloud.get_operating_systems(model=3)
+    assert images == pi3_images_response
+
+
+def test_get_pi4_operating_systems(mock_session, pi4_images_response):
+    cloud = PiCloud()
+    mock_session.get.return_value = Mock(
+        status_code=200,
+        json=Mock(return_value=pi4_images_response),
+    )
+    images = cloud.get_operating_systems(model=3)
+    assert images == pi4_images_response
