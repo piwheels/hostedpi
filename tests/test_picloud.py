@@ -1,9 +1,11 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from requests import HTTPError
 
 from hostedpi.picloud import PiCloud
 from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources
+from hostedpi.exc import HostedPiException
 
 
 @pytest.fixture(autouse=True)
@@ -71,14 +73,6 @@ def pis_response_none():
 
 
 @pytest.fixture
-def create_pi_response(mythic_async_location):
-    response = Mock()
-    response.status_code = 202
-    response.headers = {"Location": mythic_async_location}
-    return response
-
-
-@pytest.fixture
 def pis_response():
     mock = Mock()
     mock.status_code = 200
@@ -123,6 +117,25 @@ def pi4_images_response():
         "rpi-bullseye-arm64-vnc.2022-03-25T17:23:56+00:00": "Raspberry Pi OS Bullseye Desktop (64 bit, 1920x1080)",
         "rpi-focal-arm64": "Ubuntu 20.04 (Focal Fossa) (64 bit)",
     }
+
+
+@pytest.fixture
+def create_pi_response(mythic_async_location):
+    response = Mock()
+    response.status_code = 202
+    response.headers = {"Location": mythic_async_location}
+    return response
+
+
+@pytest.fixture
+def out_of_stock_response():
+    response = Mock()
+    response.status_code = 503
+    response.json.return_value = {
+        "error": "We do not have any servers of the specified type available"
+    }
+    response.raise_for_status.side_effect = HTTPError(response=response)
+    return response
 
 
 def test_picloud_init():
@@ -332,3 +345,11 @@ def test_create_pi_bad_ssh_keys():
 
     with pytest.raises(TypeError):
         cloud.create_pi(name="pi3", spec=default_pi3_spec, ssh_keys="foo")
+
+
+def test_create_pi_with_error(mock_session, out_of_stock_response, default_pi3_spec):
+    cloud = PiCloud()
+    mock_session.post.return_value = out_of_stock_response
+
+    with pytest.raises(HostedPiException):
+        cloud.create_pi(name="pi3", spec=default_pi3_spec)
