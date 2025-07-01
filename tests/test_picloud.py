@@ -38,6 +38,18 @@ def mock_session(mock_auth):
 
 
 @pytest.fixture
+def parsed_ssh_keys():
+    return {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
+
+
+@pytest.fixture
+def ssh_keys(parsed_ssh_keys):
+    mock = Mock()
+    mock.parse.return_value = parsed_ssh_keys
+    return mock
+
+
+@pytest.fixture
 def pis_response_none():
     mock = Mock()
     mock.status_code = 200
@@ -103,6 +115,33 @@ def pi4_images_response():
 def test_picloud_init():
     cloud = PiCloud()
     assert repr(cloud) == "<PiCloud id=test_id>"
+    assert cloud.ssh_keys is None
+
+
+def test_picloud_init_with_ssh_keys(ssh_keys, parsed_ssh_keys):
+    cloud = PiCloud(ssh_keys)
+    assert repr(cloud) == "<PiCloud id=test_id>"
+    assert cloud.ssh_keys == parsed_ssh_keys
+
+
+def test_get_pi3_operating_systems(mock_session, pi3_images_response):
+    cloud = PiCloud()
+    mock_session.get.return_value = Mock(
+        status_code=200,
+        json=Mock(return_value=pi3_images_response),
+    )
+    images = cloud.get_operating_systems(model=3)
+    assert images == pi3_images_response
+
+
+def test_get_pi4_operating_systems(mock_session, pi4_images_response):
+    cloud = PiCloud()
+    mock_session.get.return_value = Mock(
+        status_code=200,
+        json=Mock(return_value=pi4_images_response),
+    )
+    images = cloud.get_operating_systems(model=3)
+    assert images == pi4_images_response
 
 
 def test_get_pis_none(mock_session, pis_response_none):
@@ -200,23 +239,3 @@ def test_create_pi4_with_no_name(mock_session, create_pi_response):
     assert pi.name is None
     assert pi.memory == 4096
     assert pi.cpu_speed == 1500
-
-
-def test_get_pi3_operating_systems(mock_session, pi3_images_response):
-    cloud = PiCloud()
-    mock_session.get.return_value = Mock(
-        status_code=200,
-        json=Mock(return_value=pi3_images_response),
-    )
-    images = cloud.get_operating_systems(model=3)
-    assert images == pi3_images_response
-
-
-def test_get_pi4_operating_systems(mock_session, pi4_images_response):
-    cloud = PiCloud()
-    mock_session.get.return_value = Mock(
-        status_code=200,
-        json=Mock(return_value=pi4_images_response),
-    )
-    images = cloud.get_operating_systems(model=3)
-    assert images == pi4_images_response
