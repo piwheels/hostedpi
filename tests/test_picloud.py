@@ -8,11 +8,24 @@ from hostedpi.picloud import PiCloud
 MYTHIC_GET_SERVERS = "https://api.mythic-beasts.com/beta/pi/servers"
 
 
+@pytest.fixture(autouse=True)
+def patch_log_request():
+    with patch("hostedpi.picloud.log_request"):
+        yield
+
+
 @pytest.fixture
 def mock_auth():
     mock_auth_instance = Mock()
     mock_auth_instance._settings.id = "test_id"
     return mock_auth_instance
+
+
+@pytest.fixture(autouse=True)
+def patch_mythicauth(mock_auth):
+    with patch("hostedpi.picloud.MythicAuth") as mock_cls:
+        mock_cls.return_value = mock_auth
+        yield
 
 
 @pytest.fixture
@@ -36,20 +49,14 @@ def pis_response():
     return mock
 
 
-@patch("hostedpi.picloud.parse_ssh_keys")
-@patch("hostedpi.picloud.MythicAuth")
-def test_picloud_init(mock_mythic_auth_cls, mock_parse_ssh_keys, mock_auth):
-    mock_mythic_auth_cls.return_value = mock_auth
+def test_picloud_init(mock_parse_ssh_keys):
     mock_parse_ssh_keys.return_value = set()
     cloud = PiCloud()
     assert repr(cloud) == "<PiCloud id=test_id>"
 
 
-@patch("hostedpi.picloud.log_request")
-@patch("hostedpi.picloud.MythicAuth")
-def test_get_pis_none(mock_mythic_auth_cls, mock_log_request, mock_auth, pis_response_none):
+def test_get_pis_none(pis_response_none):
     mock_auth.session.get.return_value = pis_response_none
-    mock_mythic_auth_cls.return_value = mock_auth
     cloud = PiCloud()
     pis = cloud.pis
     assert mock_auth.session.get.called
@@ -57,11 +64,8 @@ def test_get_pis_none(mock_mythic_auth_cls, mock_log_request, mock_auth, pis_res
     assert len(pis) == 0
 
 
-@patch("hostedpi.picloud.log_request")
-@patch("hostedpi.picloud.MythicAuth")
-def test_get_pis(mock_mythic_auth_cls, mock_log_request, mock_auth, pis_response):
+def test_get_pis(mock_auth, pis_response):
     mock_auth.session.get.return_value = pis_response
-    mock_mythic_auth_cls.return_value = mock_auth
     cloud = PiCloud()
     pis = cloud.pis
 
