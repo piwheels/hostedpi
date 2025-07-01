@@ -320,6 +320,9 @@ def test_create_pi_bad_spec():
     with pytest.raises(TypeError):
         cloud.create_pi(name="pi3", spec={})
 
+    with pytest.raises(TypeError):
+        cloud.create_pi(name="pi3", spec="foo")
+
 
 def test_create_pi_bad_ssh_keys():
     cloud = PiCloud()
