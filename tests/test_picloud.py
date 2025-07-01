@@ -32,6 +32,11 @@ def patch_mythicauth(mock_auth):
 
 
 @pytest.fixture
+def mock_session(mock_auth):
+    return mock_auth.session
+
+
+@pytest.fixture
 def pis_response_none():
     mock = Mock()
     mock.status_code = 200
@@ -57,12 +62,12 @@ def test_picloud_init():
     assert repr(cloud) == "<PiCloud id=test_id>"
 
 
-def test_get_pis_none(mock_auth, pis_response_none):
+def test_get_pis_none(mock_session, pis_response_none):
     cloud = PiCloud()
-    mock_auth.session.get.return_value = pis_response_none
+    mock_session.get.return_value = pis_response_none
     pis = cloud.pis
-    assert mock_auth.session.get.called
-    assert mock_auth.session.get.call_args[0][0] == MYTHIC_SERVERS
+    assert mock_session.get.called
+    assert mock_session.get.call_args[0][0] == MYTHIC_SERVERS
     assert len(pis) == 0
 
 
