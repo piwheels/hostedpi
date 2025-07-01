@@ -265,4 +265,7 @@ def test_create_pi_with_default_ssh_keys(
 ):
     cloud = PiCloud(ssh_keys)
     mock_session.post.return_value = create_pi_response
-    pi = cloud.create_pi(name="pi3", spec=default_pi3_spec)
+    cloud.create_pi(name="pi3", spec=default_pi3_spec)
+    assert mock_session.post.called
+    assert mock_session.post.call_args[0][0] == f"{mythic_servers_url}/pi3"
+    assert mock_session.post.call_args[0][1] == {}
