@@ -50,9 +50,7 @@ def pis_response():
     return mock
 
 
-@patch("hostedpi.picloud.parse_ssh_keys")
-def test_picloud_init(mock_parse_ssh_keys):
-    mock_parse_ssh_keys.return_value = set()
+def test_picloud_init():
     cloud = PiCloud()
     assert repr(cloud) == "<PiCloud id=test_id>"
 
@@ -81,3 +79,7 @@ def test_get_pis(mock_auth, pis_response):
     assert pi2.model == 4
     assert pi2.memory == 4096
     assert pi2.cpu_speed == 1500
+
+
+def test_create_pi(mock_auth):
+    cloud = PiCloud()
