@@ -279,11 +279,11 @@ def test_create_pi_with_default_ssh_keys(
     assert called_url == f"{mythic_servers_url}/pi3"
     assert "json" in mock_session.post.call_args[1]
     called_json = mock_session.post.call_args[1]["json"]
-    assert "ssh_keys" in called_json
-    assert type(called_json["ssh_keys"]) is str
+    assert "ssh_key" in called_json
+    assert type(called_json["ssh_key"]) is str
     for key in collected_ssh_keys:
-        assert key in called_json["ssh_keys"]
-    assert called_json["ssh_keys"].count("\n") == len(collected_ssh_keys) - 1
+        assert key in called_json["ssh_key"]
+    assert called_json["ssh_key"].count("\n") == len(collected_ssh_keys) - 1
 
 
 def test_create_pi_with_ssh_keys(
@@ -302,8 +302,8 @@ def test_create_pi_with_ssh_keys(
     assert called_url == f"{mythic_servers_url}/pi3"
     assert "json" in mock_session.post.call_args[1]
     called_json = mock_session.post.call_args[1]["json"]
-    assert "ssh_keys" in called_json
-    assert type(called_json["ssh_keys"]) is str
+    assert "ssh_key" in called_json
+    assert type(called_json["ssh_key"]) is str
     for key in collected_ssh_keys:
-        assert key in called_json["ssh_keys"]
-    assert called_json["ssh_keys"].count("\n") == len(collected_ssh_keys) - 1
+        assert key in called_json["ssh_key"]
+    assert called_json["ssh_key"].count("\n") == len(collected_ssh_keys) - 1

@@ -44,5 +44,5 @@ class NewServer(BaseModel):
     def payload(self) -> dict:
         data = self.spec.model_dump(exclude_none=True)
         if self.ssh_keys is not None:
-            data["ssh_keys"] = "\n".join(self.ssh_keys)
+            data["ssh_key"] = "\n".join(self.ssh_keys)
         return data
