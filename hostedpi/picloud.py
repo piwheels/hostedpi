@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Union
 import urllib.parse
 from pathlib import Path
 
@@ -11,7 +11,7 @@ from .pi import Pi
 from .utils import parse_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import ServersResponse, PiImagesResponse, PiInfoBasic
-from .models.payloads import NewPi3ServerBody, NewPi4ServerBody, NewServer
+from .models.payloads import NewServer, Pi3ServerSpec, Pi4ServerSpec
 from .logger import log_request
 
 
@@ -104,7 +104,7 @@ class PiCloud:
         self,
         *,
         name: Union[str, None] = None,
-        spec: dict[str, Any],
+        spec: Union[Pi3ServerSpec, Pi4ServerSpec],
         ssh_keys: Union[set[str], None] = None,
         ssh_key_path: Union[Path, str, None] = None,
         ssh_import_github: Union[set[str], None] = None,
@@ -121,11 +121,9 @@ class PiCloud:
             and must consist only of alphanumeric characters and hyphens. If not provided, a server
             name will be automatically generated.
 
-        :type spec: dict
+        :type spec: Pi3ServerSpec or Pi4ServerSpec
         :param spec:
-            The spec of the Raspberry Pi to provision - must be compatible with the
-            :class:`~hostedpi.models.NewPi3ServerBody` or
-            :class:`~hostedpi.models.NewPi4ServerBody` models.
+            The spec of the Raspberry Pi to provision
 
         :type ssh_keys: set[str] or None
         :param ssh_keys:
@@ -161,23 +159,16 @@ class PiCloud:
             request a particular model beyond 3 or 4.
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
-        keys = [ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad]
-        if any(key is not None for key in keys):
-            spec["ssh_key"] = parse_ssh_keys(
-                ssh_keys=ssh_keys,
-                ssh_key_path=Path(ssh_key_path) if ssh_key_path else None,
-                ssh_import_github=ssh_import_github,
-                ssh_import_launchpad=ssh_import_launchpad,
-            )
-        elif self.ssh_keys:
-            spec.ssh_key = self.ssh_keys
-
-        if spec["model"] == 3:
-            validated_spec = NewPi3ServerBody.model_validate(spec)
-        elif spec["model"] == 4:
-            validated_spec = NewPi4ServerBody.model_validate(spec)
-        else:
-            raise TypeError("Model must be 3 or 4")
+        # keys = [ssh_keys, ssh_key_path, ssh_import_github, ssh_import_launchpad]
+        # if any(key is not None for key in keys):
+        #     spec["ssh_key"] = parse_ssh_keys(
+        #         ssh_keys=ssh_keys,
+        #         ssh_key_path=Path(ssh_key_path) if ssh_key_path else None,
+        #         ssh_import_github=ssh_import_github,
+        #         ssh_import_launchpad=ssh_import_launchpad,
+        #     )
+        # elif self.ssh_keys:
+        #     spec.ssh_key = self.ssh_keys
 
         if name is None:
             url = urllib.parse.urljoin(self._api_url, "servers")
@@ -185,12 +176,12 @@ class PiCloud:
             url = urllib.parse.urljoin(self._api_url, f"servers/{name}")
 
         try:
-            data = NewServer(name=name, spec=validated_spec)
+            data = NewServer(name=name, spec=spec)
         except ValidationError as exc:
             logger.error(f"Invalid server name or spec: {exc}")
             raise HostedPiException(f"Invalid server name or spec") from exc
 
-        logger.info("Creating new server", name=name, spec=validated_spec)
+        logger.info("Creating new server", name=name, spec=spec)
         response = self.session.post(url, json=data.spec.model_dump(exclude_none=True))
         log_request(response)
 
@@ -201,7 +192,7 @@ class PiCloud:
             raise HostedPiException(error) from exc
 
         logger.info("Server creation request accepted", status_url=response.headers["Location"])
-        info = PiInfoBasic.model_validate(validated_spec)
+        info = PiInfoBasic.model_validate(spec)
         if name is None:
             pi = Pi.from_status_url(
                 info=info,

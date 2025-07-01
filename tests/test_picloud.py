@@ -3,9 +3,11 @@ from unittest.mock import Mock, patch
 import pytest
 
 from hostedpi.picloud import PiCloud
+from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec
 
 
-MYTHIC_GET_SERVERS = "https://api.mythic-beasts.com/beta/pi/servers"
+MYTHIC_SERVERS = "https://api.mythic-beasts.com/beta/pi/servers"
+MYTHIC_ASYNC_LOCATION = "https://api.mythic-beasts.com/queue/pi/1234"
 
 
 @pytest.fixture(autouse=True)
@@ -60,7 +62,7 @@ def test_get_pis_none(mock_auth, pis_response_none):
     mock_auth.session.get.return_value = pis_response_none
     pis = cloud.pis
     assert mock_auth.session.get.called
-    assert mock_auth.session.get.call_args[0][0] == MYTHIC_GET_SERVERS
+    assert mock_auth.session.get.call_args[0][0] == MYTHIC_SERVERS
     assert len(pis) == 0
 
 
@@ -81,5 +83,36 @@ def test_get_pis(mock_auth, pis_response):
     assert pi2.cpu_speed == 1500
 
 
-def test_create_pi(mock_auth):
+def test_create_pi3_with_name(mock_auth):
     cloud = PiCloud()
+
+    create_pi3_response = Mock()
+    create_pi3_response.status_code = 202
+    create_pi3_response.headers = {"Location": MYTHIC_ASYNC_LOCATION}
+
+    pi3_spec = Pi3ServerSpec()
+    mock_auth.session.post.return_value = create_pi3_response
+    pi = cloud.create_pi(name="pi3", spec=pi3_spec)
+    assert mock_auth.session.post.called
+    assert mock_auth.session.post.call_args[0][0] == f"{MYTHIC_SERVERS}/pi3"
+    assert pi.name == "pi3"
+    assert pi.memory == 1024
+    assert pi.cpu_speed == 1200
+
+
+def test_create_pi3_with_no_name(mock_auth):
+    cloud = PiCloud()
+
+    create_pi3_response = Mock()
+    create_pi3_response.status_code = 202
+    create_pi3_response.headers = {"Location": MYTHIC_ASYNC_LOCATION}
+
+    pi3_spec = Pi3ServerSpec()
+    mock_auth.session.post.return_value = create_pi3_response
+    pi = cloud.create_pi(spec=pi3_spec)
+    assert mock_auth.session.post.called
+    assert mock_auth.session.post.call_args[0][0] == MYTHIC_SERVERS
+    assert pi._status_url == MYTHIC_ASYNC_LOCATION
+    assert pi.name is None
+    assert pi.memory == 1024
+    assert pi.cpu_speed == 1200

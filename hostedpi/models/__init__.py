@@ -1,1 +1,1 @@
-from .payloads import NewPi3ServerBody, NewPi4ServerBody
+from .pi import Pi3ServerSpec, Pi4ServerSpec
