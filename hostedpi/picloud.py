@@ -117,15 +117,18 @@ class PiCloud:
             When requesting a Pi 3, you will either get a model 3B or 3B+. It is not possible to
             request a particular model beyond 3 or 4.
         """
-        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
-
         if name is None:
+            # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piservers
             url = urllib.parse.urljoin(self._api_url, "servers")
         else:
+            # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
             url = urllib.parse.urljoin(self._api_url, f"servers/{name}")
 
+        if ssh_keys is None:
+            ssh_keys = self.ssh_keys
+
         try:
-            data = NewServer(name=name, spec=spec)
+            data = NewServer(name=name, spec=spec, ssh_keys=ssh_keys)
         except ValidationError as exc:
             logger.error(f"Invalid server name or spec: {exc}")
             raise HostedPiException(f"Invalid server name or spec") from exc

@@ -20,6 +20,7 @@ from .pi import Pi3ServerSpec, Pi4ServerSpec
 class NewServer(BaseModel):
     name: Union[str, None] = None
     spec: Union[Pi3ServerSpec, Pi4ServerSpec]
+    ssh_keys: Union[set[str], None] = None
 
     @field_validator("name", mode="after")
     @classmethod
@@ -31,3 +32,10 @@ class NewServer(BaseModel):
         if not all(c in valid_chars for c in server_name):
             raise ValueError("Server name must consist of alphanumeric characters and hyphens")
         return server_name
+
+    @field_validator("ssh_keys", mode="before")
+    @classmethod
+    def validate_ssh_keys(cls, v):
+        if v == set():
+            return None
+        return v
