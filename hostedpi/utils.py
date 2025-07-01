@@ -73,25 +73,6 @@ def collect_ssh_keys(
     return ssh_keys_set
 
 
-def collect_ssh_keys_to_str(
-    *,
-    ssh_keys: Union[set[str], None] = None,
-    ssh_key_path: Union[Path, None] = None,
-    ssh_import_github: Union[set[str], None] = None,
-    ssh_import_launchpad: Union[set[str], None] = None,
-) -> str:
-    """
-    Collect and combine SSH keys from any of various sources and return a string
-    """
-    ssh_keys_set = collect_ssh_keys(
-        ssh_keys=ssh_keys,
-        ssh_key_path=ssh_key_path,
-        ssh_import_github=ssh_import_github,
-        ssh_import_launchpad=ssh_import_launchpad,
-    )
-    return "\r\n".join(ssh_keys_set) if ssh_keys_set else None
-
-
 def get_error_message(exc: HTTPError) -> Union[str, None]:
     """
     Try to retrieve an error message from the response

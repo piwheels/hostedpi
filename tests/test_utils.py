@@ -2,13 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from hostedpi.utils import (
-    ssh_import_id,
-    fetch_keys_from_url,
-    collect_ssh_keys,
-    collect_ssh_keys_to_str,
-    get_error_message,
-)
+from hostedpi.utils import ssh_import_id, fetch_keys_from_url, collect_ssh_keys, get_error_message
 
 
 @pytest.fixture(autouse=True)
@@ -129,61 +123,6 @@ def test_collect_ssh_keys_all(mock_get, mock_github_response, mock_launchpad_res
         "ssh-rsa barfoo",
         "ssh-rsa localkey",
     }
-
-
-def test_collect_ssh_keys_to_str_set():
-    keys = collect_ssh_keys_to_str(ssh_keys={"ssh-rsa foo", "ssh-rsa bar"})
-    assert "ssh-rsa bar" in keys
-    assert "ssh-rsa foo" in keys
-    assert keys.count("\r\n") == 1
-
-
-def test_collect_ssh_keys_to_str_path(tmp_path):
-    key_path = tmp_path / "id_rsa.pub"
-    key_path.write_text("ssh-rsa foo")
-    keys = collect_ssh_keys_to_str(ssh_key_path=key_path)
-    assert keys == "ssh-rsa foo"
-
-
-@patch("hostedpi.utils.requests.get")
-def test_collect_ssh_keys_to_str_github(mock_get, mock_github_response):
-    mock_get.return_value = mock_github_response
-    keys = collect_ssh_keys_to_str(ssh_import_github={"testuser"})
-    assert "ssh-rsa bar" in keys
-    assert "ssh-rsa foo" in keys
-    assert keys.count("\r\n") == 1
-
-
-@patch("hostedpi.utils.requests.get")
-def test_collect_ssh_keys_to_str_launchpad(mock_get, mock_launchpad_response):
-    mock_get.return_value = mock_launchpad_response
-    keys = collect_ssh_keys_to_str(ssh_import_launchpad={"testuser"})
-    assert "ssh-rsa foobar" in keys
-    assert "ssh-rsa barfoo" in keys
-    assert keys.count("\r\n") == 1
-
-
-@patch("hostedpi.utils.requests.get")
-def test_collect_ssh_keys_to_str_all(
-    mock_get, mock_github_response, mock_launchpad_response, tmp_path
-):
-    mock_get.side_effect = [mock_github_response, mock_launchpad_response]
-    key_path = tmp_path / "id_rsa.pub"
-    key_path.write_text("ssh-rsa localkey")
-
-    keys = collect_ssh_keys_to_str(
-        ssh_keys={"ssh-rsa foo"},
-        ssh_key_path=key_path,
-        ssh_import_github={"testuser"},
-        ssh_import_launchpad={"testuser2"},
-    )
-
-    assert "ssh-rsa foo" in keys
-    assert "ssh-rsa bar" in keys
-    assert "ssh-rsa foobar" in keys
-    assert "ssh-rsa barfoo" in keys
-    assert "ssh-rsa localkey" in keys
-    assert keys.count("\r\n") == 4
 
 
 def test_get_error_message_json():
