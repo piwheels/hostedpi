@@ -39,3 +39,10 @@ class NewServer(BaseModel):
         if v == set():
             return None
         return v
+
+    @property
+    def payload(self) -> dict:
+        data = self.spec.model_dump(exclude_none=True)
+        if self.ssh_keys is not None:
+            data["ssh_keys"] = "\n".join(self.ssh_keys)
+        return data

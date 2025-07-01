@@ -124,7 +124,9 @@ class PiCloud:
             # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifier
             url = urllib.parse.urljoin(self._api_url, f"servers/{name}")
 
-        if ssh_keys is None:
+        if ssh_keys is not None:
+            ssh_keys = ssh_keys.parse()
+        else:
             ssh_keys = self.ssh_keys
 
         try:
@@ -133,8 +135,9 @@ class PiCloud:
             logger.error(f"Invalid server name or spec: {exc}")
             raise HostedPiException(f"Invalid server name or spec") from exc
 
-        logger.info("Creating new server", name=name, spec=spec)
-        response = self.session.post(url, json=data.spec.model_dump(exclude_none=True))
+        num_ssh_keys = len(ssh_keys) if ssh_keys else 0
+        logger.info("Creating new server", name=name, spec=spec, ssh_keys=num_ssh_keys)
+        response = self.session.post(url, json=data.payload)
         log_request(response)
 
         try:

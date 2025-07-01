@@ -209,7 +209,8 @@ def test_create_pi3_with_name(
     pi = cloud.create_pi(name="pi3", spec=default_pi3_spec)
 
     assert mock_session.post.called
-    assert mock_session.post.call_args[0][0] == f"{mythic_servers_url}/pi3"
+    called_url = mock_session.post.call_args[0][0]
+    assert called_url == f"{mythic_servers_url}/pi3"
     assert pi.name == "pi3"
     assert pi.memory == 1024
     assert pi.cpu_speed == 1200
@@ -221,10 +222,10 @@ def test_create_pi3_with_no_name(
     cloud = PiCloud()
     mock_session.post.return_value = create_pi_response
     pi = cloud.create_pi(spec=default_pi3_spec)
-    print(pi)
 
     assert mock_session.post.called
-    assert mock_session.post.call_args[0][0] == mythic_servers_url
+    called_url = mock_session.post.call_args[0][0]
+    assert called_url == mythic_servers_url
     assert pi._status_url == mythic_async_location
     assert pi.name is None
     assert pi.memory == 1024
@@ -239,7 +240,8 @@ def test_create_pi4_with_name(
     pi = cloud.create_pi(name="pi4", spec=default_pi4_spec)
 
     assert mock_session.post.called
-    assert mock_session.post.call_args[0][0] == f"{mythic_servers_url}/pi4"
+    called_url = mock_session.post.call_args[0][0]
+    assert called_url == f"{mythic_servers_url}/pi4"
     assert pi.name == "pi4"
     assert pi.memory == 4096
     assert pi.cpu_speed == 1500
@@ -253,7 +255,8 @@ def test_create_pi4_with_no_name(
     pi = cloud.create_pi(spec=default_pi4_spec)
 
     assert mock_session.post.called
-    assert mock_session.post.call_args[0][0] == mythic_servers_url
+    called_url = mock_session.post.call_args[0][0]
+    assert called_url == mythic_servers_url
     assert pi._status_url == mythic_async_location
     assert pi.name is None
     assert pi.memory == 4096
@@ -261,11 +264,46 @@ def test_create_pi4_with_no_name(
 
 
 def test_create_pi_with_default_ssh_keys(
-    mock_session, ssh_keys, create_pi_response, default_pi3_spec
+    mock_session,
+    ssh_keys,
+    create_pi_response,
+    default_pi3_spec,
+    mythic_servers_url,
+    parsed_ssh_keys,
 ):
     cloud = PiCloud(ssh_keys)
     mock_session.post.return_value = create_pi_response
     cloud.create_pi(name="pi3", spec=default_pi3_spec)
     assert mock_session.post.called
-    assert mock_session.post.call_args[0][0] == f"{mythic_servers_url}/pi3"
-    assert mock_session.post.call_args[0][1] == {}
+    called_url = mock_session.post.call_args[0][0]
+    assert called_url == f"{mythic_servers_url}/pi3"
+    assert "json" in mock_session.post.call_args[1]
+    called_json = mock_session.post.call_args[1]["json"]
+    assert "ssh_keys" in called_json
+    assert type(called_json["ssh_keys"]) is str
+    for key in parsed_ssh_keys:
+        assert key in called_json["ssh_keys"]
+    assert called_json["ssh_keys"].count("\n") == len(parsed_ssh_keys) - 1
+
+
+def test_create_pi_with_ssh_keys(
+    mock_session,
+    ssh_keys,
+    create_pi_response,
+    default_pi3_spec,
+    mythic_servers_url,
+    parsed_ssh_keys,
+):
+    cloud = PiCloud()
+    mock_session.post.return_value = create_pi_response
+    cloud.create_pi(name="pi3", spec=default_pi3_spec, ssh_keys=ssh_keys)
+    assert mock_session.post.called
+    called_url = mock_session.post.call_args[0][0]
+    assert called_url == f"{mythic_servers_url}/pi3"
+    assert "json" in mock_session.post.call_args[1]
+    called_json = mock_session.post.call_args[1]["json"]
+    assert "ssh_keys" in called_json
+    assert type(called_json["ssh_keys"]) is str
+    for key in parsed_ssh_keys:
+        assert key in called_json["ssh_keys"]
+    assert called_json["ssh_keys"].count("\n") == len(parsed_ssh_keys) - 1
