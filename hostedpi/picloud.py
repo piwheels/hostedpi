@@ -1,6 +1,5 @@
 from typing import Union
 import urllib.parse
-from pathlib import Path
 
 from requests import Session, HTTPError
 from pydantic import ValidationError
