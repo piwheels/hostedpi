@@ -3,7 +3,7 @@ from typer import Typer
 from .utils import get_pi, get_pis
 from ..exc import HostedPiException
 from . import arguments, options
-from .keys import keys_app
+from .sshkeys import keys_app
 
 
 ssh_app = Typer()

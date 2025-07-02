@@ -101,6 +101,7 @@ def do_create(
         number = 1
     if full and not wait:
         utils.print_error("You can't use --full without --wait")
+        return 1
     if ssh_key_path is not None:
         if not ssh_key_path.exists():
             utils.print_error(f"SSH key file not found: {ssh_key_path}")
