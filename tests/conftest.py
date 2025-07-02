@@ -29,6 +29,16 @@ def api_url_2():
 
 
 @pytest.fixture
+def mythic_servers_url():
+    return "https://api.mythic-beasts.com/beta/pi/servers"
+
+
+@pytest.fixture
+def mythic_async_location():
+    return "https://api.mythic-beasts.com/queue/pi/1234"
+
+
+@pytest.fixture
 def pi3_name():
     return "pi3"
 
@@ -87,3 +97,12 @@ def patch_mythicauth(mock_auth):
 @pytest.fixture
 def mock_session(mock_auth):
     return mock_auth.session
+
+
+@pytest.fixture
+def pi_info_response(pi_info_json, mythic_servers_url, pi3_name):
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = pi_info_json
+    response.request.url = f"{mythic_servers_url}/{pi3_name}"
+    return response

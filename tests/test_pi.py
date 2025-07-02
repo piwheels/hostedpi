@@ -14,7 +14,7 @@ def test_pi_init(pi_info, mock_session, api_url):
     assert repr(pi) == "<Pi name=test-pi>"
 
 
-def test_pi_get_info(pi_info, mock_session, api_url):
+def test_pi_get_info(pi_info, mock_session, api_url, pi_info_response):
     pi = Pi(name="test-pi", info=pi_info, api_url=api_url, session=mock_session)
-
-    # info = pi.info
+    mock_session.get.return_value = pi_info_response
+    info = pi.info
