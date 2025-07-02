@@ -250,3 +250,4 @@ def test_ssh_import_id(collect_ssh_keys, pi_info_basic, mock_session, api_url):
     called_json = mock_session.put.call_args[1]["json"]["ssh_key"]
     for key in ssh_keys:
         assert key in called_json
+    assert called_json.count("\r\n") == len(ssh_keys) - 1
