@@ -12,7 +12,6 @@ from pydantic import ValidationError
 from .utils import collect_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse, ProvisioningServer
-from .models.pi import NewServerSpec
 from .logger import log_request
 
 
@@ -76,7 +75,7 @@ class Pi:
     def info(self) -> PiInfo:
         """
         The full Pi information as a :class:`~hostedpi.models.responses.PiInfo` object. Always fetch
-        the latest information from the API when this is called.
+        the latest information from the API when this is called (with a cache timeout of 10 seconds).
         """
         if self._info is None:
             self._get_info()
@@ -463,7 +462,8 @@ class Pi:
 
     def _get_info(self):
         """
-        Fetch the full Pi information from the API
+        Fetch the full Pi information from the API, or return immediately if the last fetch was
+        less than 10 seconds ago.
         """
         if self.name is None:
             raise HostedPiException("Cannot fetch info for a Pi without a name")

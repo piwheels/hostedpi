@@ -172,10 +172,17 @@ def pi_info_response_random_name(pi_info_json, mythic_servers_url, random_pi_nam
     return response
 
 
-def test_picloud_init():
+def test_picloud_init(api_url):
     cloud = PiCloud()
     assert repr(cloud) == "<PiCloud id=test_id>"
     assert cloud.ssh_keys is None
+    assert cloud._api_url == api_url
+
+
+def test_picloud_init_with_api_url(api_url_2):
+    cloud = PiCloud(api_url=api_url_2)
+    assert repr(cloud) == "<PiCloud id=test_id>"
+    assert cloud._api_url == api_url_2
 
 
 def test_picloud_init_with_ssh_keys(ssh_keys, collected_ssh_keys):
