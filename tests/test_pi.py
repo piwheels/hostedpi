@@ -19,3 +19,10 @@ def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_
     mock_session.get.return_value = pi_info_response
     info = pi.info
     assert info == pi_info_full
+    assert pi.model_full == "3B"
+    assert not pi.is_booting
+    assert pi.boot_progress is None
+    assert pi.power
+    assert pi.ssh_port == 5100
+    assert pi.disk_size == 10
+    assert pi.ipv4_ssh_command == ""
