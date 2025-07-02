@@ -392,24 +392,24 @@ class Pi:
     def ssh_import_id(
         self,
         *,
-        github: Union[set[str], None] = None,
-        launchpad: Union[set[str], None] = None,
+        github_usernames: Union[set[str], None] = None,
+        launchpad_usernames: Union[set[str], None] = None,
     ) -> set[str]:
         """
         Import SSH keys from GitHub or Launchpad, and add them to the Pi. Return the set of keys
         added.
 
-        :type ssh_import_github: set[str] or None
-        :param ssh_import_github:
-            A list/set of GitHub usernames to import SSH keys from (keyword-only argument)
+        :type github_usernames: set[str] or None
+        :param github_usernames:
+            A set of GitHub usernames to import SSH keys from (keyword-only argument)
 
-        :type ssh_import_launchpad: set[str] or None
-        :param ssh_import_launchpad:
-            A list/set of Launchpad usernames to import SSH keys from (keyword-only argument)
+        :type launchpad_usernames: set[str] or None
+        :param launchpad_usernames:
+            A set of Launchpad usernames to import SSH keys from (keyword-only argument)
         """
         ssh_keys_set = collect_ssh_keys(
-            github_usernames=github,
-            launchpad_usernames=launchpad,
+            github_usernames=github_usernames,
+            launchpad_usernames=launchpad_usernames,
         )
         self.ssh_keys |= ssh_keys_set
         return ssh_keys_set

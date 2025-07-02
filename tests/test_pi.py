@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from ipaddress import IPv6Address, IPv6Network
 
 import pytest
@@ -219,3 +219,34 @@ def test_power_off_pi(pi_info_basic, mock_session, api_url):
     assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
     called_json = mock_session.put.call_args[1]["json"]
     assert called_json == {"power": False}
+
+
+def test_reboot_pi(pi_info_basic, mock_session, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    pi.reboot()
+    assert mock_session.post.call_count == 1
+    assert mock_session.post.call_args[0][0] == api_url + "servers/test-pi/reboot"
+
+
+def test_cancel_pi(pi_info_basic, mock_session, api_url, pi_info_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = pi_info_response
+    pi.cancel()
+    assert mock_session.delete.call_count == 1
+    assert mock_session.delete.call_args[0][0] == api_url + "servers/test-pi"
+    assert pi._cancelled
+    assert repr(pi) == "<Pi name=test-pi cancelled>"
+
+
+@patch("hostedpi.pi.collect_ssh_keys")
+def test_ssh_import_id(collect_ssh_keys, pi_info_basic, mock_session, api_url):
+    ssh_keys = {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    collect_ssh_keys.return_value = ssh_keys
+    mock_session.get.return_value.json.return_value = {"ssh_key": ""}
+    pi.ssh_import_id(github_usernames={"testuser"}, launchpad_usernames={"testuser"})
+    assert mock_session.put.call_count == 1
+    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    called_json = mock_session.put.call_args[1]["json"]["ssh_key"]
+    for key in ssh_keys:
+        assert key in called_json
