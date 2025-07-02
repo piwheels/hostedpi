@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from requests import HTTPError
+from requests import HTTPError, ConnectionError
 
 from hostedpi.picloud import PiCloud
 from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources
@@ -11,6 +11,12 @@ from hostedpi.exc import HostedPiException
 @pytest.fixture(autouse=True)
 def patch_log_request():
     with patch("hostedpi.picloud.log_request"):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def patch_log_request_pi():
+    with patch("hostedpi.pi.log_request"):
         yield
 
 
@@ -138,6 +144,90 @@ def out_of_stock_response():
     return response
 
 
+@pytest.fixture
+def provision_status_provisioning():
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = {
+        "status": "Provisioning",
+    }
+    return response
+
+
+@pytest.fixture
+def provision_status_installing():
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = {
+        "status": "Installing operating system",
+    }
+    return response
+
+
+@pytest.fixture
+def provision_status_booting():
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = {
+        "status": "Booting Raspberry Pi",
+    }
+    return response
+
+
+@pytest.fixture
+def pi_info():
+    return {
+        "cpu_speed": 1200,
+        "disk_size": "10.00",
+        "model_full": "3B",
+        "initialised_keys": False,
+        "ip_routed": "2a00:1098:0008:6400:0000:0000:0000:0000/56",
+        "ssh_port": 5100,
+        "ip": "2a00:1098:0008:0064:0000:0000:0000:0001",
+        "is_booting": False,
+        "location": "CLL",
+        "memory": 1024,
+        "power": True,
+        "nic_speed": 100,
+        "status": "live",
+        "model": 3,
+        "boot_progress": None,
+    }
+
+
+@pytest.fixture
+def pi3_name():
+    return "pi3"
+
+
+@pytest.fixture
+def pi4_name():
+    return "pi4"
+
+
+@pytest.fixture
+def pi_info_response(pi_info, mythic_servers_url, pi3_name):
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = pi_info
+    response.request.url = f"{mythic_servers_url}/{pi3_name}"
+    return response
+
+
+@pytest.fixture
+def random_pi_name():
+    return "abc123"
+
+
+@pytest.fixture
+def pi_info_response_random_name(pi_info, mythic_servers_url, random_pi_name):
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = pi_info
+    response.request.url = f"{mythic_servers_url}/{random_pi_name}"
+    return response
+
+
 def test_picloud_init():
     cloud = PiCloud()
     assert repr(cloud) == "<PiCloud id=test_id>"
@@ -220,16 +310,16 @@ def test_new_pi_good_name(mock_session, create_pi_response, default_pi3_spec):
 
 
 def test_create_pi3_with_name(
-    mock_session, create_pi_response, mythic_servers_url, default_pi3_spec
+    mock_session, create_pi_response, mythic_servers_url, default_pi3_spec, pi3_name
 ):
     cloud = PiCloud()
     mock_session.post.return_value = create_pi_response
-    pi = cloud.create_pi(name="pi3", spec=default_pi3_spec)
+    pi = cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
 
     assert mock_session.post.called
     called_url = mock_session.post.call_args[0][0]
-    assert called_url == f"{mythic_servers_url}/pi3"
-    assert pi.name == "pi3"
+    assert called_url == f"{mythic_servers_url}/{pi3_name}"
+    assert pi.name == pi3_name
     assert pi.memory == 1024
     assert pi.cpu_speed == 1200
 
@@ -327,29 +417,87 @@ def test_create_pi_with_ssh_keys(
     assert called_json["ssh_key"].count("\r\n") == len(collected_ssh_keys) - 1
 
 
-def test_create_pi_bad_spec():
+def test_create_pi_named_with_wait(
+    mock_session,
+    create_pi_response,
+    default_pi3_spec,
+    provision_status_provisioning,
+    provision_status_installing,
+    provision_status_booting,
+    pi_info_response,
+    pi3_name,
+):
+    cloud = PiCloud()
+    mock_session.post.return_value = create_pi_response
+    mock_session.get.side_effect = [
+        provision_status_provisioning,
+        provision_status_installing,
+        provision_status_installing,
+        provision_status_booting,
+        ConnectionError,
+        pi_info_response,
+    ]
+
+    pi = cloud.create_pi(name=pi3_name, spec=default_pi3_spec, wait=True)
+    assert mock_session.get.called
+    assert mock_session.get.call_count == 6
+    assert pi.name == pi3_name
+    assert pi.model == 3
+    assert pi.memory == 1024
+
+
+def test_create_pi_unnamed_with_wait(
+    mock_session,
+    create_pi_response,
+    default_pi3_spec,
+    provision_status_provisioning,
+    provision_status_installing,
+    provision_status_booting,
+    random_pi_name,
+    pi_info_response_random_name,
+):
+    cloud = PiCloud()
+    mock_session.post.return_value = create_pi_response
+    mock_session.get.side_effect = [
+        provision_status_provisioning,
+        provision_status_installing,
+        provision_status_installing,
+        provision_status_booting,
+        ConnectionError,
+        pi_info_response_random_name,
+    ]
+
+    pi = cloud.create_pi(spec=default_pi3_spec, wait=True)
+    assert mock_session.get.called
+    assert mock_session.get.call_count == 6
+    assert pi.name == random_pi_name
+    assert pi.model == 3
+    assert pi.memory == 1024
+
+
+def test_create_pi_bad_spec(pi3_name):
     cloud = PiCloud()
 
     with pytest.raises(TypeError):
-        cloud.create_pi(name="pi3", spec={})
+        cloud.create_pi(name=pi3_name, spec={})
 
     with pytest.raises(TypeError):
-        cloud.create_pi(name="pi3", spec="foo")
+        cloud.create_pi(name=pi3_name, spec="foo")
 
 
-def test_create_pi_bad_ssh_keys():
+def test_create_pi_bad_ssh_keys(pi3_name):
     cloud = PiCloud()
 
     with pytest.raises(TypeError):
-        cloud.create_pi(name="pi3", spec=default_pi3_spec, ssh_keys={})
+        cloud.create_pi(name=pi3_name, spec=default_pi3_spec, ssh_keys={})
 
     with pytest.raises(TypeError):
-        cloud.create_pi(name="pi3", spec=default_pi3_spec, ssh_keys="foo")
+        cloud.create_pi(name=pi3_name, spec=default_pi3_spec, ssh_keys="foo")
 
 
-def test_create_pi_with_error(mock_session, out_of_stock_response, default_pi3_spec):
+def test_create_pi_with_error(mock_session, out_of_stock_response, default_pi3_spec, pi3_name):
     cloud = PiCloud()
     mock_session.post.return_value = out_of_stock_response
 
     with pytest.raises(HostedPiException):
-        cloud.create_pi(name="pi3", spec=default_pi3_spec)
+        cloud.create_pi(name=pi3_name, spec=default_pi3_spec)

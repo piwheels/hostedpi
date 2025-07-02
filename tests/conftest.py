@@ -1,6 +1,19 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def unset_hostedpi_env(monkeypatch):
+    monkeypatch.delenv("HOSTEDPI_ID", raising=False)
+    monkeypatch.delenv("HOSTEDPI_SECRET", raising=False)
+    monkeypatch.delenv("HOSTEDPI_LOG_LEVEL", raising=False)
+
+
+@pytest.fixture(autouse=True)
+def patch_sleep():
+    with patch("hostedpi.pi.sleep"):
+        yield
 
 
 @pytest.fixture

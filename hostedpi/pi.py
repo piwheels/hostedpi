@@ -37,7 +37,13 @@ class Pi:
     """
 
     def __init__(
-        self, name: Union[str, None], *, info: PiInfoBasic, api_url: str, session: Session
+        self,
+        name: Union[str, None],
+        *,
+        info: PiInfoBasic,
+        api_url: str,
+        session: Session,
+        status_url: Union[str, None] = None,
     ):
         self._name = name
         self._model = info.model
@@ -48,7 +54,7 @@ class Pi:
         self._cancelled = False
         self._info: Union[PiInfoBasic, PiInfo, None] = None
         self._last_fetched_info: Union[datetime, None] = None
-        self._status_url: Union[str, None] = None
+        self._status_url: Union[str, None] = status_url
 
     def __repr__(self):
         if self._cancelled:
@@ -439,6 +445,9 @@ class Pi:
             raise HostedPiException(error) from exc
 
         log_request(response)
+        print(self._status_url)
+        print(response.request.url)
+        print(response.json())
 
         status = self._parse_status(response.json())
         if type(status) is ProvisioningServer:
@@ -446,10 +455,10 @@ class Pi:
             return status.provision_status
         if type(status) is PiInfo:
             self._name = response.request.url.split("/")[-1]
+            logger.info("Server provisioning complete", server_name=self._name)
             self._info = status
             self._last_fetched_info = datetime.now(timezone.utc)
             self._status_url = None
-            logger.info("Got server name", server_name=self._name)
             return status
 
     def _get_info(self):

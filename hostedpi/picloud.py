@@ -160,11 +160,15 @@ class PiCloud:
 
         logger.info("Server creation request accepted", status_url=status_url)
         basic_info = PiInfoBasic.model_validate(spec)
-        pi = Pi(name=name, info=basic_info, api_url=self._api_url, session=self.session)
-        if name is None:
-            pi._status_url = status_url
+        pi = Pi(
+            name=name,
+            info=basic_info,
+            api_url=self._api_url,
+            session=self.session,
+            status_url=status_url,
+        )
         if wait:
-            pi.wait_until_provisioned(status_url)
+            pi.wait_until_provisioned()
         return pi
 
     def get_operating_systems(self, *, model: int) -> dict[str, str]:
