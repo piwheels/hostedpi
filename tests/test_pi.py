@@ -26,3 +26,8 @@ def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_
     assert pi.ipv4_ssh_port == 5100
     assert pi.disk_size == 10
     assert pi.ipv4_ssh_command == "ssh -p 5100 root@ssh.test-pi.hostedpi.com"
+    assert pi.ipv6_ssh_command == "ssh -p 5100 root@2a00:1098:0008:0064:0000:0000:0000:0001"
+    assert pi.ipv6_address.exploded == "2a00:1098:0008:0064:0000:0000:0000:0001"
+    assert pi.ipv6_network.exploded == "2a00:1098:0008:6400::/56"
+    assert pi.initialised_keys is False
+    assert pi.location == "CLL"
