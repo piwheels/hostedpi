@@ -43,14 +43,14 @@ def get_picloud() -> PiCloud:
 def get_pi(name: str) -> Pi:
     cloud = get_picloud()
     try:
-        return {name: pi for pi in cloud.pis}[name]
+        return cloud.pis[name]
     except KeyError:
         raise HostedPiException(f"Pi not found: {name}")
 
 
 def get_all_pis() -> list[Pi]:
     cloud = get_picloud()
-    return cloud.pis
+    return list(cloud.pis.values())
 
 
 def get_pis(names: Union[list[str], None], filter: Union[str, None] = None) -> list[Pi]:

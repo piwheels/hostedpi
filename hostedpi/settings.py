@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "ERROR"
 
     @field_validator("log_level", mode="before")
+    @classmethod
     def validate_log_level(cls, v):
         if v:
             return v.upper()

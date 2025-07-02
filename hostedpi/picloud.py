@@ -62,7 +62,7 @@ class PiCloud:
         servers = self._get_pis()
         return {
             name: Pi(name, info=info, api_url=self._api_url, session=self.session)
-            for name, info in servers.items()
+            for name, info in sorted(servers.items())
         }
 
     @property

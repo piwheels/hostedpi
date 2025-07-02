@@ -58,11 +58,10 @@ class Pi:
     def __repr__(self):
         if self._cancelled:
             return f"<Pi name={self.name} cancelled>"
-        else:
-            if self._info is None:
-                return f"<Pi name={self.name}>"
-            model = self.model_full if self.model_full else self.model
-            return f"<Pi name={self.name} model={model}>"
+        if self._info is None:
+            return f"<Pi name={self.name}>"
+        model = self.model_full if self.model_full else self.model
+        return f"<Pi name={self.name} model={model}>"
 
     @property
     def session(self) -> Session:
@@ -75,7 +74,8 @@ class Pi:
     def info(self) -> PiInfo:
         """
         The full Pi information as a :class:`~hostedpi.models.responses.PiInfo` object. Always fetch
-        the latest information from the API when this is called (with a cache timeout of 10 seconds).
+        the latest information from the API when this is called (with a cache timeout of 10
+        seconds).
         """
         if self._info is None:
             self._get_info()
