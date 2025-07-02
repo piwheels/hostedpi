@@ -444,9 +444,6 @@ class Pi:
             raise HostedPiException(error) from exc
 
         log_request(response)
-        print(self._status_url)
-        print(response.request.url)
-        print(response.json())
 
         status = self._parse_status(response.json())
         if type(status) is ProvisioningServer:
