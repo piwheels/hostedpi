@@ -62,11 +62,3 @@ def pi2_info_response(pi2_info_json):
     mock.status_code = 200
     mock.json.return_value = pi2_info_json
     return mock
-
-
-def test_new_with_name(pi3_spec, pi4_spec):
-    pi3 = Pi.new_with_name("pi3", spec=pi3_spec, api_url=Mock(), session=Mock())
-    assert pi3.name == "pi3"
-
-    pi4 = Pi.new_with_name("pi4", spec=pi4_spec, api_url=Mock(), session=Mock())
-    assert pi4.name == "pi4"

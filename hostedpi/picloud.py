@@ -156,19 +156,15 @@ class PiCloud:
             error = get_error_message(exc)
             raise HostedPiException(error) from exc
 
-        logger.info("Server creation request accepted", status_url=response.headers["Location"])
-        if name is None:
-            pi = Pi.new_without_name(
-                spec=spec,
-                api_url=self._api_url,
-                session=self.session,
-                status_url=response.headers["Location"],
-            )
-        else:
-            pi = Pi.new_with_name(name, spec=spec, api_url=self._api_url, session=self.session)
+        status_url = response.headers["Location"]
 
+        logger.info("Server creation request accepted", status_url=status_url)
+        basic_info = PiInfoBasic.model_validate(spec)
+        pi = Pi(name=name, info=basic_info, api_url=self._api_url, session=self.session)
+        if name is None:
+            pi._status_url = status_url
         if wait:
-            pi.wait_until_provisioned(response.headers["Location"])
+            pi.wait_until_provisioned(status_url)
         return pi
 
     def get_operating_systems(self, *, model: int) -> dict[str, str]:
