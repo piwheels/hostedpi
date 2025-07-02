@@ -157,16 +157,15 @@ class PiCloud:
             raise HostedPiException(error) from exc
 
         logger.info("Server creation request accepted", status_url=response.headers["Location"])
-        info = PiInfoBasic.model_validate(spec)
         if name is None:
-            pi = Pi.from_status_url(
-                info=info,
+            pi = Pi.new_without_name(
+                spec=spec,
                 api_url=self._api_url,
                 session=self.session,
                 status_url=response.headers["Location"],
             )
         else:
-            pi = Pi(name, info=info, api_url=self._api_url, session=self.session)
+            pi = Pi.new_with_name(name, spec=spec, api_url=self._api_url, session=self.session)
 
         if wait:
             pi.wait_until_provisioned(response.headers["Location"])

@@ -64,9 +64,9 @@ def pi2_info_response(pi2_info_json):
     return mock
 
 
-def test_pi_init(pi3_spec, pi4_spec):
-    pi3_info = PiInfoBasic.model_validate(pi3_spec)
-    pi3 = Pi("pi1", info=pi3_info, api_url=Mock(), session=Mock())
+def test_new_with_name(pi3_spec, pi4_spec):
+    pi3 = Pi.new_with_name("pi3", spec=pi3_spec, api_url=Mock(), session=Mock())
+    assert pi3.name == "pi3"
 
-    pi4_info = PiInfoBasic.model_validate(pi4_spec)
-    pi4 = Pi("pi2", info=pi4_info, api_url=Mock(), session=Mock())
+    pi4 = Pi.new_with_name("pi4", spec=pi4_spec, api_url=Mock(), session=Mock())
+    assert pi4.name == "pi4"

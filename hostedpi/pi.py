@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from .utils import collect_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse, ProvisioningServer
+from .models.pi import NewServerSpec
 from .logger import log_request
 
 
@@ -45,16 +46,30 @@ class Pi:
         self._api_url = api_url
         self._session = session
         self._cancelled = False
-        self._info: Union[PiInfoBasic, PiInfo, None] = None
+        self._info: Union[PiInfo, None] = None
         self._last_fetched_info: Union[datetime, None] = None
         self._status_url: Union[str, None] = None
 
     @classmethod
-    def from_status_url(cls, *, info: PiInfo, api_url: str, session: Session, status_url: str):
+    def new_with_name(cls, name: str, *, spec: NewServerSpec, api_url: str, session: Session):
         """
-        Construct a ``Pi`` object from a :class:`~hostedpi.models.responses.PiInfo` object
+        Construct a named ``Pi`` object from a :class:`~hostedpi.models.pi.NewServerSpec` object, to
+        represent a new Pi server that is being provisioned.
         """
-        basic_info = PiInfoBasic.model_validate(info)
+        basic_info = PiInfoBasic.model_validate(spec)
+        pi = cls(name, info=basic_info, api_url=api_url, session=session)
+        pi._last_fetched_info = datetime.now(timezone.utc)
+        return pi
+
+    @classmethod
+    def new_without_name(
+        cls, *, spec: NewServerSpec, api_url: str, session: Session, status_url: str
+    ):
+        """
+        Construct an unnamed ``Pi`` object from a :class:`~hostedpi.models.pi.NewServerSpec` object
+        and a status URL, to represent a new Pi server that is being provisioned.
+        """
+        basic_info = PiInfoBasic.model_validate(spec)
         pi = cls(name=None, info=basic_info, api_url=api_url, session=session)
         pi._status_url = status_url
         return pi
