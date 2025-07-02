@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from .utils import collect_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse, ProvisioningServer
+from .models.sshkeys import SSHKeySources
 from .logger import log_request
 
 
@@ -301,16 +302,17 @@ class Pi:
     def ssh_keys(self, ssh_keys: Union[set[str], None]):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierssh-key
         url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}/ssh-key")
-        # data = SSHKeyBody(ssh_key=ssh_keys_str)
 
-        # response = self.session.put(url, json=data.model_dump())
-        # log_request(response)
+        data = {"ssh_key": "\r\n".join(ssh_keys) if ssh_keys else ""}
 
-        # try:
-        #     response.raise_for_status()
-        # except HTTPError as exc:
-        #     error = get_error_message(exc)
-        #     raise HostedPiException(error) from exc
+        response = self.session.put(url, json=data)
+        log_request(response)
+
+        try:
+            response.raise_for_status()
+        except HTTPError as exc:
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
 
     def on(self, *, wait: bool = False) -> Union[bool, None]:
         """

@@ -19,14 +19,53 @@ def ssh_key_empty_response(ssh_key_empty_json):
 
 
 @pytest.fixture
-def ssh_key_json():
+def ssh_three_keys_json():
     return {"ssh_key": "ssh-rsa AAA\r\n" "ssh-rsa BBB\r\n" "ssh-rsa CCC\r\n"}
 
 
 @pytest.fixture
-def ssh_key_response(ssh_key_json):
+def ssh_three_keys_key_response(ssh_three_keys_json):
     mock = Mock()
-    mock.json.return_value = ssh_key_json
+    mock.json.return_value = ssh_three_keys_json
+    return mock
+
+
+@pytest.fixture
+def one_ssh_key():
+    return {"ssh-rsa AAA"}
+
+
+@pytest.fixture
+def three_ssh_keys():
+    return {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
+
+
+@pytest.fixture
+def another_ssh_key():
+    return {"ssh-rsa ZZZ"}
+
+
+@pytest.fixture
+def one_ssh_key_json():
+    return {"ssh_key": "ssh-rsa AAA"}
+
+
+@pytest.fixture
+def another_ssh_key_json():
+    return {"ssh_key": "ssh-rsa ZZZ"}
+
+
+@pytest.fixture
+def one_ssh_key_response(one_ssh_key_json):
+    mock = Mock()
+    mock.json.return_value = one_ssh_key_json
+    return mock
+
+
+@pytest.fixture
+def another_ssh_key_response(another_ssh_key_json):
+    mock = Mock()
+    mock.json.return_value = another_ssh_key_json
     return mock
 
 
@@ -85,12 +124,80 @@ def test_get_ssh_keys_empty(pi_info_basic, mock_session, api_url, ssh_key_empty_
     assert keys == set()
 
 
-def test_get_ssh_keys(pi_info_basic, mock_session, api_url, ssh_key_response):
+def test_get_ssh_keys(pi_info_basic, mock_session, api_url, ssh_three_keys_key_response):
     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = ssh_key_response
+    mock_session.get.return_value = ssh_three_keys_key_response
     keys = pi.ssh_keys
     assert keys == {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
 
 
-def test_set_ssh_keys(pi_info_basic, mock_session, api_url_2, ssh_key_response):
-    pass
+def test_unset_ssh_keys(pi_info_basic, mock_session, api_url, one_ssh_key_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.put.return_value = one_ssh_key_response
+    pi.ssh_keys = None
+    assert mock_session.put.call_count == 1
+    called_json = mock_session.put.call_args[1]["json"]
+    assert called_json == {"ssh_key": ""}
+
+
+def test_set_one_ssh_key(pi_info_basic, mock_session, api_url, one_ssh_key_response, one_ssh_key):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.put.return_value = one_ssh_key_response
+    pi.ssh_keys = one_ssh_key
+    assert mock_session.put.call_count == 1
+    called_json = mock_session.put.call_args[1]["json"]
+    assert called_json == {"ssh_key": "ssh-rsa AAA"}
+
+
+def test_add_one_ssh_key(
+    pi_info_basic, mock_session, api_url, ssh_key_empty_response, one_ssh_key_response, one_ssh_key
+):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = ssh_key_empty_response
+    mock_session.put.return_value = one_ssh_key_response
+    pi.ssh_keys |= one_ssh_key
+    assert mock_session.get.call_count == 1
+    assert mock_session.put.call_count == 1
+    called_json = mock_session.put.call_args[1]["json"]
+    assert called_json == {"ssh_key": "ssh-rsa AAA"}
+
+
+def test_add_ssh_keys(
+    pi_info_basic,
+    mock_session,
+    api_url,
+    ssh_key_empty_response,
+    one_ssh_key_response,
+    three_ssh_keys,
+):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = ssh_key_empty_response
+    mock_session.put.return_value = one_ssh_key_response
+    pi.ssh_keys |= three_ssh_keys
+    assert mock_session.get.call_count == 1
+    assert mock_session.put.call_count == 1
+    ssh_keys_data = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert "ssh-rsa AAA" in ssh_keys_data
+    assert "ssh-rsa BBB" in ssh_keys_data
+    assert "ssh-rsa CCC" in ssh_keys_data
+    assert ssh_keys_data.count("\r\n") == 2
+
+
+def test_add_another_ssh_key(
+    pi_info_basic,
+    mock_session,
+    api_url,
+    one_ssh_key_response,
+    another_ssh_key,
+    another_ssh_key_response,
+):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = one_ssh_key_response
+    mock_session.put.return_value = another_ssh_key_response
+    pi.ssh_keys |= another_ssh_key
+    assert mock_session.get.call_count == 1
+    assert mock_session.put.call_count == 1
+    ssh_keys_data = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert "ssh-rsa AAA" in ssh_keys_data
+    assert "ssh-rsa ZZZ" in ssh_keys_data
+    assert ssh_keys_data.count("\r\n") == 1
