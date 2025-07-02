@@ -45,20 +45,9 @@ class Pi:
         self._api_url = api_url
         self._session = session
         self._cancelled = False
-        self._info: Union[PiInfo, None] = None
+        self._info: Union[PiInfoBasic, PiInfo, None] = None
         self._last_fetched_info: Union[datetime, None] = None
         self._status_url: Union[str, None] = None
-
-    @classmethod
-    def from_pi_info(cls, name: str, *, info: PiInfo, api_url: str, session: Session):
-        """
-        Construct a ``Pi`` object from a :class:`~hostedpi.models.responses.PiInfo` object
-        """
-        basic_info = PiInfoBasic.model_validate(info)
-        pi = cls(name, info=basic_info, api_url=api_url, session=session)
-        pi._info = info
-        pi._last_fetched_info = datetime.now(timezone.utc)
-        return pi
 
     @classmethod
     def from_status_url(cls, *, info: PiInfo, api_url: str, session: Session, status_url: str):
