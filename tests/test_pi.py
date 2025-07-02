@@ -19,6 +19,8 @@ def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_
     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
     mock_session.get.return_value = pi_info_response
     info = pi.info
+    assert mock_session.get.call_count == 1
+    assert mock_session.get.call_args[0][0] == f"{api_url}/servers/test-pi"
     assert info == pi_info_full
     assert pi.model_full == "3B"
     assert not pi.is_booting
