@@ -4,20 +4,8 @@ import pytest
 from requests import HTTPError, ConnectionError
 
 from hostedpi.picloud import PiCloud
-from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources
+from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec
 from hostedpi.exc import HostedPiException
-
-
-@pytest.fixture(autouse=True)
-def patch_log_request():
-    with patch("hostedpi.picloud.log_request"):
-        yield
-
-
-@pytest.fixture(autouse=True)
-def patch_log_request_pi():
-    with patch("hostedpi.pi.log_request"):
-        yield
 
 
 @pytest.fixture
@@ -28,16 +16,6 @@ def default_pi3_spec():
 @pytest.fixture
 def default_pi4_spec():
     return Pi4ServerSpec()
-
-
-@pytest.fixture(autouse=True)
-def collected_ssh_keys():
-    return {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
-
-
-@pytest.fixture(autouse=True)
-def ssh_keys(collected_ssh_keys):
-    return SSHKeySources(ssh_keys=collected_ssh_keys)
 
 
 @pytest.fixture

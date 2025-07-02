@@ -2,7 +2,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from hostedpi.models.responses import PiInfoBasic
+from hostedpi.models.responses import PiInfoBasic, PiInfo
+from hostedpi.models.sshkeys import SSHKeySources
 
 
 @pytest.fixture(autouse=True)
@@ -16,6 +17,28 @@ def unset_hostedpi_env(monkeypatch):
 def patch_sleep():
     with patch("hostedpi.pi.sleep"):
         yield
+
+
+@pytest.fixture(autouse=True)
+def patch_log_request():
+    with patch("hostedpi.picloud.log_request"):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def patch_log_request_pi():
+    with patch("hostedpi.pi.log_request"):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def collected_ssh_keys():
+    return {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
+
+
+@pytest.fixture(autouse=True)
+def ssh_keys(collected_ssh_keys):
+    return SSHKeySources(ssh_keys=collected_ssh_keys)
 
 
 @pytest.fixture
@@ -75,7 +98,12 @@ def pi_info_json():
 
 
 @pytest.fixture
-def pi_info(pi_info_json):
+def pi_info_full(pi_info_json):
+    return PiInfo.model_validate(pi_info_json)
+
+
+@pytest.fixture
+def pi_info_basic(pi_info_json):
     return PiInfoBasic.model_validate(pi_info_json)
 
 

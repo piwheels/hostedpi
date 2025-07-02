@@ -5,8 +5,8 @@ import pytest
 from hostedpi.pi import Pi
 
 
-def test_pi_init(pi_info, mock_session, api_url):
-    pi = Pi(name="test-pi", info=pi_info, api_url=api_url, session=mock_session)
+def test_pi_init(pi_info_basic, mock_session, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
     assert pi.name == "test-pi"
     assert pi.model == 3
     assert pi.memory == 1024
@@ -14,7 +14,8 @@ def test_pi_init(pi_info, mock_session, api_url):
     assert repr(pi) == "<Pi name=test-pi>"
 
 
-def test_pi_get_info(pi_info, mock_session, api_url, pi_info_response):
-    pi = Pi(name="test-pi", info=pi_info, api_url=api_url, session=mock_session)
+def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_info_full):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
     mock_session.get.return_value = pi_info_response
     info = pi.info
+    assert info == pi_info_full
