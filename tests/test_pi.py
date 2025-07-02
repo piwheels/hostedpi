@@ -6,6 +6,30 @@ import pytest
 from hostedpi.pi import Pi
 
 
+@pytest.fixture
+def ssh_key_empty_json():
+    return {"ssh_key": ""}
+
+
+@pytest.fixture
+def ssh_key_empty_response(ssh_key_empty_json):
+    mock = Mock()
+    mock.json.return_value = ssh_key_empty_json
+    return mock
+
+
+@pytest.fixture
+def ssh_key_json():
+    return {"ssh_key": "ssh-rsa AAA\r\n" "ssh-rsa BBB\r\n" "ssh-rsa CCC\r\n"}
+
+
+@pytest.fixture
+def ssh_key_response(ssh_key_json):
+    mock = Mock()
+    mock.json.return_value = ssh_key_json
+    return mock
+
+
 def test_pi_init(pi_info_basic, mock_session, api_url):
     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
     assert pi.name == "test-pi"
@@ -50,3 +74,23 @@ def test_pi_get_info_with_api_url(pi_info_basic, mock_session, api_url_2, pi_inf
     pi.info
     assert mock_session.get.call_count == 1
     assert mock_session.get.call_args[0][0] == api_url_2 + "servers/test-pi"
+
+
+def test_get_ssh_keys_empty(pi_info_basic, mock_session, api_url, ssh_key_empty_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = ssh_key_empty_response
+    keys = pi.ssh_keys
+    assert mock_session.get.call_count == 1
+    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    assert keys == set()
+
+
+def test_get_ssh_keys(pi_info_basic, mock_session, api_url, ssh_key_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = ssh_key_response
+    keys = pi.ssh_keys
+    assert keys == {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
+
+
+def test_set_ssh_keys(pi_info_basic, mock_session, api_url_2, ssh_key_response):
+    pass
