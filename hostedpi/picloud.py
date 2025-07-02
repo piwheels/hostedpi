@@ -32,8 +32,13 @@ class PiCloud:
         but are overriden by any passed to the :meth:`~hostedpi.picloud.PiCloud.create_pi` method.
     """
 
-    def __init__(self, ssh_keys: Union[SSHKeySources, None] = None):
-        self._api_url = "https://api.mythic-beasts.com/beta/pi/"
+    def __init__(
+        self,
+        ssh_keys: Union[SSHKeySources, None] = None,
+        *,
+        api_url: str = "https://api.mythic-beasts.com/beta/pi/",
+    ):
+        self._api_url = api_url
         self.ssh_keys = None
         if ssh_keys is not None:
             if not isinstance(ssh_keys, SSHKeySources):

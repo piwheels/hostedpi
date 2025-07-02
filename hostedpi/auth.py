@@ -15,8 +15,8 @@ logger = get_logger()
 
 
 class MythicAuth:
-    def __init__(self):
-        self._url = "https://auth.mythic-beasts.com/login"
+    def __init__(self, *, login_url: str = "https://auth.mythic-beasts.com/login"):
+        self._url = login_url
         self._settings = get_settings()
         self._token = None
         self._token_expiry = datetime.now()
