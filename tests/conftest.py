@@ -1,4 +1,5 @@
 from unittest.mock import Mock, patch
+from datetime import datetime
 
 import pytest
 
@@ -11,6 +12,11 @@ def unset_hostedpi_env(monkeypatch):
     monkeypatch.delenv("HOSTEDPI_ID", raising=False)
     monkeypatch.delenv("HOSTEDPI_SECRET", raising=False)
     monkeypatch.delenv("HOSTEDPI_LOG_LEVEL", raising=False)
+
+
+@pytest.fixture
+def mock_dt():
+    return datetime(2025, 1, 1)
 
 
 @pytest.fixture(autouse=True)
@@ -95,6 +101,25 @@ def pi_info_json():
         "model": 3,
         "boot_progress": None,
     }
+
+
+@pytest.fixture
+def pi_info_response(pi_info_json):
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = pi_info_json
+    return response
+
+
+@pytest.fixture
+def pi_info_booting_response(pi_info_json):
+    pi_info_booting_json = pi_info_json.copy()
+    pi_info_booting_json["is_booting"] = True
+    pi_info_booting_json["boot_progress"] = "booting"
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = pi_info_booting_json
+    return response
 
 
 @pytest.fixture

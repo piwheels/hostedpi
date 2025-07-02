@@ -1,15 +1,10 @@
 from unittest.mock import Mock, patch
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import pytest
 
 from hostedpi.auth import MythicAuth
 from hostedpi.settings import Settings
-
-
-@pytest.fixture
-def mock_dt():
-    return datetime(2025, 1, 1)
 
 
 @pytest.fixture

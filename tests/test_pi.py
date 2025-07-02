@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from ipaddress import IPv6Address, IPv6Network
 
 import pytest
@@ -201,3 +201,21 @@ def test_add_another_ssh_key(
     assert "ssh-rsa AAA" in ssh_keys_data
     assert "ssh-rsa ZZZ" in ssh_keys_data
     assert ssh_keys_data.count("\r\n") == 1
+
+
+def test_power_on_pi(pi_info_basic, mock_session, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    pi.on()
+    assert mock_session.put.call_count == 1
+    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
+    called_json = mock_session.put.call_args[1]["json"]
+    assert called_json == {"power": True}
+
+
+def test_power_off_pi(pi_info_basic, mock_session, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    pi.off()
+    assert mock_session.put.call_count == 1
+    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
+    called_json = mock_session.put.call_args[1]["json"]
+    assert called_json == {"power": False}

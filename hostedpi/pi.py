@@ -12,7 +12,6 @@ from pydantic import ValidationError
 from .utils import collect_ssh_keys, get_error_message
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse, ProvisioningServer
-from .models.sshkeys import SSHKeySources
 from .logger import log_request
 
 
@@ -323,7 +322,7 @@ class Pi:
         self._power_on_off(on=True)
         if wait:
             while self.info.is_booting:
-                sleep(5)
+                sleep(10)
             return self.power
 
     def off(self):
