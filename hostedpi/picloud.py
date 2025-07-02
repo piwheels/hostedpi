@@ -54,17 +54,16 @@ class PiCloud:
         return self._auth.session
 
     @property
-    def pis(self) -> list[Pi]:
+    def pis(self) -> dict[str, Pi]:
         """
-        A list of all Raspberry Pi servers associated with the account, as :class:`~hostedpi.pi.Pi`
-        instances
+        A dict of all Raspberry Pi servers associated with the account, keyed by their names.
+        Each value is an instance of :class:`~hostedpi.pi.Pi` representing the server.
         """
-        servers = self._get_servers()
-        pis = [
-            Pi(name, info=info, api_url=self._api_url, session=self.session)
-            for name, info in servers.servers.items()
-        ]
-        return sorted(pis, key=lambda pi: pi.name)
+        servers = self._get_pis()
+        return {
+            name: Pi(name, info=info, api_url=self._api_url, session=self.session)
+            for name, info in servers.items()
+        }
 
     @property
     def ipv4_ssh_config(self) -> str:
@@ -202,9 +201,9 @@ class PiCloud:
 
         return PiImagesResponse.model_validate(response.json()).root
 
-    def _get_servers(self) -> ServersResponse:
+    def _get_pis(self) -> dict[str, PiInfoBasic]:
         """
-        Retrieve all servers associated with the account
+        Retrieve all Raspberry Pi servers associated with the account
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piservers
         url = urllib.parse.urljoin(self._api_url, "servers")
@@ -218,4 +217,5 @@ class PiCloud:
             error = get_error_message(exc)
             raise HostedPiException(error) from exc
 
-        return ServersResponse.model_validate(response.json())
+        response = ServersResponse.model_validate(response.json())
+        return response.servers

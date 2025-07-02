@@ -193,7 +193,7 @@ def test_get_pis(mock_session, pis_response):
     pis = cloud.pis
 
     assert len(pis) == 2
-    pi1, pi2 = pis
+    pi1, pi2 = pis.values()
     assert pi1.name == "pi1"
     assert pi1.model == 3
     assert pi1.memory == 1024
