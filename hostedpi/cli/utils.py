@@ -9,12 +9,12 @@ from rich.table import Table
 from structlog import get_logger
 from pydantic import ValidationError
 
-from ..models.payloads import NewPi3ServerBody, NewPi4ServerBody
+from ..models.pi import Pi3ServerSpec, Pi4ServerSpec
 from ..picloud import PiCloud
 from ..pi import Pi
 from ..exc import HostedPiException
 from . import format
-from ..utils import collect_ssh_keys_to_str
+from ..models.sshkeys import SSHKeySources
 
 
 logger = get_logger()
@@ -28,11 +28,10 @@ def make_table(*headers: str) -> Table:
     return table
 
 
-def validate_server_body(model: Literal[3, 4], data: dict) -> dict:
+def validate_server_spec(model: Literal[3, 4], data: dict) -> Union[Pi3ServerSpec, Pi4ServerSpec]:
     if model == 3:
-        return NewPi3ServerBody.model_validate(data).model_dump()
-    else:
-        return NewPi4ServerBody.model_validate(data).model_dump()
+        return Pi3ServerSpec.model_validate(data)
+    return Pi4ServerSpec.model_validate(data)
 
 
 @cache
@@ -120,41 +119,32 @@ def create_pi(
     os_image: Union[str, None],
     wait: bool,
     ssh_key_path: Union[Path, None],
-    ssh_import_github: Union[set[str], None],
-    ssh_import_launchpad: Union[set[str], None],
+    github_usernames: Union[set[str], None],
+    launchpad_usernames: Union[set[str], None],
     full: bool,
     name: Union[str, None] = None,
 ):
-    ssh_keys = collect_ssh_keys_to_str(
-        ssh_key_path=ssh_key_path,
-        ssh_import_github=ssh_import_github,
-        ssh_import_launchpad=ssh_import_launchpad,
-    )
-
     data = {
         "disk": disk,
-        "ssh_key": ssh_keys,
-        "model": model,
         "memory": memory,
         "cpu_speed": cpu_speed,
         "os_image": os_image,
     }
     data = {k: v for k, v in data.items() if v is not None}
 
+    ssh_keys = SSHKeySources(
+        ssh_key_path=ssh_key_path,
+        github_usernames=github_usernames,
+        launchpad_usernames=launchpad_usernames,
+    )
+
     try:
-        spec = validate_server_body(model, data)
+        spec = validate_server_spec(model, data)
     except ValidationError as exc:
         raise HostedPiException(f"Invalid server spec: {exc}") from exc
 
     cloud = get_picloud()
-    pi = cloud.create_pi(
-        name=name,
-        spec=spec,
-        wait=wait,
-        ssh_key_path=ssh_key_path,
-        ssh_import_github=ssh_import_github,
-        ssh_import_launchpad=ssh_import_launchpad,
-    )
+    pi = cloud.create_pi(name=name, spec=spec, ssh_keys=ssh_keys, wait=wait)
 
     if full:
         print_success("Server provisioned")

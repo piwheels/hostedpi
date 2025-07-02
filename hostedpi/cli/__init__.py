@@ -120,8 +120,8 @@ def do_create(
                     os_image=os_image,
                     wait=wait,
                     ssh_key_path=ssh_key_path,
-                    ssh_import_github=ssh_import_gh_set,
-                    ssh_import_launchpad=ssh_import_lp_set,
+                    github_usernames=ssh_import_gh_set,
+                    launchpad_usernames=ssh_import_lp_set,
                     full=full,
                 )
             except HostedPiException as exc:
@@ -139,8 +139,8 @@ def do_create(
                     os_image=os_image,
                     wait=wait,
                     ssh_key_path=ssh_key_path,
-                    ssh_import_github=ssh_import_gh_set,
-                    ssh_import_launchpad=ssh_import_lp_set,
+                    github_usernames=ssh_import_gh_set,
+                    launchpad_usernames=ssh_import_lp_set,
                     full=full,
                 )
             except HostedPiException as exc:
