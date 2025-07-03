@@ -7,7 +7,7 @@ from hostedpi.utils import (
     fetch_keys_from_url,
     collect_ssh_keys,
     get_error_message,
-    _dedupe_ssh_keys,
+    dedupe_ssh_keys,
 )
 
 
@@ -39,7 +39,7 @@ def test_dedupe_ssh_keys():
         "ssh-rsa bar",
         "ssh-rsa foo",
     }
-    deduped_keys = _dedupe_ssh_keys(keys)
+    deduped_keys = dedupe_ssh_keys(keys)
     assert deduped_keys == {"ssh-rsa foo", "ssh-rsa bar"}
 
     keys = {
@@ -47,7 +47,7 @@ def test_dedupe_ssh_keys():
         "ssh-rsa bar",
         "ssh-rsa foo",
     }
-    deduped_keys = _dedupe_ssh_keys(keys)
+    deduped_keys = dedupe_ssh_keys(keys)
     assert deduped_keys == {
         "ssh-rsa foo # ssh-import-id gh:testuser",
         "ssh-rsa bar",
@@ -69,9 +69,9 @@ def test_dedupe_ssh_keys():
         "ssh-rsa foobar",
         "ssh-rsa barfoo",
     }
-    deduped_keys = _dedupe_ssh_keys(keys)
+    deduped_keys = dedupe_ssh_keys(keys)
     assert deduped_keys == {
-        "ssh-rsa bar testuser@home # ssh-import-id lp:testuser2",
+        "ssh-rsa bar testuser@home # ssh-import-id gh:testuser",
         "ssh-rsa barfoo testuser@home # ssh-import-id lp:testuser2",
         "ssh-rsa foo testuser@home # ssh-import-id gh:testuser",
         "ssh-rsa foobar testuser@home # ssh-import-id lp:testuser2",

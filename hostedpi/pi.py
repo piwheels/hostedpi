@@ -9,7 +9,7 @@ from requests import Session, HTTPError, ConnectionError
 from structlog import get_logger
 from pydantic import ValidationError
 
-from .utils import collect_ssh_keys, get_error_message
+from .utils import collect_ssh_keys, get_error_message, dedupe_ssh_keys
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse, ProvisioningServer
 from .logger import log_request
@@ -295,14 +295,17 @@ class Pi:
 
         data = SSHKeysResponse.model_validate(response.json())
 
-        return data.keys
+        return dedupe_ssh_keys(data.keys)
 
     @ssh_keys.setter
     def ssh_keys(self, ssh_keys: Union[set[str], None]):
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-put-piserversidentifierssh-key
         url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}/ssh-key")
 
-        data = {"ssh_key": "\r\n".join(ssh_keys) if ssh_keys else ""}
+        if ssh_keys is None:
+            data = {"ssh_key": ""}
+        else:
+            data = {"ssh_key": "\r\n".join(dedupe_ssh_keys(ssh_keys))}
 
         response = self.session.put(url, json=data)
         log_request(response)

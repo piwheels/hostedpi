@@ -82,16 +82,20 @@ def collect_ssh_keys(
     if launchpad_usernames:
         for username in launchpad_usernames:
             ssh_keys_set |= ssh_import_id(launchpad_username=username)
-    return _dedupe_ssh_keys(ssh_keys_set)
+    return dedupe_ssh_keys(ssh_keys_set)
 
 
-def _dedupe_ssh_keys(ssh_keys: set[str]) -> set[str]:
+def dedupe_ssh_keys(ssh_keys: set[str]) -> set[str]:
     """
     Deduplicate SSH keys by removing any duplicates that are identical
     except for the comment at the end of the key.
     """
+
+    def keysort(key: str) -> int:
+        return (-key.count(" "), key)
+
     # sort keys by the number of spaces so we don't throw away any additional comments
-    sorted_keys = reversed(sorted(ssh_keys, key=lambda k: k.count(" ")))
+    sorted_keys = sorted(ssh_keys, key=keysort)
 
     actual_keys = set()  # without comments
     unique_keys = set()  # with comments (returned)
