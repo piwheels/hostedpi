@@ -136,22 +136,24 @@ def test_get_error_message_json():
 
 
 def test_get_error_message_text():
-    mock_response = Mock(
-        json=Mock(side_effect=Exception),
-        text="Something went wrong",
-        status_code=400,
+    mock_exc = Mock(
+        response=Mock(
+            json=Mock(side_effect=Exception),
+            text="Something went wrong",
+            status_code=400,
+        )
     )
-    mock_exc = Mock(response=mock_response)
     message = get_error_message(mock_exc)
     assert message == "Error 400: Something went wrong"
 
 
 def test_get_error_message_no_text():
-    mock_response = Mock(
-        json=Mock(side_effect=Exception),
-        text="",
-        status_code=400,
+    mock_exc = Mock(
+        response=Mock(
+            json=Mock(side_effect=Exception),
+            text="",
+            status_code=400,
+        )
     )
-    mock_exc = Mock(response=mock_response)
     message = get_error_message(mock_exc)
     assert message == "Error 400"
