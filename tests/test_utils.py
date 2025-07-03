@@ -252,7 +252,7 @@ def test_remove_ssh_keys_by_label():
     }
 
 
-def test_remove_imported_ssh_keys():
+def test_remove_imported_ssh_keys_github():
     ssh_keys = set()
     result = remove_imported_ssh_keys(ssh_keys, "gh", "testuser")
     assert result == set()
@@ -260,6 +260,7 @@ def test_remove_imported_ssh_keys():
     ssh_keys = {
         "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
         "ssh-rsa bar ben@jake",
+        "ssh-rsa foo bob@test # ssh-import-id gh:testuser2",
         "ssh-rsa foobar dave@home # ssh-import-id lp:testuser",
         "ssh-rsa barfoo # ssh-import-id lp:testuser",
     }
@@ -267,6 +268,31 @@ def test_remove_imported_ssh_keys():
     result = remove_imported_ssh_keys(ssh_keys, "gh", "testuser")
     assert result == {
         "ssh-rsa bar ben@jake",
+        "ssh-rsa foo bob@test # ssh-import-id gh:testuser2",
+        "ssh-rsa foobar dave@home # ssh-import-id lp:testuser",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser",
+    }
+
+    result = remove_imported_ssh_keys(ssh_keys, "gh", "testuser2")
+    assert result == {
+        "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
+        "ssh-rsa bar ben@jake",
+        "ssh-rsa foobar dave@home # ssh-import-id lp:testuser",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser",
+    }
+    result = remove_imported_ssh_keys(ssh_keys, "gh", "testuser3")
+    assert result == ssh_keys
+
+
+def test_remove_imported_ssh_keys_launchpad():
+    ssh_keys = set()
+    result = remove_imported_ssh_keys(ssh_keys, "lp", "testuser")
+    assert result == set()
+
+    ssh_keys = {
+        "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
+        "ssh-rsa bar ben@jake",
+        "ssh-rsa foo bob@test # ssh-import-id lp:testuser2",
         "ssh-rsa foobar dave@home # ssh-import-id lp:testuser",
         "ssh-rsa barfoo # ssh-import-id lp:testuser",
     }
@@ -275,7 +301,15 @@ def test_remove_imported_ssh_keys():
     assert result == {
         "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
         "ssh-rsa bar ben@jake",
+        "ssh-rsa foo bob@test # ssh-import-id lp:testuser2",
     }
 
-    result = remove_imported_ssh_keys(ssh_keys, "gh", "testuser2")
+    result = remove_imported_ssh_keys(ssh_keys, "lp", "testuser2")
+    assert result == {
+        "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
+        "ssh-rsa bar ben@jake",
+        "ssh-rsa foobar dave@home # ssh-import-id lp:testuser",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser",
+    }
+    result = remove_imported_ssh_keys(ssh_keys, "lp", "testuser3")
     assert result == ssh_keys

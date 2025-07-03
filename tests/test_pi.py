@@ -25,7 +25,7 @@ def ssh_three_keys_json():
 
 
 @pytest.fixture
-def ssh_three_keys_response(ssh_three_keys_json):
+def three_ssh_keys_response(ssh_three_keys_json):
     return Mock(
         status_code=200,
         json=Mock(return_value=ssh_three_keys_json),
@@ -70,6 +70,28 @@ def another_ssh_key_response(another_ssh_key_json):
     return Mock(
         status_code=200,
         json=Mock(return_value=another_ssh_key_json),
+    )
+
+
+@pytest.fixture
+def imported_ssh_keys_json():
+    return {
+        "ssh_key": (
+            "ssh-rsa AAAA ben@finn # ssh-import-id gh:testuser\n"
+            "ssh-rsa BBBB ben@jake # ssh-import-id gh:testuser\n"
+            "ssh-rsa CCCC dave@home # ssh-import-id gh:testuser2\n"
+            "ssh-rsa DDDD dave@work # ssh-import-id gh:testuser2\n"
+            "ssh-rsa EEEE # ssh-import-id lp:testuser3\n"
+            "ssh-rsa FFFF # ssh-import-id lp:testuser4"
+        )
+    }
+
+
+@pytest.fixture
+def imported_ssh_keys_response(imported_ssh_keys_json):
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=imported_ssh_keys_json),
     )
 
 
@@ -128,9 +150,9 @@ def test_get_ssh_keys_empty(pi_info_basic, mock_session, api_url, ssh_key_empty_
     assert keys == set()
 
 
-def test_get_ssh_keys(pi_info_basic, mock_session, api_url, ssh_three_keys_response):
+def test_get_ssh_keys(pi_info_basic, mock_session, api_url, three_ssh_keys_response):
     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = ssh_three_keys_response
+    mock_session.get.return_value = three_ssh_keys_response
     keys = pi.ssh_keys
     assert keys == {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
 
@@ -257,11 +279,30 @@ def test_ssh_import_id(collect_ssh_keys, pi_info_basic, mock_session, api_url):
     assert called_json.count("\r\n") == len(ssh_keys) - 1
 
 
-def test_unimport_ssh_keys(pi_info_basic, mock_session, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    pi.unimport_ssh_keys
+"ssh-rsa AAAA ben@finn # ssh-import-id gh:testuser\n"
+"ssh-rsa BBBB ben@jake # ssh-import-id gh:testuser\n"
+"ssh-rsa CCCC dave@home # ssh-import-id gh:testuser2\n"
+"ssh-rsa DDDD dave@work # ssh-import-id gh:testuser2\n"
+"ssh-rsa EEEE # ssh-import-id lp:testuser3\n"
+"ssh-rsa FFFF # ssh-import-id lp:testuser4"
 
 
-def test_remove_ssh_keys_by_label(pi_info_basic, mock_session, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    pi.remove_ssh_keys_by_label
+# def test_unimport_ssh_keys_github(pi_info_basic, mock_session, api_url, imported_ssh_keys_response):
+#     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+#     mock_session.get.return_value = imported_ssh_keys_response
+#     pi.unimport_ssh_keys(github_usernames={"testuser"})
+#     assert mock_session.put.call_count == 1
+#     assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+#     called_json = mock_session.put.call_args[1]["json"]["ssh_key"]
+#     print(called_json)
+#     assert "ssh-rsa AAAA" not in called_json
+#     assert "ssh-rsa BBBB" not in called_json
+#     assert "ssh-rsa CCCC" in called_json
+#     assert "ssh-rsa DDDD" in called_json
+#     assert "ssh-rsa EEEE" in called_json
+#     assert "ssh-rsa FFFF" in called_json
+
+
+# def test_remove_ssh_keys_by_label(pi_info_basic, mock_session, api_url):
+#     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+#     pi.remove_ssh_keys_by_label

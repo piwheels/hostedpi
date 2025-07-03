@@ -441,11 +441,16 @@ class Pi:
         :param launchpad_usernames:
             A set of Launchpad usernames to remove SSH keys for (keyword-only argument)
         """
-        self.ssh_keys = remove_imported_ssh_keys(
-            ssh_keys=self.ssh_keys,
-            github_usernames=github_usernames,
-            launchpad_usernames=launchpad_usernames,
-        )
+        ssh_keys = self.ssh_keys
+        if github_usernames:
+            for username in github_usernames:
+                ssh_keys = remove_imported_ssh_keys(ssh_keys, "gh", username)
+
+        if launchpad_usernames:
+            for username in launchpad_usernames:
+                ssh_keys = remove_imported_ssh_keys(ssh_keys, "lp", username)
+
+        self.ssh_keys = ssh_keys
         return self.ssh_keys
 
     def remove_ssh_keys_by_label(self, label: str) -> set[str]:

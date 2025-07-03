@@ -153,8 +153,8 @@ def _is_imported_ssh_key(key: str, source: Literal["gh", "lp"], username: str) -
     """
     Check if the SSH key was imported from a specific source (GitHub or Launchpad) and username
     """
-    import_comment = f"{source}:{username}"
-    return import_comment in key
+    import_comment = f"# ssh-import-id {source}:{username}"
+    return key.endswith(import_comment)
 
 
 def _add_ssh_import_tag(key: str, source: str, username: str) -> str:
