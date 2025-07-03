@@ -62,7 +62,7 @@ def do_list(name: arguments.server_name):
 
 
 @keys_app.command("table")
-def do_table(name: arguments.server_name):
+def do_table(name: arguments.server_name, filter: options.filter_pattern = None):
     """
     List the SSH keys on a Raspberry Pi server in a table format
     """
@@ -71,6 +71,8 @@ def do_table(name: arguments.server_name):
     table = Table(*headers)
 
     for key in pi.ssh_keys:
+        if filter and not filter.lower() in key.lower():
+            continue
         label = ""
         note = ""
         parts = key.split(" ")
