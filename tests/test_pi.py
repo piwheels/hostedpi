@@ -1,5 +1,5 @@
-from unittest.mock import Mock, patch
 from ipaddress import IPv6Address, IPv6Network
+from unittest.mock import Mock, patch
 
 import pytest
 

@@ -33,3 +33,28 @@ Setting up for Development
     .. code-block:: console
 
         $ make develop
+
+Run the tests
+-------------
+
+Run the tests in your environment with:
+
+    .. code-block:: console
+
+        $ make test
+
+Or you can run the tests directly with `pytest` for more control:
+
+    .. code-block:: console
+
+        $ pytest -vv
+
+Format code
+-----------
+
+Format code with ``black`` and ``isort`` 
+
+    .. code-block:: console
+
+        $ make format
+

@@ -1,20 +1,24 @@
-from typing import Union
 import urllib.parse
+from typing import Union
 
-from requests import Session, HTTPError
 from pydantic import ValidationError
+from requests import HTTPError, Session
 from structlog import get_logger
 
 from .auth import MythicAuth
+from .exc import HostedPiException
+from .logger import log_request
+from .models.payloads import NewServer
+from .models.responses import (
+    PiImagesResponse,
+    PiInfoBasic,
+    ServersResponse,
+    SpecsResponse,
+)
+from .models.specs import Pi3ServerSpec, Pi4ServerSpec, ServerSpec
+from .models.sshkeys import SSHKeySources
 from .pi import Pi
 from .utils import get_error_message
-from .exc import HostedPiException
-from .models.sshkeys import SSHKeySources
-from .models.responses import ServersResponse, PiImagesResponse, PiInfoBasic, SpecsResponse
-from .models.payloads import NewServer
-from .models.specs import Pi3ServerSpec, Pi4ServerSpec, ServerSpec
-from .logger import log_request
-
 
 logger = get_logger()
 
@@ -130,7 +134,8 @@ class PiCloud:
 
         .. note::
             When requesting a Pi 3, you will either get a model 3B or 3B+. It is not possible to
-            request a particular model beyond 3 or 4.
+            request a particular model beyond 3 or 4. Some memory and CPU speed options are
+            available when requesting a Pi 4.
         """
         if name is None:
             # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piservers

@@ -1,12 +1,11 @@
-from typer import Typer
 import rich
-from rich.live import Live
 from rich.console import Console
+from rich.live import Live
+from typer import Typer
 
-from . import options, arguments, utils
-from .ssh import ssh_app
 from ..exc import HostedPiException
-
+from . import arguments, options, utils
+from .ssh import ssh_app
 
 app = Typer(name="hostedpi", no_args_is_help=True)
 app.add_typer(ssh_app, name="ssh", no_args_is_help=True, help="SSH access management commands")

@@ -1,8 +1,7 @@
-from typing import Union, Annotated
 from pathlib import Path
+from typing import Annotated, Union
 
 from typer import Option
-
 
 server_name = Annotated[Union[str, None], Option(help="Name of the new Raspberry Pi server")]
 model = Annotated[int, Option(help="Raspberry Pi Model", min=3, max=4)]

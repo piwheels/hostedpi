@@ -1,8 +1,7 @@
-from typing import Union, Annotated
 from pathlib import Path
+from typing import Annotated, Union
 
 from typer import Argument
-
 
 server_name = Annotated[str, Argument(help="Name of the Raspberry Pi server")]
 server_names = Annotated[Union[list[str], None], Argument(help="Names of the Raspberry Pi servers")]

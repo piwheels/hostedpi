@@ -1,10 +1,11 @@
-import sys
 import os
+import sys
 from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
-from hostedpi import __version__
 import sphinx_rtd_theme
+
+VERSION = "0.4.0"
 
 
 # -- General configuration ------------------------------------------------
@@ -22,8 +23,8 @@ source_suffix = ".rst"
 master_doc = "index"
 copyright = "2020-%s %s" % (datetime.now().year, author)
 project = "hostedpi"
-version = __version__
-release = __version__
+version = VERSION
+release = VERSION
 # language = None
 # today_fmt = '%B %d, %Y'
 exclude_patterns = ["_build"]
@@ -43,7 +44,7 @@ autodoc_member_order = "groupwise"
 # -- Intersphinx configuration --------------------------------------------
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.7", None),
+    "python": ("https://docs.python.org/3.9", None),
 }
 
 # -- Options for HTML output ----------------------------------------------

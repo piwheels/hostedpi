@@ -1,5 +1,5 @@
-from typing import Union, Literal
 from pathlib import Path
+from typing import Literal, Union
 
 import requests
 from requests.exceptions import HTTPError
@@ -8,7 +8,6 @@ from structlog import get_logger
 from .exc import HostedPiException
 from .logger import log_request
 from .models.responses import ErrorResponse
-
 
 logger = get_logger()
 

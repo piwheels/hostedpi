@@ -1,21 +1,20 @@
-from typing import Literal, Union
 from functools import cache
 from pathlib import Path
+from typing import Literal, Union
 
 import rich
-from rich.live import Live
+from pydantic import ValidationError
 from rich.console import Console
+from rich.live import Live
 from rich.table import Table
 from structlog import get_logger
-from pydantic import ValidationError
 
-from ..models.specs import Pi3ServerSpec, Pi4ServerSpec
-from ..picloud import PiCloud
-from ..pi import Pi
 from ..exc import HostedPiException
-from . import format
+from ..models.specs import Pi3ServerSpec, Pi4ServerSpec
 from ..models.sshkeys import SSHKeySources
-
+from ..pi import Pi
+from ..picloud import PiCloud
+from . import format
 
 logger = get_logger()
 console = Console()
@@ -41,10 +40,7 @@ def get_picloud() -> PiCloud:
 
 def get_pi(name: str) -> Pi:
     cloud = get_picloud()
-    try:
-        return cloud.pis[name]
-    except KeyError:
-        raise HostedPiException(f"Pi not found: {name}")
+    return cloud.pis.get(name)
 
 
 def get_all_pis() -> list[Pi]:

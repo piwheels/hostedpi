@@ -1,5 +1,5 @@
-from unittest.mock import Mock, patch
 from datetime import timedelta
+from unittest.mock import Mock, patch
 
 import pytest
 

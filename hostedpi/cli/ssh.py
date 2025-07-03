@@ -1,10 +1,9 @@
 from typer import Typer
 
-from .utils import get_pi, get_pis
 from ..exc import HostedPiException
 from . import arguments, options
 from .sshkeys import keys_app
-
+from .utils import get_pi, get_pis, print_error
 
 ssh_app = Typer()
 ssh_app.add_typer(keys_app, name="keys", no_args_is_help=True, help="SSH key management commands")
@@ -16,6 +15,9 @@ def do_command(name: arguments.server_name, ipv6: options.ipv6 = False):
     Get the SSH command to connect to a Raspberry Pi server
     """
     pi = get_pi(name)
+    if pi is None:
+        print_error(f"Pi '{name}' not found")
+        return 1
     try:
         if ipv6:
             print(pi.ipv6_ssh_command)

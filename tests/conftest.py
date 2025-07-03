@@ -1,9 +1,9 @@
-from unittest.mock import Mock, patch
 from datetime import datetime
+from unittest.mock import Mock, patch
 
 import pytest
 
-from hostedpi.models.responses import PiInfoBasic, PiInfo
+from hostedpi.models.responses import PiInfo, PiInfoBasic
 from hostedpi.models.sshkeys import SSHKeySources
 
 

@@ -1,7 +1,7 @@
-from typing import Union
 from ipaddress import IPv6Address, IPv6Network
+from typing import Union
 
-from pydantic import BaseModel, RootModel, Field, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
 
 from .specs import ServerSpec
 

@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
 from importlib.metadata import version
 
-from requests import Session, HTTPError
 from pydantic import ValidationError
+from requests import HTTPError, Session
 from structlog import get_logger
 
 from .exc import MythicAuthenticationError
 from .models.responses import AuthResponse
 from .settings import get_settings
-
 
 hostedpi_version = version("hostedpi")
 logger = get_logger()

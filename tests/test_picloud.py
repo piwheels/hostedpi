@@ -1,11 +1,11 @@
 from unittest.mock import Mock
 
 import pytest
-from requests import HTTPError, ConnectionError
+from requests import ConnectionError, HTTPError
 
-from hostedpi.picloud import PiCloud
-from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec
 from hostedpi.exc import HostedPiException
+from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec
+from hostedpi.picloud import PiCloud
 
 
 @pytest.fixture

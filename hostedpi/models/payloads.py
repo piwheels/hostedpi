@@ -1,5 +1,5 @@
-from typing import Union
 import string
+from typing import Union
 
 from pydantic import BaseModel, field_validator
 

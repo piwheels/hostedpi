@@ -1,12 +1,11 @@
 import json
 
 import structlog
-from structlog import get_logger
-from requests import Response
 from pydantic import ValidationError
+from requests import Response
+from structlog import get_logger
 
 from .settings import get_settings
-
 
 try:
     settings = get_settings()

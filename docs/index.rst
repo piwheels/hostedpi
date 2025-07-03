@@ -34,51 +34,59 @@ View the information about Pis in your account from the command line:
 .. code-block:: console
 
     $ hostedpi list          
-    c8046p3gu
-    c8046p55a
-    c8046p6vv
-    c8046p6wt
+    pi123
+    pi234
+    pi345
+    pi456
     $ hostedpi table
     ┏━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
     ┃ Name            ┃ Model ┃ Memory ┃ CPU Speed ┃
     ┡━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ c8046p3gu       │ 3     │ 1 GB   │ 1.2 GHz   │
-    │ c8046p55a       │ 3     │ 1 GB   │ 1.2 GHz   │
-    │ c8046p6vv       │ 3     │ 1 GB   │ 1.2 GHz   │
-    │ c8046p6wt       │ 3     │ 1 GB   │ 1.2 GHz   │
-    │ c8046p6ha       │ 4     │ 8 GB   │ 2.0 GHz   │
-    │ c8046p6lj       │ 4     │ 4 GB   │ 1.5 GHz   │
+    │ pi123           │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ pi234           │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ pi345           │ 4     │ 8 GB   │ 2.0 GHz   │
+    │ pi456           │ 4     │ 4 GB   │ 1.5 GHz   │
     └─────────────────┴───────┴────────┴───────────┘
-    $ hostedpi table c8046p6ha
+    $ hostedpi table pi123
     ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
     ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃
     ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ c8046p6ha │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ pi123     │ 3     │ 1 GB   │ 1.2 GHz   │
     └───────────┴───────┴────────┴───────────┘
 
-    $ hostedpi table c8046p6ha --full
+    $ hostedpi table pi345 --full
     ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
     ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃ NIC Speed ┃ Disk size ┃ Status     ┃ Initialised keys ┃ IPv4 SSH port ┃
     ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
-    │ c8046p6ha │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 50 GB     │ Powered on │ Yes              │ 5387          │
+    │ pi123     │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 50 GB     │ Powered on │ Yes              │ 5387          │
     └───────────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴──────────────────┴───────────────┘
 
-Provision a new Pi and view its SSH command:
+Provision a new Pi with your public key and SSH into it:
 
 .. code-block:: console
 
-    $ hostedpi create mypi --spec pi4-server
-    Creating Pi mypi with spec pi4-server...
-    Pi mypi created successfully.
-    SSH command: ssh -p 5123
+    $ hostedpi create mypi --model 3 --ssh-key-path ~/.ssh/id_rsa.pub --wait
+    Server provisioned
+    ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃
+    ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
+    │ c8046pw79 │ 3     │ 1 GB   │ 1.2 GHz   │
+    └───────────┴───────┴────────┴───────────┘
+    $ hostedpi ssh command mypi
+    ssh -p 5063 root@ssh.mypi.hostedpi.com
+    $ ssh -p 5063 root@ssh.mypi.hostedpi.com
+    root@mypi:~#
 
-.. code-block:: pycon
+Write a Python script to provision a new Pi and output its SSH command:
 
-    >>> from hostedpi import PiCloud, Pi4ServerSpec
-    >>> cloud = PiCloud()
-    >>> pi = cloud.create_pi('mypi', spec=Pi4ServerSpec)
-    >>> print(pi.ssh_command)
-    ssh -p 5123 root@ssh.mypi.hostedpi.com
+.. code-block:: python
+
+    from hostedpi import PiCloud, Pi4ServerSpec
+
+    cloud = PiCloud()
+    
+    pi = cloud.create_pi('mypi', spec=Pi4ServerSpec())
+    print(pi.ipv4_ssh_command)
 
 See the :doc:`getting_started` page for information on how to authenticate, and
 see the :doc:`cli` page for information on using the command line interface.

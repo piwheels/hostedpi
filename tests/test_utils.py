@@ -3,13 +3,13 @@ from unittest.mock import Mock, patch
 import pytest
 
 from hostedpi.utils import (
-    ssh_import_id,
-    fetch_keys_from_url,
     collect_ssh_keys,
-    get_error_message,
     dedupe_ssh_keys,
-    remove_ssh_keys_by_label,
+    fetch_keys_from_url,
+    get_error_message,
     remove_imported_ssh_keys,
+    remove_ssh_keys_by_label,
+    ssh_import_id,
 )
 
 

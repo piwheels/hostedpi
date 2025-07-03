@@ -7,7 +7,7 @@ DOC_TREES=docs/build/doctrees
 all:
 	@echo "make install - Install on local system"
 	@echo "make develop - Install symlinks for development"
-	@echo "make format - Format all Python code with black"
+	@echo "make format - Format all Python code with isort and black"
 	@echo "make test - Run tests"
 	@echo "make clean - Remove all generated files"
 	@echo "make build - Build the package release files"
@@ -23,10 +23,11 @@ develop:
 	pip install -U setuptools
 	pip install -U wheel
 	pip install -U "poetry>2"
-	poetry install --all-extras
+	poetry install --with dev --all-extras
 	hostedpi --install-completion
 
 format:
+	isort .
 	black .
 
 test:

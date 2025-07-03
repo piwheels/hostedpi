@@ -1,14 +1,12 @@
-from typer import Typer
-from rich.live import Live
-from rich.console import Console
-from rich.table import Table
 import rich
+from rich.console import Console
+from rich.live import Live
+from rich.table import Table
+from typer import Typer
 
-from . import utils
 from ..exc import HostedPiException
-from . import arguments, options
-from ..utils import collect_ssh_keys, remove_ssh_keys_by_label, remove_imported_ssh_keys
-
+from ..utils import collect_ssh_keys, remove_imported_ssh_keys, remove_ssh_keys_by_label
+from . import arguments, options, utils
 
 keys_app = Typer()
 console = Console()
