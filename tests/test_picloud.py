@@ -27,16 +27,21 @@ def pis_response_none():
 
 
 @pytest.fixture
-def pis_response():
-    mock = Mock()
-    mock.status_code = 200
-    mock.json.return_value = {
+def pis_response_json():
+    return {
         "servers": {
             "pi1": {"model": 3, "memory": 1024, "cpu_speed": 1200},
             "pi2": {"model": 4, "memory": 4096, "cpu_speed": 1500},
         }
     }
-    return mock
+
+
+@pytest.fixture
+def pis_response(pis_response_json):
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pis_response_json),
+    )
 
 
 @pytest.fixture
@@ -66,10 +71,10 @@ def images_response(images_response_json):
 
 @pytest.fixture
 def create_pi_response(mythic_async_location):
-    response = Mock()
-    response.status_code = 202
-    response.headers = {"Location": mythic_async_location}
-    return response
+    return Mock(
+        status_code=202,
+        headers={"Location": mythic_async_location},
+    )
 
 
 @pytest.fixture
