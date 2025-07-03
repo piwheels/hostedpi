@@ -3,7 +3,7 @@ import string
 
 from pydantic import BaseModel, field_validator
 
-from .pi import Pi3ServerSpec, Pi4ServerSpec
+from .specs import Pi3ServerSpec, Pi4ServerSpec
 
 
 class NewServer(BaseModel):

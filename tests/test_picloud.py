@@ -40,7 +40,7 @@ def pis_response():
 
 
 @pytest.fixture
-def pi3_images_response():
+def images_response_json():
     return {
         "rpi-buster-armhf": "Raspberry Pi OS Buster (32 bit)",
         "rpi-bullseye-armhf": "Raspberry Pi OS Bullseye (32 bit)",
@@ -57,20 +57,11 @@ def pi3_images_response():
 
 
 @pytest.fixture
-def pi4_images_response():
-    return {
-        "rpi-buster-armhf": "Raspberry Pi OS Buster (32 bit)",
-        "rpi-bullseye-armhf": "Raspberry Pi OS Bullseye (32 bit)",
-        "rpi-bullseye-arm64": "Raspberry Pi OS Bullseye (64 bit)",
-        "rpi-focal-armhf": "Ubuntu 20.04 (Focal Fossa) (32 bit)",
-        "rpi-buster-arm64": "Raspberry Pi OS Buster (64 bit)",
-        "rpi-bookworm-armhf": "Raspberry Pi OS Bookworm (12) (32 bit)",
-        "rpi-jammy-arm64": "Ubuntu 22.04 (Jammy Jellyfish) (64 bit)",
-        "rpi-bookworm-arm64": "Raspberry Pi OS Bookworm (12) (64 bit)",
-        "rpi-bionic-arm64": "Ubuntu 18.04 (Bionic Beaver) (64 bit)",
-        "rpi-bullseye-arm64-vnc.2022-03-25T17:23:56+00:00": "Raspberry Pi OS Bullseye Desktop (64 bit, 1920x1080)",
-        "rpi-focal-arm64": "Ubuntu 20.04 (Focal Fossa) (64 bit)",
-    }
+def images_response(images_response_json):
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=images_response_json),
+    )
 
 
 @pytest.fixture
@@ -131,6 +122,26 @@ def pi_info_response_random_name(pi_info_json, mythic_servers_url, random_pi_nam
     return response
 
 
+@pytest.fixture
+def specs_response_json():
+    return {
+        "models": [
+            {"nic_speed": 100, "model": 3, "memory": 1024, "cpu_speed": 1200},
+            {"memory": 4096, "model": 4, "nic_speed": 1000, "cpu_speed": 1500},
+            {"cpu_speed": 1500, "memory": 8192, "model": 4, "nic_speed": 1000},
+            {"cpu_speed": 2000, "model": 4, "nic_speed": 1000, "memory": 8192},
+        ]
+    }
+
+
+@pytest.fixture
+def specs_response(specs_response_json):
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = specs_response_json
+    return response
+
+
 def test_picloud_init(api_url):
     cloud = PiCloud()
     assert repr(cloud) == "<PiCloud id=test_id>"
@@ -158,24 +169,18 @@ def test_picloud_init_with_bad_ssh_keys():
         PiCloud(ssh_keys="foo")
 
 
-def test_get_pi3_operating_systems(mock_session, pi3_images_response):
+def test_get_pi3_operating_systems(mock_session, images_response, images_response_json):
     cloud = PiCloud()
-    mock_session.get.return_value = Mock(
-        status_code=200,
-        json=Mock(return_value=pi3_images_response),
-    )
+    mock_session.get.return_value = images_response
     images = cloud.get_operating_systems(model=3)
-    assert images == pi3_images_response
+    assert images == images_response_json
 
 
-def test_get_pi4_operating_systems(mock_session, pi4_images_response):
+def test_get_pi4_operating_systems(mock_session, images_response, images_response_json):
     cloud = PiCloud()
-    mock_session.get.return_value = Mock(
-        status_code=200,
-        json=Mock(return_value=pi4_images_response),
-    )
-    images = cloud.get_operating_systems(model=3)
-    assert images == pi4_images_response
+    mock_session.get.return_value = images_response
+    images = cloud.get_operating_systems(model=4)
+    assert images == images_response_json
 
 
 def test_get_pis_none(mock_session, pis_response_none, mythic_servers_url):
@@ -411,3 +416,14 @@ def test_create_pi_with_error(mock_session, out_of_stock_response, default_pi3_s
 
     with pytest.raises(HostedPiException):
         cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
+
+
+def test_get_available_specs(mock_session, specs_response, api_url):
+    cloud = PiCloud(api_url=api_url)
+    mock_session.get.return_value = specs_response
+
+    specs = cloud._get_available_specs()
+
+    assert mock_session.get.called
+    assert mock_session.get.call_args[0][0] == api_url + "models"
+    assert len(specs) == 4

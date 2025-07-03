@@ -10,8 +10,9 @@ from .pi import Pi
 from .utils import get_error_message
 from .exc import HostedPiException
 from .models.sshkeys import SSHKeySources
-from .models.responses import ServersResponse, PiImagesResponse, PiInfoBasic
-from .models.payloads import NewServer, Pi3ServerSpec, Pi4ServerSpec
+from .models.responses import ServersResponse, PiImagesResponse, PiInfoBasic, SpecsResponse
+from .models.payloads import NewServer
+from .models.specs import Pi3ServerSpec, Pi4ServerSpec, ServerSpec
 from .logger import log_request
 
 
@@ -26,6 +27,11 @@ class PiCloud:
     :param ssh_keys:
         An instance of :class:`~hostedpi.models.sshkeys.SSHKeys` containing sources of SSH keys to
         use when creating new Pis. If not provided, no SSH keys will be used by default.
+
+    :type api_url: str
+    :param api_url:
+        The base URL of the Mythic Beasts Pi Cloud API. Default is
+        "https://api.mythic-beasts.com/beta/pi/". You almost certainly won't need to change this.
 
     .. note::
         If any SSH keys are provided on class initialisation, they will be used when creating Pis
@@ -200,6 +206,23 @@ class PiCloud:
             raise HostedPiException(error) from exc
 
         return PiImagesResponse.model_validate(response.json()).root
+
+    def _get_available_specs(self) -> list[ServerSpec]:
+        """
+        Retrieve all available Raspberry Pi server specifications
+        """
+        url = urllib.parse.urljoin(self._api_url, "models")
+        response = self.session.get(url)
+        log_request(response)
+
+        try:
+            response.raise_for_status()
+        except HTTPError as exc:
+            error = get_error_message(exc)
+            raise HostedPiException(error) from exc
+
+        data = SpecsResponse.model_validate(response.json())
+        return data.models
 
     def _get_pis(self) -> dict[str, PiInfoBasic]:
         """

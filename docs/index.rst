@@ -11,8 +11,8 @@ Python interface to the `Mythic Beasts Hosted Pi`_ API, developed by the `piwhee
 
 .. _Mythic Beasts Hosted Pi: https://www.mythic-beasts.com/order/rpi
 .. _piwheels: https://www.piwheels.org/
-.. _Ben Nuttall: https://twitter.com/ben_nuttall
-.. _Dave Jones: https://twitter.com/waveform80
+.. _Ben Nuttall: https://github.com/bennuttall
+.. _Dave Jones: https://github.com/waveform80
 
 This module provides a Pythonic interface to the API, as well as a command line interface.
 
@@ -29,38 +29,55 @@ https://www.mythic-beasts.com/support/api/raspberry-pi
 Usage
 =====
 
-View the information about a Pi from the command line:
+View the information about Pis in your account from the command line:
 
 .. code-block:: console
 
-    $ hostedpi show mypi
-    Name: mypi
-    Provision status: live
-    Model: Raspberry Pi 3B
-    Disk size: 10GB
-    Power: on
-    IPv6 address: 2a00:1098:8:5b::1
-    IPv6 network: 2a00:1098:8:5b00::/56
-    Initialised keys: yes
-    SSH keys: 4
-    IPv4 SSH port: 5091
-    Location: MER
-    URLs:
-      http://www.mypi.hostedpi.com
-      https://www.mypi.hostedpi.com
-    SSH commands:
-      ssh -p 5091 root@ssh.mypi.hostedpi.com  # IPv4
-      ssh root@[2a00:1098:8:5b::1]  # IPv6
+    $ hostedpi list          
+    c8046p3gu
+    c8046p55a
+    c8046p6vv
+    c8046p6wt
+    $ hostedpi table
+    ┏━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name            ┃ Model ┃ Memory ┃ CPU Speed ┃
+    ┡━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
+    │ c8046p3gu       │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ c8046p55a       │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ c8046p6vv       │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ c8046p6wt       │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ c8046p6ha       │ 4     │ 8 GB   │ 2.0 GHz   │
+    │ c8046p6lj       │ 4     │ 4 GB   │ 1.5 GHz   │
+    └─────────────────┴───────┴────────┴───────────┘
+    $ hostedpi table c8046p6ha
+    ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃
+    ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
+    │ c8046p6ha │ 3     │ 1 GB   │ 1.2 GHz   │
+    └───────────┴───────┴────────┴───────────┘
 
-Provision a new Pi and view its SSH command (using Python):
+    $ hostedpi table c8046p6ha --full
+    ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+    ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃ NIC Speed ┃ Disk size ┃ Status     ┃ Initialised keys ┃ IPv4 SSH port ┃
+    ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+    │ c8046p6ha │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 50 GB     │ Powered on │ Yes              │ 5387          │
+    └───────────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴──────────────────┴───────────────┘
+
+
+Provision a new Pi and view its SSH command:
+
+.. code-block:: console
+
+    $ hostedpi create mypi --spec pi4-server
+    Creating Pi mypi with spec pi4-server...
+    Pi mypi created successfully.
+    SSH command: ssh -p 5123
 
 .. code-block:: pycon
 
-    >>> from hostedpi import PiCloud
-    >>> api_id = '8t29hvcux5g9vud8'
-    >>> secret = 'QNwsvxZY8SxT3OiLt:Vmz-D1mWQuoZ'
-    >>> cloud = PiCloud(api_id, secret, ssh_key_path='/home/ben/.ssh/id_rsa.pub')
-    >>> pi = cloud.create_pi('mypi')
+    >>> from hostedpi import PiCloud, Pi4ServerSpec
+    >>> cloud = PiCloud()
+    >>> pi = cloud.create_pi('mypi', spec=Pi4ServerSpec)
     >>> print(pi.ssh_command)
     ssh -p 5123 root@ssh.mypi.hostedpi.com
 
@@ -85,5 +102,5 @@ Contributing
 * Source code can be found on GitHub at https://github.com/piwheels/hostedpi
 * Code and documentation contributions welcome
 * The issue tracker can be found at https://github.com/piwheels/hostedpi/issues
-* For issues with the API itself, please contact Mythic Beasts support
+* For issues with the API or the service itself, please contact Mythic Beasts support
   https://www.mythic-beasts.com/support

@@ -9,7 +9,7 @@ from rich.table import Table
 from structlog import get_logger
 from pydantic import ValidationError
 
-from ..models.pi import Pi3ServerSpec, Pi4ServerSpec
+from ..models.specs import Pi3ServerSpec, Pi4ServerSpec
 from ..picloud import PiCloud
 from ..pi import Pi
 from ..exc import HostedPiException
@@ -157,7 +157,8 @@ def create_pi(
 
 
 def print_exc(exc: Exception):
-    logger.debug(f"hostedpi error: {exc}", exc_info=exc)
+    logger.error(f"hostedpi error: {exc}")
+    logger.debug("", exc_info=exc)
 
 
 def print_error(error: str):

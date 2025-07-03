@@ -3,6 +3,8 @@ from ipaddress import IPv6Address, IPv6Network
 
 from pydantic import BaseModel, RootModel, Field, ConfigDict, model_validator
 
+from .specs import ServerSpec
+
 
 class AuthResponse(BaseModel):
     access_token: str
@@ -55,3 +57,7 @@ class SSHKeysResponse(BaseModel):
 
 class PiImagesResponse(RootModel):
     root: dict[str, str]
+
+
+class SpecsResponse(BaseModel):
+    models: list[ServerSpec]
