@@ -279,6 +279,17 @@ def test_ssh_import_id(collect_ssh_keys, pi_info_basic, mock_session, api_url):
     assert called_json.count("\r\n") == len(ssh_keys) - 1
 
 
+def test_remove_ssh_keys_by_label(pi_info_basic, mock_session, api_url, imported_ssh_keys_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = imported_ssh_keys_response
+    pi.remove_ssh_keys_by_label("ben@finn")
+    assert mock_session.get.call_count == 1
+    assert mock_session.put.call_count == 1
+    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    json_called = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert "ben@finn" not in json_called
+
+
 "ssh-rsa AAAA ben@finn # ssh-import-id gh:testuser\n"
 "ssh-rsa BBBB ben@jake # ssh-import-id gh:testuser\n"
 "ssh-rsa CCCC dave@home # ssh-import-id gh:testuser2\n"
@@ -301,8 +312,3 @@ def test_ssh_import_id(collect_ssh_keys, pi_info_basic, mock_session, api_url):
 #     assert "ssh-rsa DDDD" in called_json
 #     assert "ssh-rsa EEEE" in called_json
 #     assert "ssh-rsa FFFF" in called_json
-
-
-# def test_remove_ssh_keys_by_label(pi_info_basic, mock_session, api_url):
-#     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-#     pi.remove_ssh_keys_by_label
