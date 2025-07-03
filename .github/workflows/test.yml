@@ -29,4 +29,4 @@ jobs:
         pip install -e .[test]
 
     - name: Run tests with pytest
-      run: pytest -vv --cov=hostedpi --cov-report=term-missing
+      run: pytest -vv
