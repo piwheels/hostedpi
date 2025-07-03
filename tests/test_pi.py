@@ -248,10 +248,20 @@ def test_ssh_import_id(collect_ssh_keys, pi_info_basic, mock_session, api_url):
     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
     collect_ssh_keys.return_value = ssh_keys
     mock_session.get.return_value.json.return_value = {"ssh_key": ""}
-    pi.ssh_import_id(github_usernames={"testuser"}, launchpad_usernames={"testuser"})
+    pi.import_ssh_keys(github_usernames={"testuser"}, launchpad_usernames={"testuser"})
     assert mock_session.put.call_count == 1
     assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
     called_json = mock_session.put.call_args[1]["json"]["ssh_key"]
     for key in ssh_keys:
         assert key in called_json
     assert called_json.count("\r\n") == len(ssh_keys) - 1
+
+
+def test_unimport_ssh_keys(pi_info_basic, mock_session, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    pi.unimport_ssh_keys
+
+
+def test_remove_ssh_keys_by_label(pi_info_basic, mock_session, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    pi.remove_ssh_keys_by_label

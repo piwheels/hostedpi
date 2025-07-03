@@ -9,7 +9,13 @@ from requests import Session, HTTPError, ConnectionError
 from structlog import get_logger
 from pydantic import ValidationError
 
-from .utils import collect_ssh_keys, get_error_message, dedupe_ssh_keys
+from .utils import (
+    collect_ssh_keys,
+    get_error_message,
+    dedupe_ssh_keys,
+    remove_imported_ssh_keys,
+    remove_ssh_keys_by_label,
+)
 from .exc import HostedPiException
 from .models.responses import PiInfoBasic, PiInfo, SSHKeysResponse, ProvisioningServer
 from .logger import log_request
@@ -392,7 +398,7 @@ class Pi:
 
         self._cancelled = True
 
-    def ssh_import_id(
+    def import_ssh_keys(
         self,
         *,
         github_usernames: Union[set[str], None] = None,
@@ -416,6 +422,42 @@ class Pi:
         )
         self.ssh_keys |= ssh_keys_set
         return ssh_keys_set
+
+    def unimport_ssh_keys(
+        self,
+        *,
+        github_usernames: Union[set[str], None] = None,
+        launchpad_usernames: Union[set[str], None] = None,
+    ) -> set[str]:
+        """
+        Remove SSH keys that were imported from GitHub or Launchpad, and return the remaining set of
+        keys.
+
+        :type github_usernames: set[str] or None
+        :param github_usernames:
+            A set of GitHub usernames to remove SSH keys for (keyword-only argument)
+
+        :type launchpad_usernames: set[str] or None
+        :param launchpad_usernames:
+            A set of Launchpad usernames to remove SSH keys for (keyword-only argument)
+        """
+        self.ssh_keys = remove_imported_ssh_keys(
+            ssh_keys=self.ssh_keys,
+            github_usernames=github_usernames,
+            launchpad_usernames=launchpad_usernames,
+        )
+        return self.ssh_keys
+
+    def remove_ssh_keys_by_label(self, label: str) -> set[str]:
+        """
+        Remove SSH keys from the Pi that have a specific label (e.g. user@hostname) and return the
+        remaining set of keys.
+
+        :type label: str
+        :param label: The label to remove from the SSH keys
+        """
+        self.ssh_keys = remove_ssh_keys_by_label(self.ssh_keys, label)
+        return self.ssh_keys
 
     def wait_until_provisioned(self):
         """
