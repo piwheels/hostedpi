@@ -123,7 +123,7 @@ def get_error_message(exc: HTTPError) -> Union[str, None]:
 
 def remove_ssh_keys_by_label(ssh_keys: set[str], label: str) -> set[str]:
     """
-    Remove SSH keys that have a specific label (e.g. user@hostname)
+    Remove SSH keys that have a specific label (e.g. ``user@hostname``)
     """
     if label:
         return {key for key in ssh_keys if _extract_ssh_key_label(key) != label}
@@ -141,7 +141,7 @@ def remove_imported_ssh_keys(
 
 def _extract_ssh_key_label(key: str) -> Union[str, None]:
     """
-    Try to extract the label (e.g. user@hostname) from an SSH key string, otherwise return None
+    Try to extract the label (e.g. ``user@hostname``) from an SSH key string, otherwise return None
     """
     parts = key.split(" ")
     if len(parts) > 2 and "@" in parts[2]:

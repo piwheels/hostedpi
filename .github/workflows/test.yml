@@ -30,3 +30,9 @@ jobs:
 
     - name: Run tests with pytest
       run: pytest -vv
+
+    - name: Run formatter checks
+      run: |
+        pip install isort black
+        isort --check .
+        black --check .

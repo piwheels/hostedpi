@@ -22,14 +22,8 @@ useful to show what you can do with the API via the *hostedpi* module.
     >>> from hostedpi import PiCloud
     >>> cloud = PiCloud()
 
-PiCloud
-=======
-
 .. autoclass:: hostedpi.picloud.PiCloud
     :members:
-
-Pi
-==
 
 .. autoclass:: hostedpi.pi.Pi()
     :members:

@@ -31,7 +31,7 @@ class Pi:
 
     There are two ways to get access to a ``Pi`` object: retrieval from the
     :attr:`~hostedpi.picloud.PiCloud.pis` dictionary; and the return value of
-    :meth:`~hostedpi.picloud.PiCloud.create_pi` method``.
+    :meth:`~hostedpi.picloud.PiCloud.create_pi` method.
 
     With a ``Pi`` object, you can access data about that particular Pi service, add SSH keys, reboot
     it, cancel it and more.
@@ -454,8 +454,8 @@ class Pi:
 
     def remove_ssh_keys_by_label(self, label: str) -> set[str]:
         """
-        Remove SSH keys from the Pi that have a specific label (e.g. user@hostname) and return the
-        remaining set of keys.
+        Remove SSH keys from the Pi that have a specific label (e.g. ``user@hostname``) and return
+        the remaining set of keys.
 
         :type label: str
         :param label: The label to remove from the SSH keys

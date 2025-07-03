@@ -6,9 +6,10 @@ This page contains reference material for those interested in developing and con
 **hostedpi** module.
 
 The project source code is hosted on GitHub at https://github.com/piwheels/hostedpi which also
-includes the `issue tracker`_.
+includes the `issue tracker`_ and `CI`_.
 
 .. _issue tracker: https://github.com/piwheels/hostedpi/issues
+.. _CI: https://github.com/piwheels/hostedpi/actions
 
 Setting up for Development
 ==========================
@@ -52,9 +53,14 @@ Or you can run the tests directly with `pytest` for more control:
 Format code
 -----------
 
-Format code with ``black`` and ``isort`` 
+Format code with ``isort`` and ``black``:
 
     .. code-block:: console
 
         $ make format
 
+GitHub Actions
+--------------
+
+GitHub Actions are used to run tests and formatter checks on every commit and pull request:
+https://github.com/piwheels/hostedpi/actions
