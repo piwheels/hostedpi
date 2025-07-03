@@ -49,7 +49,7 @@ def do_show(name: arguments.server_name):
 @keys_app.command("list")
 def do_list(name: arguments.server_name):
     """
-    List the SSH keys on a Raspberry Pi server, using the key name and comment if available
+    List the SSH keys on a Raspberry Pi server, using the key label and note if available
     """
     pi = utils.get_pi(name)
     for key in pi.ssh_keys:
@@ -64,7 +64,7 @@ def do_list(name: arguments.server_name):
 @keys_app.command("table")
 def do_table(name: arguments.server_name):
     """
-    List the SSH keys on a Raspberry Pi server, using the key name and comment if available
+    List the SSH keys on a Raspberry Pi server in a table format
     """
     pi = utils.get_pi(name)
     headers = ["Type", "Label", "Note"]
