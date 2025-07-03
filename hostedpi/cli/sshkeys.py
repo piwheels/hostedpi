@@ -7,7 +7,7 @@ import rich
 from . import utils
 from ..exc import HostedPiException
 from . import arguments, options
-from ..utils import collect_ssh_keys
+from ..utils import collect_ssh_keys, remove_ssh_keys_by_label, remove_imported_ssh_keys
 
 
 keys_app = Typer()
@@ -145,7 +145,7 @@ def do_remove(
         keys = pi.ssh_keys
         keys_before = len(keys)
         try:
-            keys = utils.remove_ssh_keys_by_label(keys, label)
+            keys = remove_ssh_keys_by_label(keys, label)
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
@@ -225,9 +225,9 @@ def do_unimport(
         keys = pi.ssh_keys
         keys_before = len(keys)
         for gh_username in github:
-            keys = utils.remove_imported_ssh_keys(keys, "gh", gh_username)
+            keys = remove_imported_ssh_keys(keys, "gh", gh_username)
         for lp_username in launchpad:
-            keys = utils.remove_imported_ssh_keys(keys, "lp", lp_username)
+            keys = remove_imported_ssh_keys(keys, "lp", lp_username)
         try:
             pi.ssh_keys = keys
         except HostedPiException as exc:

@@ -156,29 +156,6 @@ def create_pi(
         print_success("Server provision request accepted")
 
 
-def extract_ssh_key_label(key: str) -> Union[str, None]:
-    parts = key.split(" ")
-    if len(parts) > 2 and "@" in parts[2]:
-        return parts[2]
-
-
-def is_imported_ssh_key(key: str, source: Literal["gh", "lp"], username: str) -> bool:
-    import_comment = f"{source}:{username}"
-    return import_comment in key
-
-
-def remove_ssh_keys_by_label(ssh_keys: set[str], label: str) -> set[str]:
-    if label:
-        return {key for key in ssh_keys if extract_ssh_key_label(key) != label}
-    return ssh_keys
-
-
-def remove_imported_ssh_keys(
-    ssh_keys: set[str], source: Literal["gh", "lp"], username: str
-) -> set[str]:
-    return {key for key in ssh_keys if not is_imported_ssh_key(key, source, username)}
-
-
 def print_exc(exc: Exception):
     logger.error(f"hostedpi error: {exc}")
     logger.debug("", exc_info=exc)

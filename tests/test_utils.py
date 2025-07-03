@@ -8,6 +8,8 @@ from hostedpi.utils import (
     collect_ssh_keys,
     get_error_message,
     dedupe_ssh_keys,
+    remove_ssh_keys_by_label,
+    remove_imported_ssh_keys,
 )
 
 
@@ -225,3 +227,55 @@ def test_get_error_message_no_text():
     )
     message = get_error_message(mock_exc)
     assert message == "Error 400"
+
+
+def test_remove_ssh_keys_by_label():
+    ssh_keys = {
+        "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
+        "ssh-rsa bar ben@jake",
+        "ssh-rsa foobar dave@home # ssh-import-id lp:testuser2",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser2",
+    }
+
+    result = remove_ssh_keys_by_label(ssh_keys, "ben@finn")
+    assert result == {
+        "ssh-rsa bar ben@jake",
+        "ssh-rsa foobar dave@home # ssh-import-id lp:testuser2",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser2",
+    }
+
+    result = remove_ssh_keys_by_label(ssh_keys, "dave@home")
+    assert result == {
+        "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
+        "ssh-rsa bar ben@jake",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser2",
+    }
+
+
+def test_remove_imported_ssh_keys():
+    ssh_keys = set()
+    result = remove_imported_ssh_keys(ssh_keys, "gh", "testuser")
+    assert result == set()
+
+    ssh_keys = {
+        "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
+        "ssh-rsa bar ben@jake",
+        "ssh-rsa foobar dave@home # ssh-import-id lp:testuser",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser",
+    }
+
+    result = remove_imported_ssh_keys(ssh_keys, "gh", "testuser")
+    assert result == {
+        "ssh-rsa bar ben@jake",
+        "ssh-rsa foobar dave@home # ssh-import-id lp:testuser",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser",
+    }
+
+    result = remove_imported_ssh_keys(ssh_keys, "lp", "testuser")
+    assert result == {
+        "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",
+        "ssh-rsa bar ben@jake",
+    }
+
+    result = remove_imported_ssh_keys(ssh_keys, "gh", "testuser2")
+    assert result == ssh_keys

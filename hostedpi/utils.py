@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Literal
 from pathlib import Path
 
 import requests
@@ -37,13 +37,6 @@ def ssh_import_id(
         }
 
     return keys
-
-
-def _add_ssh_import_tag(key: str, source: str, username: str) -> str:
-    """
-    Add a tag to the SSH key to indicate it was imported
-    """
-    return f"{key} # ssh-import-id {source}:{username}"
 
 
 def fetch_keys_from_url(url: str, sep: str) -> set[str]:
@@ -127,3 +120,45 @@ def get_error_message(exc: HTTPError) -> Union[str, None]:
         return ErrorResponse.model_validate(data).error
     except Exception:
         return
+
+
+def remove_ssh_keys_by_label(ssh_keys: set[str], label: str) -> set[str]:
+    """
+    Remove SSH keys that have a specific label (e.g. user@hostname)
+    """
+    if label:
+        return {key for key in ssh_keys if _extract_ssh_key_label(key) != label}
+    return ssh_keys
+
+
+def remove_imported_ssh_keys(
+    ssh_keys: set[str], source: Literal["gh", "lp"], username: str
+) -> set[str]:
+    """
+    Remove SSH keys that were imported from a specific source (GitHub or Launchpad)
+    """
+    return {key for key in ssh_keys if not _is_imported_ssh_key(key, source, username)}
+
+
+def _extract_ssh_key_label(key: str) -> Union[str, None]:
+    """
+    Try to extract the label (e.g. user@hostname) from an SSH key string, otherwise return None
+    """
+    parts = key.split(" ")
+    if len(parts) > 2 and "@" in parts[2]:
+        return parts[2]
+
+
+def _is_imported_ssh_key(key: str, source: Literal["gh", "lp"], username: str) -> bool:
+    """
+    Check if the SSH key was imported from a specific source (GitHub or Launchpad) and username
+    """
+    import_comment = f"{source}:{username}"
+    return import_comment in key
+
+
+def _add_ssh_import_tag(key: str, source: str, username: str) -> str:
+    """
+    Add a tag to the SSH key to indicate it was imported
+    """
+    return f"{key} # ssh-import-id {source}:{username}"
