@@ -13,9 +13,10 @@ def ssh_key_empty_json():
 
 @pytest.fixture
 def ssh_key_empty_response(ssh_key_empty_json):
-    mock = Mock()
-    mock.json.return_value = ssh_key_empty_json
-    return mock
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=ssh_key_empty_json),
+    )
 
 
 @pytest.fixture
@@ -24,10 +25,11 @@ def ssh_three_keys_json():
 
 
 @pytest.fixture
-def ssh_three_keys_key_response(ssh_three_keys_json):
-    mock = Mock()
-    mock.json.return_value = ssh_three_keys_json
-    return mock
+def ssh_three_keys_response(ssh_three_keys_json):
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=ssh_three_keys_json),
+    )
 
 
 @pytest.fixture
@@ -57,16 +59,18 @@ def another_ssh_key_json():
 
 @pytest.fixture
 def one_ssh_key_response(one_ssh_key_json):
-    mock = Mock()
-    mock.json.return_value = one_ssh_key_json
-    return mock
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=one_ssh_key_json),
+    )
 
 
 @pytest.fixture
 def another_ssh_key_response(another_ssh_key_json):
-    mock = Mock()
-    mock.json.return_value = another_ssh_key_json
-    return mock
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=another_ssh_key_json),
+    )
 
 
 def test_pi_init(pi_info_basic, mock_session, api_url):
@@ -124,9 +128,9 @@ def test_get_ssh_keys_empty(pi_info_basic, mock_session, api_url, ssh_key_empty_
     assert keys == set()
 
 
-def test_get_ssh_keys(pi_info_basic, mock_session, api_url, ssh_three_keys_key_response):
+def test_get_ssh_keys(pi_info_basic, mock_session, api_url, ssh_three_keys_response):
     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = ssh_three_keys_key_response
+    mock_session.get.return_value = ssh_three_keys_response
     keys = pi.ssh_keys
     assert keys == {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
 

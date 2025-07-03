@@ -105,10 +105,10 @@ def pi_info_json():
 
 @pytest.fixture
 def pi_info_response(pi_info_json):
-    response = Mock()
-    response.status_code = 200
-    response.json.return_value = pi_info_json
-    return response
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pi_info_json),
+    )
 
 
 @pytest.fixture
@@ -116,10 +116,10 @@ def pi_info_booting_response(pi_info_json):
     pi_info_booting_json = pi_info_json.copy()
     pi_info_booting_json["is_booting"] = True
     pi_info_booting_json["boot_progress"] = "booting"
-    response = Mock()
-    response.status_code = 200
-    response.json.return_value = pi_info_booting_json
-    return response
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pi_info_booting_json),
+    )
 
 
 @pytest.fixture
@@ -134,10 +134,7 @@ def pi_info_basic(pi_info_json):
 
 @pytest.fixture
 def mock_auth():
-    mock_auth_instance = Mock()
-    mock_auth_instance._settings.id = "test_id"
-    mock_auth_instance.session.get = Mock()
-    return mock_auth_instance
+    return Mock(_settings=Mock(id="test_id"))
 
 
 @pytest.fixture(autouse=True)
@@ -154,8 +151,8 @@ def mock_session(mock_auth):
 
 @pytest.fixture
 def pi_info_response(pi_info_json, mythic_servers_url, pi3_name):
-    response = Mock()
-    response.status_code = 200
-    response.json.return_value = pi_info_json
-    response.request.url = f"{mythic_servers_url}/{pi3_name}"
-    return response
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pi_info_json),
+        request=Mock(url=f"{mythic_servers_url}/{pi3_name}"),
+    )

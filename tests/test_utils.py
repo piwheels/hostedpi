@@ -13,18 +13,18 @@ def patch_log_request():
 
 @pytest.fixture
 def mock_github_response():
-    mock = Mock()
-    mock.status_code = 200
-    mock.text = "ssh-rsa foo\nssh-rsa bar"
-    return mock
+    return Mock(
+        status_code=200,
+        text="ssh-rsa foo\nssh-rsa bar",
+    )
 
 
 @pytest.fixture
 def mock_launchpad_response():
-    mock = Mock()
-    mock.status_code = 200
-    mock.text = "ssh-rsa foobar\r\n\n" "ssh-rsa barfoo"
-    return mock
+    return Mock(
+        status_code=200,
+        text="ssh-rsa foobar\r\n\n" "ssh-rsa barfoo",
+    )
 
 
 @patch("hostedpi.utils.requests.get")

@@ -24,18 +24,18 @@ def mock_settings():
 
 @pytest.fixture
 def auth_response():
-    mock = Mock()
-    mock.status_code = 200
-    mock.json.return_value = {"access_token": "foobar", "expires_in": 3600}
-    return mock
+    return Mock(
+        status_code=200,
+        json=Mock(return_value={"access_token": "foobar", "expires_in": 3600}),
+    )
 
 
 @pytest.fixture
 def auth_response_2():
-    mock = Mock()
-    mock.status_code = 200
-    mock.json.return_value = {"access_token": "barfoo", "expires_in": 3600}
-    return mock
+    return Mock(
+        status_code=200,
+        json=Mock(return_value={"access_token": "barfoo", "expires_in": 3600}),
+    )
 
 
 @patch("hostedpi.auth.Session.post")
