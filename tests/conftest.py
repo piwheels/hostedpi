@@ -3,15 +3,17 @@ from datetime import datetime
 
 import pytest
 
-from hostedpi.models.responses import PiInfoBasic, PiInfo
-from hostedpi.models.sshkeys import SSHKeySources
 
-
+# sorry, must be run before any hostedpi imports
 @pytest.fixture(autouse=True)
 def unset_hostedpi_env(monkeypatch):
     monkeypatch.delenv("HOSTEDPI_ID", raising=False)
     monkeypatch.delenv("HOSTEDPI_SECRET", raising=False)
     monkeypatch.delenv("HOSTEDPI_LOG_LEVEL", raising=False)
+
+
+from hostedpi.models.responses import PiInfoBasic, PiInfo
+from hostedpi.models.sshkeys import SSHKeySources
 
 
 @pytest.fixture
