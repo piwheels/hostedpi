@@ -20,10 +20,10 @@ def default_pi4_spec():
 
 @pytest.fixture
 def pis_response_none():
-    mock = Mock()
-    mock.status_code = 200
-    mock.json.return_value = {"servers": {}}
-    return mock
+    return Mock(
+        status_code=200,
+        json=Mock(return_value={"servers": {}}),
+    )
 
 
 @pytest.fixture
@@ -79,52 +79,53 @@ def create_pi_response(mythic_async_location):
 
 @pytest.fixture
 def out_of_stock_response():
-    response = Mock()
-    response.status_code = 503
-    response.json.return_value = {
-        "error": "We do not have any servers of the specified type available"
-    }
+    response = Mock(
+        status_code=503,
+        json=Mock(
+            return_value={"error": "We do not have any servers of the specified type available"}
+        ),
+    )
     response.raise_for_status.side_effect = HTTPError(response=response)
     return response
 
 
 @pytest.fixture
 def provision_status_provisioning():
-    response = Mock()
-    response.status_code = 200
-    response.json.return_value = {
-        "status": "Provisioning",
-    }
-    return response
+    return Mock(
+        status_code=200,
+        json=Mock(
+            return_value={"status": "Provisioning"},
+        ),
+    )
 
 
 @pytest.fixture
 def provision_status_installing():
-    response = Mock()
-    response.status_code = 200
-    response.json.return_value = {
-        "status": "Installing operating system",
-    }
-    return response
+    return Mock(
+        status_code=200,
+        json=Mock(
+            return_value={
+                "status": "Installing operating system",
+            }
+        ),
+    )
 
 
 @pytest.fixture
 def provision_status_booting():
-    response = Mock()
-    response.status_code = 200
-    response.json.return_value = {
-        "status": "Booting Raspberry Pi",
-    }
-    return response
+    return Mock(
+        status_code=200,
+        json=Mock(return_value={"status": "Booting Raspberry Pi"}),
+    )
 
 
 @pytest.fixture
 def pi_info_response_random_name(pi_info_json, mythic_servers_url, random_pi_name):
-    response = Mock()
-    response.status_code = 200
-    response.json.return_value = pi_info_json
-    response.request.url = f"{mythic_servers_url}/{random_pi_name}"
-    return response
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pi_info_json),
+        request=Mock(url=f"{mythic_servers_url}/{random_pi_name}"),
+    )
 
 
 @pytest.fixture
@@ -141,10 +142,10 @@ def specs_response_json():
 
 @pytest.fixture
 def specs_response(specs_response_json):
-    response = Mock()
-    response.status_code = 200
-    response.json.return_value = specs_response_json
-    return response
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=specs_response_json),
+    )
 
 
 def test_picloud_init(api_url):
