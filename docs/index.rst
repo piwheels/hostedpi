@@ -63,7 +63,6 @@ View the information about Pis in your account from the command line:
     │ c8046p6ha │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 50 GB     │ Powered on │ Yes              │ 5387          │
     └───────────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴──────────────────┴───────────────┘
 
-
 Provision a new Pi and view its SSH command:
 
 .. code-block:: console

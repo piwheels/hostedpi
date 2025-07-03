@@ -25,13 +25,25 @@ def ssh_import_id(
     if github_username is not None:
         url = f"https://github.com/{github_username}.keys"
         sep = "\n"
-        keys |= fetch_keys_from_url(url, sep)
+        keys |= {
+            _add_ssh_import_tag(key, "gh", github_username) for key in fetch_keys_from_url(url, sep)
+        }
     if launchpad_username is not None:
         url = f"https://launchpad.net/~{launchpad_username}/+sshkeys"
         sep = "\r\n\n"
-        keys |= fetch_keys_from_url(url, sep)
+        keys |= {
+            _add_ssh_import_tag(key, "lp", launchpad_username)
+            for key in fetch_keys_from_url(url, sep)
+        }
 
     return keys
+
+
+def _add_ssh_import_tag(key: str, source: str, username: str) -> str:
+    """
+    Add a tag to the SSH key to indicate it was imported
+    """
+    return f"{key} # ssh-import-id {source}:{username}"
 
 
 def fetch_keys_from_url(url: str, sep: str) -> set[str]:
@@ -70,7 +82,30 @@ def collect_ssh_keys(
     if launchpad_usernames:
         for username in launchpad_usernames:
             ssh_keys_set |= ssh_import_id(launchpad_username=username)
-    return ssh_keys_set
+    return _dedupe_ssh_keys(ssh_keys_set)
+
+
+def _dedupe_ssh_keys(ssh_keys: set[str]) -> set[str]:
+    """
+    Deduplicate SSH keys by removing any duplicates that are identical
+    except for the comment at the end of the key.
+    """
+    # sort keys by the number of spaces so we don't throw away any additional comments
+    sorted_keys = reversed(sorted(ssh_keys, key=lambda k: k.count(" ")))
+
+    actual_keys = set()  # without comments
+    unique_keys = set()  # with comments (returned)
+
+    for key in sorted_keys:
+        # Split the key into the actual key and the comment
+        parts = key.split()
+        actual_key = " ".join(parts[:2])
+        if actual_key not in actual_keys:
+            # Only add unique keys to the return set
+            unique_keys.add(key)
+            actual_keys.add(actual_key)
+
+    return unique_keys
 
 
 def get_error_message(exc: HTTPError) -> Union[str, None]:

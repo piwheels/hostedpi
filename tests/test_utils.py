@@ -2,7 +2,13 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from hostedpi.utils import ssh_import_id, fetch_keys_from_url, collect_ssh_keys, get_error_message
+from hostedpi.utils import (
+    ssh_import_id,
+    fetch_keys_from_url,
+    collect_ssh_keys,
+    get_error_message,
+    _dedupe_ssh_keys,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -23,8 +29,53 @@ def mock_github_response():
 def mock_launchpad_response():
     return Mock(
         status_code=200,
-        text="ssh-rsa foobar\r\n\n" "ssh-rsa barfoo",
+        text="ssh-rsa foobar\r\n\nssh-rsa barfoo",
     )
+
+
+def test_dedupe_ssh_keys():
+    keys = {
+        "ssh-rsa foo",
+        "ssh-rsa bar",
+        "ssh-rsa foo",
+    }
+    deduped_keys = _dedupe_ssh_keys(keys)
+    assert deduped_keys == {"ssh-rsa foo", "ssh-rsa bar"}
+
+    keys = {
+        "ssh-rsa foo # ssh-import-id gh:testuser",
+        "ssh-rsa bar",
+        "ssh-rsa foo",
+    }
+    deduped_keys = _dedupe_ssh_keys(keys)
+    assert deduped_keys == {
+        "ssh-rsa foo # ssh-import-id gh:testuser",
+        "ssh-rsa bar",
+    }
+
+    keys = {
+        "ssh-rsa foo testuser@home # ssh-import-id gh:testuser",
+        "ssh-rsa bar testuser@home # ssh-import-id gh:testuser",
+        "ssh-rsa foo testuser@home",
+        "ssh-rsa bar testuser@home",
+        "ssh-rsa foobar testuser@home",
+        "ssh-rsa barfoo testuser@home",
+        "ssh-rsa foo testuser@home # ssh-import-id lp:testuser2",
+        "ssh-rsa bar testuser@home # ssh-import-id lp:testuser2",
+        "ssh-rsa foobar testuser@home # ssh-import-id lp:testuser2",
+        "ssh-rsa barfoo testuser@home # ssh-import-id lp:testuser2",
+        "ssh-rsa foo",
+        "ssh-rsa bar",
+        "ssh-rsa foobar",
+        "ssh-rsa barfoo",
+    }
+    deduped_keys = _dedupe_ssh_keys(keys)
+    assert deduped_keys == {
+        "ssh-rsa bar testuser@home # ssh-import-id lp:testuser2",
+        "ssh-rsa barfoo testuser@home # ssh-import-id lp:testuser2",
+        "ssh-rsa foo testuser@home # ssh-import-id gh:testuser",
+        "ssh-rsa foobar testuser@home # ssh-import-id lp:testuser2",
+    }
 
 
 @patch("hostedpi.utils.requests.get")
@@ -52,7 +103,10 @@ def test_ssh_import_id_github(mock_get, mock_github_response):
     keys = ssh_import_id(github_username=gh_user)
     assert mock_get.call_count == 1
     assert mock_get.call_args_list[0][0][0] == f"https://github.com/{gh_user}.keys"
-    assert keys == {"ssh-rsa foo", "ssh-rsa bar"}
+    assert keys == {
+        "ssh-rsa foo # ssh-import-id gh:testuser",
+        "ssh-rsa bar # ssh-import-id gh:testuser",
+    }
 
 
 @patch("hostedpi.utils.requests.get")
@@ -62,7 +116,10 @@ def test_ssh_import_id_launchpad(mock_get, mock_launchpad_response):
     keys = ssh_import_id(launchpad_username=lp_user)
     assert mock_get.call_count == 1
     assert mock_get.call_args_list[0][0][0] == f"https://launchpad.net/~{lp_user}/+sshkeys"
-    assert keys == {"ssh-rsa foobar", "ssh-rsa barfoo"}
+    assert keys == {
+        "ssh-rsa foobar # ssh-import-id lp:testuser2",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser2",
+    }
 
 
 @patch("hostedpi.utils.requests.get")
@@ -74,7 +131,12 @@ def test_ssh_import_id_both(mock_get, mock_github_response, mock_launchpad_respo
     assert mock_get.call_count == 2
     assert mock_get.call_args_list[0][0][0] == f"https://github.com/{gh_user}.keys"
     assert mock_get.call_args_list[1][0][0] == f"https://launchpad.net/~{lp_user}/+sshkeys"
-    assert keys == {"ssh-rsa foo", "ssh-rsa bar", "ssh-rsa foobar", "ssh-rsa barfoo"}
+    assert keys == {
+        "ssh-rsa foo # ssh-import-id gh:testuser",
+        "ssh-rsa bar # ssh-import-id gh:testuser",
+        "ssh-rsa foobar # ssh-import-id lp:testuser2",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser2",
+    }
 
 
 def test_collect_ssh_keys_set():
@@ -93,14 +155,20 @@ def test_collect_ssh_keys_path(tmp_path):
 def test_collect_ssh_keys_github(mock_get, mock_github_response):
     mock_get.return_value = mock_github_response
     keys = collect_ssh_keys(github_usernames={"testuser"})
-    assert keys == {"ssh-rsa foo", "ssh-rsa bar"}
+    assert keys == {
+        "ssh-rsa foo # ssh-import-id gh:testuser",
+        "ssh-rsa bar # ssh-import-id gh:testuser",
+    }
 
 
 @patch("hostedpi.utils.requests.get")
 def test_collect_ssh_keys_launchpad(mock_get, mock_launchpad_response):
     mock_get.return_value = mock_launchpad_response
     keys = collect_ssh_keys(launchpad_usernames={"testuser"})
-    assert keys == {"ssh-rsa foobar", "ssh-rsa barfoo"}
+    assert keys == {
+        "ssh-rsa foobar # ssh-import-id lp:testuser",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser",
+    }
 
 
 @patch("hostedpi.utils.requests.get")
@@ -117,10 +185,10 @@ def test_collect_ssh_keys_all(mock_get, mock_github_response, mock_launchpad_res
     )
 
     assert keys == {
-        "ssh-rsa foo",
-        "ssh-rsa bar",
-        "ssh-rsa foobar",
-        "ssh-rsa barfoo",
+        "ssh-rsa foo # ssh-import-id gh:testuser",
+        "ssh-rsa bar # ssh-import-id gh:testuser",
+        "ssh-rsa foobar # ssh-import-id lp:testuser2",
+        "ssh-rsa barfoo # ssh-import-id lp:testuser2",
         "ssh-rsa localkey",
     }
 
