@@ -68,7 +68,7 @@ def filter_pis(pis: list[Pi], filter: Union[str, None]) -> list[Pi]:
     return [pi for pi in pis if filter is None or filter.lower() in pi.name.lower()]
 
 
-def short_table(pis: list[Pi]):
+def short_pis_table(pis: list[Pi]):
     table = make_table("Name", "Model", "Memory", "CPU Speed")
 
     for pi in pis:
@@ -81,7 +81,7 @@ def short_table(pis: list[Pi]):
     rich.print(table)
 
 
-def full_table(pis: list[Pi]):
+def full_pis_table(pis: list[Pi]):
     headers = [
         "Name",
         "Model",
@@ -148,12 +148,35 @@ def create_pi(
 
     if full:
         print_success("Server provisioned")
-        full_table([pi])
+        full_pis_table([pi])
     elif wait:
         print_success("Server provisioned")
-        short_table([pi])
+        short_pis_table([pi])
     else:
         print_success("Server provision request accepted")
+
+
+def extract_ssh_key_label(key: str) -> Union[str, None]:
+    parts = key.split(" ")
+    if len(parts) > 2 and "@" in parts[2]:
+        return parts[2]
+
+
+def is_imported_ssh_key(key: str, source: Literal["gh", "lp"], username: str) -> bool:
+    import_comment = f"{source}:{username}"
+    return import_comment in key
+
+
+def remove_ssh_keys_by_label(ssh_keys: set[str], label: str) -> set[str]:
+    if label:
+        return {key for key in ssh_keys if extract_ssh_key_label(key) != label}
+    return ssh_keys
+
+
+def remove_imported_ssh_keys(
+    ssh_keys: set[str], source: Literal["gh", "lp"], username: str
+) -> set[str]:
+    return {key for key in ssh_keys if not is_imported_ssh_key(key, source, username)}
 
 
 def print_exc(exc: Exception):
@@ -167,3 +190,7 @@ def print_error(error: str):
 
 def print_success(message: str):
     console.print(f"[green]{message}[/green]")
+
+
+def print_warn(message: str):
+    console.print(f"[yellow]{message}[/yellow]")

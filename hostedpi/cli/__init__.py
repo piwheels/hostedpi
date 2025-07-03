@@ -71,9 +71,9 @@ def do_table(
     pis = utils.get_pis(names, filter)
 
     if full:
-        utils.full_table(pis)
+        utils.full_pis_table(pis)
     else:
-        utils.short_table(pis)
+        utils.short_pis_table(pis)
 
 
 @app.command("create")

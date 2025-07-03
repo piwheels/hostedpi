@@ -1,6 +1,8 @@
 from typer import Typer
 from rich.live import Live
 from rich.console import Console
+from rich.table import Table
+import rich
 
 from . import utils
 from ..exc import HostedPiException
@@ -33,7 +35,7 @@ def do_count(names: arguments.server_names = None, filter: options.filter_patter
 @keys_app.command("show")
 def do_show(name: arguments.server_name):
     """
-    List the SSH keys on a Raspberry Pi server
+    List the SSH keys on a Raspberry Pi server as plaintext
     """
     pi = utils.get_pi(name)
     for key in pi.ssh_keys:
@@ -42,6 +44,47 @@ def do_show(name: arguments.server_name):
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
+
+
+@keys_app.command("list")
+def do_list(name: arguments.server_name):
+    """
+    List the SSH keys on a Raspberry Pi server, using the key name and comment if available
+    """
+    pi = utils.get_pi(name)
+    for key in pi.ssh_keys:
+        try:
+            parts = key.split()
+            print(" ".join(parts[2:]))
+        except HostedPiException as exc:
+            utils.print_exc(exc)
+            continue
+
+
+@keys_app.command("table")
+def do_table(name: arguments.server_name):
+    """
+    List the SSH keys on a Raspberry Pi server, using the key name and comment if available
+    """
+    pi = utils.get_pi(name)
+    headers = ["Type", "Label", "Note"]
+    table = Table(*headers)
+
+    for key in pi.ssh_keys:
+        label = ""
+        note = ""
+        parts = key.split(" ")
+        key_type = parts[0]
+        if len(parts) > 1:
+            if "@" in parts[2]:
+                label = parts[2]
+                note = " ".join(parts[3:]).removeprefix("# ")
+            else:
+                note = " ".join(parts[2:]).removeprefix("# ")
+
+        table.add_row(key_type, label, note)
+
+    rich.print(table)
 
 
 @keys_app.command("add")
@@ -89,7 +132,33 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
 
 @keys_app.command("rm", hidden=True)
 @keys_app.command("remove")
-def do_remove(names: arguments.server_names = None, filter: options.filter_pattern = None):
+def do_remove(
+    label: arguments.ssh_key_label,
+    names: arguments.server_names = None,
+    filter: options.filter_pattern = None,
+):
+    """
+    Remove an SSH key from one or more Raspberry Pi servers
+    """
+    pis = utils.get_pis(names, filter)
+    for pi in pis:
+        keys = pi.ssh_keys
+        keys_before = len(keys)
+        try:
+            keys = utils.remove_ssh_keys_by_label(keys, label)
+        except HostedPiException as exc:
+            utils.print_exc(exc)
+            continue
+        pi.ssh_keys = keys
+        removed_keys = keys_before - len(keys)
+        if removed_keys == 0:
+            utils.print_warn(f"No keys matching '{label}' found on {pi.name}")
+        else:
+            utils.print_success(f"Removed {removed_keys} keys from {pi.name}")
+
+
+@keys_app.command("clear")
+def do_clear(names: arguments.server_names = None, filter: options.filter_pattern = None):
     """
     Remove the SSH keys from one or more Raspberry Pi servers
     """
@@ -100,7 +169,7 @@ def do_remove(names: arguments.server_names = None, filter: options.filter_patte
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
-        utils.print_success(f"Removed keys from {pi.name}")
+        utils.print_success(f"Removed all keys from {pi.name}")
 
 
 @keys_app.command("import")
@@ -122,9 +191,50 @@ def do_import(
         launchpad_usernames=set(launchpad) if launchpad else None,
     )
     for pi in pis:
+        keys_before = len(pi.ssh_keys)
         try:
             pi.ssh_keys |= ssh_keys
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
-        utils.print_success(f"Imported {len(ssh_keys)} keys to {pi.name}")
+        keys_after = len(pi.ssh_keys)
+        keys_imported = keys_after - keys_before
+        if keys_imported == 0:
+            utils.print_warn(f"No new keys imported to {pi.name}")
+        else:
+            utils.print_success(f"Imported {keys_imported} keys to {pi.name}")
+
+
+@keys_app.command("unimport")
+def do_unimport(
+    names: arguments.server_names = None,
+    filter: options.filter_pattern = None,
+    github: options.ssh_import_github = None,
+    launchpad: options.ssh_import_launchpad = None,
+):
+    """
+    Remove imported SSH keys from one or more Raspberry Pi servers
+    """
+    if not github and not launchpad:
+        utils.print_error("You must specify at least one source to unimport from")
+        return 1
+    github = set(github) if github else set()
+    launchpad = set(launchpad) if launchpad else set()
+    pis = utils.get_pis(names, filter)
+    for pi in pis:
+        keys = pi.ssh_keys
+        keys_before = len(keys)
+        for gh_username in github:
+            keys = utils.remove_imported_ssh_keys(keys, "gh", gh_username)
+        for lp_username in launchpad:
+            keys = utils.remove_imported_ssh_keys(keys, "lp", lp_username)
+        try:
+            pi.ssh_keys = keys
+        except HostedPiException as exc:
+            utils.print_exc(exc)
+            continue
+        removed_keys = keys_before - len(keys)
+        if removed_keys == 0:
+            utils.print_warn(f"No keys matching import sources specified found on {pi.name}")
+        else:
+            utils.print_success(f"Removed {removed_keys} keys from {pi.name}")

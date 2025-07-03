@@ -12,3 +12,4 @@ ssh_key_path = Annotated[
 images_model = Annotated[
     int, Argument(help="Model of Raspberry Pi server to list images for", min=3, max=4)
 ]
+ssh_key_label = Annotated[str, Argument(help="Label for the SSH key, e.g. 'ben@finn'")]
