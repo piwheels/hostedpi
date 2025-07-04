@@ -24,9 +24,9 @@ Description
 
     The name of the Pis to add keys to
 
-.. option:: -h, --help
+.. option:: --help
 
-    Show this help message and exit
+    Show this message and exit
 
 Usage
 =====

@@ -2,7 +2,7 @@
 hostedpi list
 =============
 
-List all Pis in the account
+List Raspberry Pi servers
 
 Synopsis
 ========
@@ -16,9 +16,17 @@ Description
 
 .. program:: hostedpi-list
 
-.. option:: -h, --help
+.. option:: names
 
-    Show this help message and exit
+    Names of the Raspberry Pi servers
+
+.. option:: --filter
+
+    Search pattern for filtering results
+
+.. option:: --help
+
+    Show this message and exit
 
 Usage
 =====
@@ -30,5 +38,13 @@ List all Pis in the account:
     $ hostedpi list
     mypi
     mypi2
-    mypi3
-    mypi4
+    bob1
+    bob2
+
+Filter by a search pattern:
+
+.. code-block:: console
+
+    $ hostedpi list --filter bob
+    bob1
+    bob2

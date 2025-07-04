@@ -20,9 +20,9 @@ Description
 
     The name of the Pi to power off
 
-.. option:: -h, --help
+.. option:: --help
 
-    Show this help message and exit
+    Show this message and exit
 
 Usage
 =====

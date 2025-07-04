@@ -24,9 +24,9 @@ Description
 
     The names of the Pis to copy keys to
 
-.. option:: -h, --help
+.. option:: --help
 
-    Show this help message and exit
+    Show this message and exit
 
 Usage
 =====

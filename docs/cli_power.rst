@@ -20,9 +20,9 @@ Description
 
     The names of the Pis to get the power status for
 
-.. option:: -h, --help
+.. option:: --help
 
-    Show this help message and exit
+    Show this message and exit
 
 Usage
 =====

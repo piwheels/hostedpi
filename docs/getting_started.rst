@@ -37,11 +37,21 @@ for more information.
 
 .. _pipx docs: https://github.com/pypa/pipx?tab=readme-ov-file#install-pipx
 
+.. code-block:: console
+
+    $ pipx install hostedpi[cli]
+
 To install the Python library, you can install into an activated virtual environment:
 
 .. code-block:: console
 
     $ pip install hostedpi
+
+To include the CLI dependencies, you can install the ``hostedpi[cli]`` extra:
+
+.. code-block:: console
+
+    $ pip install hostedpi[cli]
 
 Set your environment variables
 ==============================

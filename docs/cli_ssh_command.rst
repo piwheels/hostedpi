@@ -20,9 +20,9 @@ Description
 
     The names of the Pis to get SSH commands for
 
-.. option:: -h, --help
+.. option:: --help
 
-    Show this help message and exit
+    Show this message and exit
 
 .. option:: --ipv6
 

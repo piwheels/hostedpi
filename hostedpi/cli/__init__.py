@@ -36,7 +36,7 @@ def do_images(
     images = cloud.get_operating_systems(model=model)
     table = utils.make_table("ID", "Name")
 
-    for id, name in images.items():
+    for id, name in sorted(images.items()):
         if filter is None or filter.lower() in id.lower() or filter.lower() in name.lower():
             table.add_row(id, name)
     rich.print(table)
