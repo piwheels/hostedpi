@@ -99,8 +99,9 @@ Table of Contents
 
     getting_started
     cli
-    recipes
     api
+    recipes
+    specs
     development
 
 Contributing

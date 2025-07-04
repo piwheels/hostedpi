@@ -1,24 +1,30 @@
-============
+=============
 hostedpi off
-============
-
-Power off one or more Pis in the account
-
-Synopsis
-========
-
-.. code-block:: text
-
-    hostedpi off [-h] [names [names ...]]
-
-Description
-===========
+=============
 
 .. program:: hostedpi-off
 
-.. option:: names [names ...]
+Power off one or more Raspberry Pi servers
 
-    The name of the Pi to power off
+.. code-block:: text
+
+    Usage: hostedpi off [OPTIONS] [NAMES]...
+
+Arguments
+=========
+
+.. option:: names [str ...]
+
+    Names of the Raspberry Pi servers to power off
+
+    If no names are given, all Pis in the account will be powered off
+
+Options
+=======
+
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
 
 .. option:: --help
 
@@ -32,15 +38,37 @@ Power off a Pi:
 .. code-block:: console
 
     $ hostedpi off mypi
-    mypi powered off
+    ┏━━━━━━━┳━━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Status       ┃
+    ┡━━━━━━━╇━━━━━━━━━━━━━━┩
+    │ mypi  │ Powering off │
+    └───────┴──────────────┘
 
-Power off multiple Pis:
+Power off multiple Pis by name:
 
 .. code-block:: console
 
     $ hostedpi off mypi mypi2
-    mypi powered off
-    mypi2 powered off
+    ┏━━━━━━━┳━━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Status       ┃
+    ┡━━━━━━━╇━━━━━━━━━━━━━━┩
+    │ mypi  │ Powering off │
+    │ mypi2 │ Powering off │
+    └───────┴──────────────┘
+
+Power off multiple Pis with a filter:
+
+.. code-block:: console
+
+    $ hostedpi off --filter mypi
+    ┏━━━━━━━┳━━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Status       ┃
+    ┡━━━━━━━╇━━━━━━━━━━━━━━┩
+    │ mypi  │ Powering off │
+    │ mypi2 │ Powering off │
+    │ mypi3 │ Powering off │
+    │ mypi4 │ Powering off │
+    └───────┴──────────────┘
 
 .. note::
 

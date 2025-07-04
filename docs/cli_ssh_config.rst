@@ -1,41 +1,54 @@
 ===================
-hostedpi ssh-config
+hostedpi ssh config
 ===================
 
-Output the SSH config for one or more Pis in the account
+.. program:: hostedpi-ssh config
 
-Synopsis
-========
+Get the SSH config to connect to one or more Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi ssh-config [-h] [--ipv6] [names [names ...]]
+    Usage: hostedpi ssh config [OPTIONS] [NAMES]...
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-ssh-config
+.. option:: names [str ...]
 
-.. option:: names [names ...]
+    Names of the Raspberry Pi servers to get SSH config for
 
-    The name of the Pis to add keys to
+Options
+=======
+
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
+
+.. option:: --ipv6
+
+    Use the IPv6 connection method
 
 .. option:: --help
 
     Show this message and exit
 
-.. option:: --ipv6
-
-    Use IPv6 connection details
-
 Usage
 =====
+
+The SSH config file is a convenient way to store SSH connection information for multiple hosts. It
+allows you to connect to a host using a simple command like `ssh mypi` instead of typing the full
+command every time.
+
+It is generally useful to redirect the output of this command to your SSH config file, which is
+usually located at `~/.ssh/config`. Outputting to the terminal is useful for copy-pasting, but
+redirecting to the config file allows you to automate the process. You will need to prune this file
+as you provision and deprovision Pis.
 
 Output the IPv4 SSH config for a Pi:
 
 .. code-block:: console
 
-    $ hostedpi ssh-config mypi
+    $ hostedpi ssh config mypi
     Host mypi
         user root
         port 5224
@@ -45,7 +58,7 @@ Output the IPv6 SSH config for a Pi:
 
 .. code-block:: console
 
-    $ hostedpi ssh-config mypi --ipv6
+    $ hostedpi ssh config mypi --ipv6
     Host mypi
         user root
         hostname 2a00:1098:8:5b::1
@@ -54,7 +67,7 @@ Output the IPv4 SSH config for multiple Pis:
 
 .. code-block:: console
 
-    $ hostedpi ssh-config mypi mypi2
+    $ hostedpi ssh config mypi mypi2
     Host mypi
         user root
         port 5224
@@ -64,16 +77,11 @@ Output the IPv4 SSH config for multiple Pis:
         port 5072
         hostname ssh.mypi2.hostedpi.com
 
-.. note::
-
-    If no names of Pis are given, the SSH commands will be shown for all Pis in the account
-
-Save (append) the IPv4 SSH config for all Pis in the account into your SSH
-config file:
+Save (append) the IPv4 SSH config for all Pis in the account into your SSH config file:
 
 .. code-block:: console
 
-    $ hostedpi ssh-config >> ~/.ssh/config
+    $ hostedpi ssh config >> ~/.ssh/config
 
 .. note::
 

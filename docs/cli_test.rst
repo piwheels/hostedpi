@@ -2,20 +2,17 @@
 hostedpi test
 =============
 
+.. program:: hostedpi-test
+
 Test a connection to the Mythic Beasts API using API ID and secret, using configuration as described
 in the :doc:`getting_started` section.
 
-Synopsis
-========
-
 .. code-block:: text
 
-    hostedpi test [-h]
+    Usage: hostedpi test [OPTIONS]
 
-Description
-===========
-
-.. program:: hostedpi-test
+Options
+=======
 
 .. option:: --help
 
@@ -37,7 +34,3 @@ An error will be shown if the connection fails:
 
     $ hostedpi test
     Failed to authenticate
-
-.. note::
-    
-    See the :doc:`getting_started` section for details on how to authenticate

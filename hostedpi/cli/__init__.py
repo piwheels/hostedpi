@@ -28,7 +28,7 @@ def do_test():
 @app.command("images")
 def do_images(
     model: arguments.images_model,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_images = None,
 ):
     """
     List operating system images available for Raspberry Pi servers
@@ -47,7 +47,7 @@ def do_images(
 @app.command("list")
 def do_list(
     names: arguments.server_names = None,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_pi = None,
 ):
     """
     List Raspberry Pi servers
@@ -62,7 +62,7 @@ def do_list(
 @app.command("table")
 def do_table(
     names: arguments.server_names = None,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_pi = None,
     full: options.full_table = False,
 ):
     """
@@ -150,7 +150,7 @@ def do_create(
 
 
 @app.command("status")
-def do_status(names: arguments.server_names = None, filter: options.filter_pattern = None):
+def do_status(names: arguments.server_names = None, filter: options.filter_pattern_pi = None):
     """
     Get the current status of one or more Raspberry Pi servers
     """
@@ -167,7 +167,7 @@ def do_status(names: arguments.server_names = None, filter: options.filter_patte
 
 
 @app.command("on")
-def do_on(names: arguments.server_names = None, filter: options.filter_pattern = None):
+def do_on(names: arguments.server_names = None, filter: options.filter_pattern_pi = None):
     """
     Power on one or more Raspberry Pi servers
     """
@@ -185,7 +185,7 @@ def do_on(names: arguments.server_names = None, filter: options.filter_pattern =
 
 
 @app.command("off")
-def do_off(names: arguments.server_names = None, filter: options.filter_pattern = None):
+def do_off(names: arguments.server_names = None, filter: options.filter_pattern_pi = None):
     """
     Power off one or more Raspberry Pi servers
     """
@@ -203,7 +203,7 @@ def do_off(names: arguments.server_names = None, filter: options.filter_pattern 
 
 
 @app.command("reboot")
-def do_reboot(names: arguments.server_names = None, filter: options.filter_pattern = None):
+def do_reboot(names: arguments.server_names = None, filter: options.filter_pattern_pi = None):
     """
     Reboot one or more Raspberry Pi servers
     """
@@ -223,7 +223,7 @@ def do_reboot(names: arguments.server_names = None, filter: options.filter_patte
 @app.command("cancel")
 def do_cancel(
     names: arguments.server_names = None,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_pi = None,
     yes: options.yes = False,
 ):
     """

@@ -2,6 +2,8 @@
 Command line interface
 ======================
 
+.. program:: hostedpi
+
 The ``hostedpi`` command provides a command line interface to provision and manage Raspberry Pi
 servers in a Mythic Beasts account.
 
@@ -54,3 +56,15 @@ Commands
     cli_reboot
     cli_cancel
     cli_ssh
+    cli_ssh_command
+    cli_ssh_config
+    cli_ssh_keys
+    cli_ssh_keys_show
+    cli_ssh_keys_list
+    cli_ssh_keys_table
+    cli_ssh_keys_add
+    cli_ssh_keys_copy
+    cli_ssh_keys_remove
+    cli_ssh_keys_clear
+    cli_ssh_keys_import
+    cli_ssh_keys_unimport

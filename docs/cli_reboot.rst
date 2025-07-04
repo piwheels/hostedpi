@@ -2,23 +2,29 @@
 hostedpi reboot
 ===============
 
-Reboot one or more Pis in the account
+.. program:: hostedpi-on
 
-Synopsis
-========
+Reboot one or more Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi reboot [-h] [names [names ...]]
+    Usage: hostedpi reboot [OPTIONS] [NAMES]...
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-reboot
+.. option:: names [str ...]
 
-.. option:: names [names ...]
+    Names of the Raspberry Pi servers to reboot
 
-    The names of the Pis to reboot
+    If no names are given, all Pis in the account will be rebooted
+
+Options
+=======
+
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
 
 .. option:: --help
 
@@ -32,15 +38,37 @@ Reboot a Pi:
 .. code-block:: console
 
     $ hostedpi reboot mypi
-    mypi rebooted
+    ┏━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name ┃ Status    ┃
+    ┡━━━━━━╇━━━━━━━━━━━┩
+    │ mypi │ Rebooting │
+    └──────┴───────────┘
 
-Reboot multiple Pis:
+Reboot multiple Pis by name:
 
 .. code-block:: console
 
     $ hostedpi reboot mypi mypi2
-    mypi rebooted
-    mypi2 rebooted
+    ┏━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name ┃ Status    ┃
+    ┡━━━━━━╇━━━━━━━━━━━┩
+    │ mypi │ Rebooting │
+    │ mypi2│ Rebooting │
+    └──────┴───────────┘
+
+Reboot multiple Pis with a filter:
+
+.. code-block:: console
+
+    $ hostedpi reboot --filter mypi
+    ┏━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name ┃ Status    ┃
+    ┡━━━━━━╇━━━━━━━━━━━┩
+    │ mypi │ Rebooting │
+    │ mypi2│ Rebooting │
+    │ mypi3│ Rebooting │
+    │ mypi4│ Rebooting │
+    └──────┴───────────┘
 
 .. note::
     

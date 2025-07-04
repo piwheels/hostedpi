@@ -1,37 +1,44 @@
-======================
-hostedpi ssh-import-id
-======================
+========================
+hostedpi ssh keys import
+========================
 
-Import SSH keys from GitHub or Launchpad and add them to one or more Pis
+.. program:: hostedpi-ssh-keys-import
 
-Synopsis
-========
+Import SSH keys from GitHub and/or Launchpad to one or more Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi ssh-import-id [-h] [--gh [github username]] [--lp [launchpad username]]
-                           [names [names ...]]
+    Usage: hostedpi ssh keys import [OPTIONS] [NAMES]...
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-ssh-import-id
+.. option:: names [str ...]
 
-.. option:: names [names ...]
+    Names of the Raspberry Pi server to import SSH keys to
 
-    The names of the Pis to import keys onto
+Options
+=======
+
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
+
+.. option:: --github [str] [repeatable]
+
+    A GitHub username to source SSH keys from
+
+    Can be provided multiple times
+
+.. option:: --launchpad [str] [repeatable]
+
+    A Launchpad username to source SSH keys from
+
+    Can be provided multiple times
 
 .. option:: --help
 
     Show this message and exit
-
-.. option:: --gh [github username]
-
-    The GitHub username to import keys from
-
-.. option:: --lp [launchpad username]
-
-    The Launchpad username to import keys from
 
 Usage
 =====

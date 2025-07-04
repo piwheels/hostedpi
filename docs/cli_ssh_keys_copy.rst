@@ -1,28 +1,28 @@
-==================
-hostedpi copy-keys
-==================
+======================
+hostedpi ssh keys copy
+======================
 
-Copy all SSH keys from one Pi to one or more others
+.. program:: hostedpi-ssh-keys-copy
 
-Synopsis
-========
+Copy the SSH keys from one Raspberry Pi server to others
 
 .. code-block:: text
 
-    hostedpi copy-keys [-h] name_src [names_dest [names_dest ...]]
+    Usage: hostedpi ssh keys copy [OPTIONS] SRC DESTS...
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-copy-keys
+.. option:: src [str] [required]
 
-.. option:: name_src
+    Name of the Raspberry Pi server to copy SSH keys from
 
-    The name of the Pi to copy keys from
+.. option:: dests [str ...] [required]
 
-.. option:: names_dest
+    Names of the Raspberry Pi servers to copy SSH keys to
 
-    The names of the Pis to copy keys to
+Options
+=======
 
 .. option:: --help
 

@@ -2,23 +2,29 @@
 hostedpi on
 ===========
 
-Power on one or more Pis in the account
+.. program:: hostedpi-on
 
-Synopsis
-========
+Power on one or more Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi on [-h] [names [names ...]]
+    Usage: hostedpi on [OPTIONS] [NAMES]...
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-on
+.. option:: names [str ...]
 
-.. option:: names [names ...]
+    Names of the Raspberry Pi servers to power on
 
-    The name of the Pi to power on
+    If no names are given, all Pis in the account will be powered on
+
+Options
+=======
+
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
 
 .. option:: --help
 
@@ -32,15 +38,37 @@ Power on a Pi:
 .. code-block:: console
 
     $ hostedpi on mypi
-    mypi powered on
+    ┏━━━━━━━┳━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Status      ┃
+    ┡━━━━━━━╇━━━━━━━━━━━━━┩
+    │ mypi  │ Powering on │
+    └───────┴─────────────┘
 
-Power on multiple Pis:
+Power on multiple Pis by name:
 
 .. code-block:: console
 
     $ hostedpi on mypi mypi2
-    mypi powered on
-    mypi2 powered on
+    ┏━━━━━━━┳━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Status      ┃
+    ┡━━━━━━━╇━━━━━━━━━━━━━┩
+    │ mypi  │ Powering on │
+    │ mypi2 │ Powering on │
+    └───────┴─────────────┘
+
+Power on multiple Pis with a filter:
+
+.. code-block:: console
+
+    $ hostedpi on --filter mypi
+    ┏━━━━━━━┳━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Status      ┃
+    ┡━━━━━━━╇━━━━━━━━━━━━━┩
+    │ mypi  │ Powering on │
+    │ mypi2 │ Powering on │
+    │ mypi3 │ Powering on │
+    │ mypi4 │ Powering on │
+    └───────┴─────────────┘
 
 .. note::
     

@@ -32,7 +32,7 @@ def do_command(name: arguments.server_name, ipv6: options.ipv6 = False):
 @ssh_app.command("config")
 def do_config(
     names: arguments.server_names = None,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_pi = None,
     ipv6: options.ipv6 = False,
 ):
     """

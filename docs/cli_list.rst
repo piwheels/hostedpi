@@ -2,27 +2,27 @@
 hostedpi list
 =============
 
-List Raspberry Pi servers
+.. program:: hostedpi-list
 
-Synopsis
-========
+List Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi list [-h]
+    Usage: hostedpi list [OPTIONS] [NAMES]...
 
-Description
-===========
-
-.. program:: hostedpi-list
+Arguments
+=========
 
 .. option:: names
 
     Names of the Raspberry Pi servers
 
-.. option:: --filter
+Options
+=======
 
-    Search pattern for filtering results
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
 
 .. option:: --help
 

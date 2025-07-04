@@ -14,7 +14,7 @@ console = Console()
 
 
 @keys_app.command("count")
-def do_count(names: arguments.server_names = None, filter: options.filter_pattern = None):
+def do_count(names: arguments.server_names = None, filter: options.filter_pattern_pi = None):
     """
     Count the number of SSH keys on one or more Raspberry Pi servers
     """
@@ -61,7 +61,7 @@ def do_list(name: arguments.server_name):
 
 
 @keys_app.command("table")
-def do_table(name: arguments.server_name, filter: options.filter_pattern = None):
+def do_table(name: arguments.server_name, filter: options.filter_pattern_pi = None):
     """
     List the SSH keys on a Raspberry Pi server in a table format
     """
@@ -92,7 +92,7 @@ def do_table(name: arguments.server_name, filter: options.filter_pattern = None)
 def do_add(
     ssh_key_path: arguments.ssh_key_path,
     names: arguments.server_names = None,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_pi = None,
 ):
     """
     Add an SSH key to one or more Raspberry Pi servers
@@ -136,7 +136,7 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
 def do_remove(
     label: arguments.ssh_key_label,
     names: arguments.server_names = None,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_pi = None,
 ):
     """
     Remove an SSH key from one or more Raspberry Pi servers
@@ -159,9 +159,9 @@ def do_remove(
 
 
 @keys_app.command("clear")
-def do_clear(names: arguments.server_names = None, filter: options.filter_pattern = None):
+def do_clear(names: arguments.server_names = None, filter: options.filter_pattern_pi = None):
     """
-    Remove the SSH keys from one or more Raspberry Pi servers
+    Remove all SSH keys from one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
     for pi in pis:
@@ -176,12 +176,12 @@ def do_clear(names: arguments.server_names = None, filter: options.filter_patter
 @keys_app.command("import")
 def do_import(
     names: arguments.server_names = None,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_pi = None,
     github: options.ssh_import_github = None,
     launchpad: options.ssh_import_launchpad = None,
 ):
     """
-    Import SSH keys from one or more files to one or more Raspberry Pi servers
+    Import SSH keys from GitHub and/or Launchpad to one or more Raspberry Pi servers
     """
     if not github and not launchpad:
         utils.print_error("You must specify at least one source to import from")
@@ -209,7 +209,7 @@ def do_import(
 @keys_app.command("unimport")
 def do_unimport(
     names: arguments.server_names = None,
-    filter: options.filter_pattern = None,
+    filter: options.filter_pattern_pi = None,
     github: options.ssh_import_github = None,
     launchpad: options.ssh_import_launchpad = None,
 ):

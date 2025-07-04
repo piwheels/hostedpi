@@ -1,28 +1,32 @@
-================
-hostedpi add-key
-================
+=====================
+hostedpi ssh keys add
+=====================
 
-Add an SSH key from a public key file to one or more Pis
+.. program:: hostedpi-ssh-keys-add
 
-Synopsis
-========
+Add an SSH key to one or more Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi add-key [-h] ssh_key_path [names [names ...]]
+    Usage: hostedpi ssh keys add [OPTIONS] SSH_KEY_PATH [NAMES]...
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-add-key
+.. option:: ssh_key_path [path] [required]
 
-.. option:: ssh_key_path
+    Path to the SSH key to install on the Raspberry Pi servers
 
-    The path to an SSH public key file to add to the Pi
+.. option:: names [str ...]
 
-.. option:: names [names ...]
+    Name of the Raspberry Pi server to add SSH keys to
 
-    The name of the Pis to add keys to
+Options
+=======
+
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
 
 .. option:: --help
 

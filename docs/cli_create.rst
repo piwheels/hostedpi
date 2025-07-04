@@ -1,6 +1,8 @@
 ===============
 hostedpi create
-===============                                                                                                                                                                                                           
+===============
+
+.. program:: hostedpi-create
                                                                                                                                                                                                                                                            
 Provision one or more new Raspberry Pi servers
 
@@ -8,12 +10,10 @@ Provision one or more new Raspberry Pi servers
 
     Usage: hostedpi create [OPTIONS] [NAMES]...
 
-.. program:: hostedpi-create
-
 Arguments
 =========
 
-.. option:: names [list[str]] = None
+.. option:: names [str ...]
 
     Names of the Raspberry Pi servers to provision
 
@@ -29,7 +29,7 @@ Options
 
     Available models are 3 and 4
 
-.. option:: --number [int] = None
+.. option:: --number [int]
 
     Number of Raspberry Pi servers to create
 
@@ -40,44 +40,44 @@ Options
 
     Disk size in GB. Must be a multiple of 10.
 
-.. option:: --memory [int] = None
+.. option:: --memory [int]
 
-    Memory in MB. Valid options depend on the model chosen. Default is the lowest available for the
+    Memory in GB. Valid options depend on the model chosen. Default is the lowest available for the
     model.
 
-.. option:: --cpu-speed [int] = None
+.. option:: --cpu-speed [int]
 
     CPU speed in MHz. Valid options depend on the model chosen. Default is the lowest available for
     the model.
 
-.. option:: --os-image [str] = None
+.. option:: --os-image [str]
 
     Operating system image. Default is determined by Mythic Beasts.
 
-.. option:: --wait [bool] = False
+.. option:: --wait
 
     Wait and poll for status to be available before returning
 
     Supply with :option:`--full` to show the full table of Raspberry Pi server info when the server
     is provisioned
 
-.. option:: --ssh-key-path [path] = None
+.. option:: --ssh-key-path [path]
 
     Path to the SSH key to install on the Raspberry Pi server
 
-.. option:: --ssh-import-github [str] = None
+.. option:: --ssh-import-github [str] [repeatable]
 
-    Usernames to import SSH keys from GitHub
-
-    Can be provided multiple times
-
-.. option:: --ssh-import-launchpad [str] = None
-
-    Usernames to import SSH keys from Launchpad
+    A GitHub username to source SSH keys from
 
     Can be provided multiple times
 
-.. option:: --full [bool] = False
+.. option:: --ssh-import-launchpad [str] [repeatable]
+
+    A Launchpad username to source SSH keys from
+
+    Can be provided multiple times
+
+.. option:: --full
 
     Show full table of Raspberry Pi server info when the server is provisioned
 
@@ -146,3 +146,6 @@ Provision a new Pi with SSH keys imported from multiple users on GitHub and Laun
 
     $ hostedpi create mypi --model 4 --ssh-import-github user1 --ssh-import-github user2 --ssh-import-launchpad user3
 
+.. note::
+    See :doc:`specs` for more information on which combinations of specs are valid for each
+    Raspberry Pi model.

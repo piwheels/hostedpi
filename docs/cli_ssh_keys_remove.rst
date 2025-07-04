@@ -1,24 +1,32 @@
-====================
-hostedpi remove-keys
-====================
+========================
+hostedpi ssh keys remove
+========================
 
-Remove all SSH keys from one or more Pis
+.. program:: hostedpi-ssh-keys-remove
 
-Synopsis
-========
+Remove an SSH key from one or more Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi remove-keys [-h] names [names ...]
+    Usage: hostedpi ssh keys remove [OPTIONS] LABEL [NAMES]...
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-remove-keys
+.. option:: label [str] [required]
 
-.. option:: names [names ...]
+    Label for the SSH key, e.g. ``ben@finn``
 
-    The name of the Pis to remove keys from
+.. option:: names [str ...]
+
+    Names of the Raspberry Pi servers to remove SSH keys from
+
+Options
+=======
+
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
 
 .. option:: --help
 

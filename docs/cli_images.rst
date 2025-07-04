@@ -2,27 +2,27 @@
 hostedpi images
 ===============
 
-List operating system images available for Raspberry Pi servers
+.. program:: hostedpi-images
 
-Synopsis
-========
+List operating system images available for Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi images [-h] [model]
+    Usage: hostedpi images [OPTIONS] MODEL
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-images
+.. option:: model [int] [required]
 
-.. option:: model
+    Raspberry Pi model number to list images for (3 or 4)
 
-    Model of Raspberry Pi server to list images for
+Options
+=======
 
-.. option:: --filter
+.. option:: --filter [str]
 
-    Search pattern for filtering results
+    Search pattern for filtering image names
 
 .. option:: --help
 
@@ -71,5 +71,6 @@ List the available operating system images for Pi 3 and Pi 4:
     └────────────────────────────────────────────┴─────────────────────────────────────────────┘
 
 .. note::
-    The right hand column represents the image label which can be used when provisioning a new Pi
+    
+    The left hand column represents the image label which can be used when provisioning a new Pi
     with :doc:`cli_create` and :meth:`~hostedpi.picloud.PiCloud.create_pi`.

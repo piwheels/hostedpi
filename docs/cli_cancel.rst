@@ -2,31 +2,37 @@
 hostedpi cancel
 ===============
 
-Cancel one or more Pis in the account
+.. program:: hostedpi-cancel
 
-Synopsis
-========
+Unprovision one or more Raspberry Pi servers
 
 .. code-block:: text
 
-    hostedpi cancel [-h] [-y] names [names ...]
+    Usage: hostedpi cancel [OPTIONS] [NAMES]...
 
-Description
-===========
+Arguments
+=========
 
-.. program:: hostedpi-cancel
+.. option:: names [str ...]
 
-.. option:: names
+    Names of the Raspberry Pi servers to cancel
 
-    The name of the Pis to cancel
+    If no names are given, all Pis in the account will be cancelled
+
+Options
+=======
+
+.. option:: --filter [str]
+
+    Search pattern for filtering server names
+
+.. option:: -y --yes
+
+    Proceed without confirmation
 
 .. option:: --help
 
     Show this message and exit
-
-.. option:: -y, --yes
-
-    Proceed without confirmation
 
 Usage
 =====
@@ -36,24 +42,43 @@ Cancel a Pi:
 .. code-block:: console
 
     $ hostedpi cancel mypi
-    Cancelling 1 Pi. Proceed? [Y/n]
-    mypi cancelled
+    Are you sure you want to cancel mypi? [y/N] y
+    ┏━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name ┃ Status    ┃
+    ┡━━━━━━╇━━━━━━━━━━━┩
+    │ mypi │ Cancelled │
+    └──────┴───────────┘
 
 .. note::
     You can cancel by entering ``n`` or interrupting with ``Ctrl + C``.
 
-.. note::
-    Unlike other commands, there is no implicit targeting of all Pis. Pis must be listed explicitly
-    to be cancelled.
-
-Cancel multiple Pis:
+Cancel multiple Pis by name:
 
 .. code-block:: console
 
     $ hostedpi cancel mypi mypi2
-    Cancelling 2 Pis. Proceed? [Y/n]
-    mypi cancelled
-    mypi2 cancelled
+    Are you sure you want to cancel mypi, mypi2? [y/N]
+    ┏━━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name  ┃ Status    ┃
+    ┡━━━━━━━╇━━━━━━━━━━━┩
+    │ mypi  │ Cancelled │
+    │ mypi2 │ Cancelled │
+    └───────┴───────────┘
+
+Cancel multiple Pis with a filter:
+
+.. code-block:: console
+
+    $ hostedpi cancel --filter mypi
+    Are you sure you want to cancel mypi, mypi2, mypi3, mypi4? [y/N]
+    ┏━━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name  ┃ Status    ┃
+    ┡━━━━━━━╇━━━━━━━━━━━┩
+    │ mypi  │ Cancelled │
+    │ mypi2 │ Cancelled │
+    │ mypi3 │ Cancelled │
+    │ mypi4 │ Cancelled │
+    └───────┴───────────┘
 
 Cancel a Pi without the confirmation step:
 
@@ -61,6 +86,11 @@ Cancel a Pi without the confirmation step:
 
     $ hostedpi cancel mypi -y
     mypi cancelled
+    ┏━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name ┃ Status    ┃
+    ┡━━━━━━╇━━━━━━━━━━━┩
+    │ mypi │ Cancelled │
+    └──────┴───────────┘
 
 .. warning::
     
