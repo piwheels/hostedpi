@@ -9,6 +9,7 @@ from .exc import HostedPiException
 from .logger import log_request
 from .models.responses import ErrorResponse
 
+
 logger = get_logger()
 
 

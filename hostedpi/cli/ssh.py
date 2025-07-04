@@ -5,6 +5,7 @@ from . import arguments, options
 from .sshkeys import keys_app
 from .utils import get_pi, get_pis, print_error
 
+
 ssh_app = Typer()
 ssh_app.add_typer(keys_app, name="keys", no_args_is_help=True, help="SSH key management commands")
 

@@ -2,8 +2,10 @@ import os
 import sys
 from datetime import datetime
 
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
 import sphinx_rtd_theme
+
 
 VERSION = "0.4.0"
 

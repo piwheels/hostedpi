@@ -16,6 +16,7 @@ from ..pi import Pi
 from ..picloud import PiCloud
 from . import format
 
+
 logger = get_logger()
 console = Console()
 
@@ -122,7 +123,7 @@ def create_pi(
 ):
     data = {
         "disk": disk,
-        "memory": memory,
+        "memory_gb": memory,
         "cpu_speed": cpu_speed,
         "os_image": os_image,
     }

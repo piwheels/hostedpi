@@ -1,6 +1,6 @@
 from typing import Literal, Union
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class ServerSpec(BaseModel):
@@ -10,11 +10,16 @@ class ServerSpec(BaseModel):
     cpu_speed: int
     nic_speed: int
 
+    @property
+    def memory_gb(self) -> int:
+        return self.memory // 1024
+
 
 class NewServerSpec(BaseModel):
     disk: int = 10
     model: int
     memory: int
+    memory_gb: Union[int, None] = Field(default=None, exclude=True)
     cpu_speed: int
     os_image: Union[str, None] = None
     # wait_for_dns: bool = False
@@ -28,14 +33,22 @@ class NewServerSpec(BaseModel):
             raise ValueError("Disk size must be a multiple of 10GB")
         return v
 
+    @model_validator(mode="after")
+    def convert_memory_db_to_mb(self):
+        if self.memory_gb is not None:
+            self.memory = self.memory_gb * 1024
+        return self
+
 
 class Pi3ServerSpec(NewServerSpec):
     model: int = 3
-    memory: int = 1024
+    memory: Union[int, None] = None
+    memory_gb: int = Field(default=1, exclude=True)
     cpu_speed: int = 1200
 
 
 class Pi4ServerSpec(NewServerSpec):
     model: int = 4
-    memory: Literal[4096, 8192] = 4096
+    memory: Union[int, None] = None
+    memory_gb: Literal[4, 8] = Field(default=4, exclude=True)
     cpu_speed: Literal[1500, 2000] = 1500
