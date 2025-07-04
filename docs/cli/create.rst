@@ -137,7 +137,8 @@ Provision a new Pi 4 using custom settings:
     └───────┴───────┴────────┴───────────┘
 
 .. note::
-    Use the :doc:`cli_images` command to retrieve the available operating system images for each Pi
+
+    Use the :doc:`images` command to retrieve the available operating system images for each Pi
     model.
     
 Provision a new Pi with SSH keys imported from multiple users on GitHub and Launchpad:
@@ -147,5 +148,6 @@ Provision a new Pi with SSH keys imported from multiple users on GitHub and Laun
     $ hostedpi create mypi --model 4 --ssh-import-github user1 --ssh-import-github user2 --ssh-import-launchpad user3
 
 .. note::
-    See :doc:`specs` for more information on which combinations of specs are valid for each
+    
+    See :doc:`../specs` for more information on which combinations of specs are valid for each
     Raspberry Pi model.

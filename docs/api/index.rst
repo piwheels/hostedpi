@@ -2,8 +2,6 @@
 Python library API
 ==================
 
-.. module:: hostedpi
-
 This page describes the methods and properties available in the :class:`~hostedpi.picloud.PiCloud`
 and :class:`~hostedpi.pi.Pi` classes and are intended as a useful reference to the functionality
 provided.
@@ -22,8 +20,13 @@ useful to show what you can do with the API via the *hostedpi* module.
     >>> from hostedpi import PiCloud
     >>> cloud = PiCloud()
 
-.. autoclass:: hostedpi.picloud.PiCloud
-    :members:
+Contents
+========
 
-.. autoclass:: hostedpi.pi.Pi()
-    :members:
+.. toctree::
+   :maxdepth: 1
+
+   picloud
+   pi
+   models
+   exc

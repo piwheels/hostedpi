@@ -3,10 +3,11 @@ Recipes
 =======
 
 This page includes some recipes for using the Python library to make custom programs with the
-utilities provided, perhaps combined with other libraries. See the :doc:`api` page for a full API
-reference.
+utilities provided, perhaps combined with other libraries. See the :doc:`api/index` page for a full
+API reference.
 
 .. note::
+
     You'll need to create an API key to be able to use these recipes. See the :doc:`getting_started`
     page to begin. The following examples assume the API keys are set using environment variables,
     but they can be provided as arguments to the :class:`~hostedpi.picloud.PiCloud` class
@@ -62,6 +63,7 @@ Push button to provision a Pi
 See a live demo at https://twitter.com/ben_nuttall/status/1300442981779025921
 
 .. note::
+
     This requires the `gpiozero`_ library.
 
 .. _gpiozero: https://gpiozero.readthedocs.io/
@@ -167,6 +169,7 @@ Retrieve the contents of the homepage
 -------------------------------------
 
 .. note::
+    
     Note that a web server must be installed on the Pi for the URL to resolve in a web browser, and
     an SSL certificate must be created for the https URL to resolve.
 

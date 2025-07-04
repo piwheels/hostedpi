@@ -23,6 +23,7 @@ Documentation of the API itself can be found at
 https://www.mythic-beasts.com/support/api/raspberry-pi
 
 .. note::
+    
     Note that the library is currently in beta. The API and CLI are not yet stable and may change.
     Once the library reaches v1.0, it will be considered stable.
 
@@ -89,19 +90,21 @@ Write a Python script to provision a new Pi and output its SSH command:
     print(pi.ipv4_ssh_command)
 
 See the :doc:`getting_started` page for information on how to authenticate, and
-see the :doc:`cli` page for information on using the command line interface.
+see the :doc:`cli/index` page for information on using the command line interface.
 
 Table of Contents
 =================
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 4
+    :titlesonly:
 
     getting_started
-    cli
-    api
+    cli/index
+    api/index
     recipes
     specs
+    env
     development
 
 Contributing

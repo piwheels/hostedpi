@@ -50,6 +50,7 @@ Cancel a Pi:
     └──────┴───────────┘
 
 .. note::
+    
     You can cancel by entering ``n`` or interrupting with ``Ctrl + C``.
 
 Cancel multiple Pis by name:

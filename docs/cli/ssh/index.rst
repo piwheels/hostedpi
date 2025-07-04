@@ -20,6 +20,10 @@ Options
 Subcommands
 ===========
 
-* :doc:`cli_ssh_command`
-* :doc:`cli_ssh_config`
-* :doc:`cli_ssh_keys`
+.. toctree::
+    :maxdepth: 2
+    :titlesonly:
+
+    command
+    config
+    keys/index

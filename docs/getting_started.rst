@@ -27,6 +27,7 @@ Create an API key
 retrieve them after this screen is gone.
 
 .. note::
+    
     If you lose your keys, you can simply reset them or create a new API key.
 
 Install the hostedpi module
@@ -119,7 +120,7 @@ You can provision a new Pi with the following command:
 More
 ====
 
-* See the :doc:`cli` page for details of the possibilities provided by ready-made scripts
+* See the :doc:`cli/index` page for details of the possibilities provided by ready-made scripts
 * See the API documentation for :class:`~hostedpi.picloud.PiCloud` and :class:`~hostedpi.pi.Pi` for
   details of the Python module API
 * See the :doc:`recipes` page for ideas of what you can do with this module

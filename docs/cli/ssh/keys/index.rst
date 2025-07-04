@@ -20,12 +20,16 @@ Options
 Subcommands
 ===========
 
-* :doc:`cli_ssh_keys_show`
-* :doc:`cli_ssh_keys_list`
-* :doc:`cli_ssh_keys_table`
-* :doc:`cli_ssh_keys_add`
-* :doc:`cli_ssh_keys_copy`
-* :doc:`cli_ssh_keys_remove`
-* :doc:`cli_ssh_keys_clear`
-* :doc:`cli_ssh_keys_import`
-* :doc:`cli_ssh_keys_unimport`
+.. toctree::
+    :maxdepth: 1
+    :titlesonly:
+
+    add
+    clear
+    copy
+    import
+    list
+    remove
+    show
+    table
+    unimport

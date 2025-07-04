@@ -12,6 +12,9 @@ class SSHKeySources(BaseModel):
     launchpad_usernames: Union[set[str], None] = None
 
     def collect(self) -> Union[set[str], None]:
+        """
+        Collect SSH keys from various sources
+        """
         keys = collect_ssh_keys(
             ssh_keys=self.ssh_keys,
             ssh_key_path=self.ssh_key_path,

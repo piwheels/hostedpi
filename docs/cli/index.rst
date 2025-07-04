@@ -8,7 +8,7 @@ The ``hostedpi`` command provides a command line interface to provision and mana
 servers in a Mythic Beasts account.
 
 This program requires API keys to be provided using environment variables ``HOSTEDPI_ID`` and
-``HOSTEDPI_SECRET``. See :doc:`getting_started` for more information on how to obtain and configure
+``HOSTEDPI_SECRET``. See :doc:`../getting_started` for more information on how to obtain and configure
 these.
 
 Run ``hostedpi`` or ``hostedpi --help`` to see a list of available commands and options:
@@ -43,28 +43,17 @@ Commands
 ========
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
+    :titlesonly:
 
-    cli_test
-    cli_images
-    cli_list
-    cli_table
-    cli_create
-    cli_status
-    cli_on
-    cli_off
-    cli_reboot
-    cli_cancel
-    cli_ssh
-    cli_ssh_command
-    cli_ssh_config
-    cli_ssh_keys
-    cli_ssh_keys_show
-    cli_ssh_keys_list
-    cli_ssh_keys_table
-    cli_ssh_keys_add
-    cli_ssh_keys_copy
-    cli_ssh_keys_remove
-    cli_ssh_keys_clear
-    cli_ssh_keys_import
-    cli_ssh_keys_unimport
+    test
+    images
+    list
+    table
+    create
+    status
+    on
+    off
+    reboot
+    cancel
+    ssh/index

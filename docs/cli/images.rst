@@ -73,4 +73,4 @@ List the available operating system images for Pi 3 and Pi 4:
 .. note::
     
     The left hand column represents the image label which can be used when provisioning a new Pi
-    with :doc:`cli_create` and :meth:`~hostedpi.picloud.PiCloud.create_pi`.
+    with :doc:`create` and :meth:`~hostedpi.picloud.PiCloud.create_pi`.

@@ -43,12 +43,12 @@ class NewServerSpec(BaseModel):
 class Pi3ServerSpec(NewServerSpec):
     model: int = 3
     memory: Union[int, None] = None
-    memory_gb: int = Field(default=1, exclude=True)
-    cpu_speed: int = 1200
+    memory_gb: int = Field(default=1, exclude=True, description="Memory in GB")
+    cpu_speed: int = Field(default=1200, description="CPU speed in MHz")
 
 
 class Pi4ServerSpec(NewServerSpec):
     model: int = 4
     memory: Union[int, None] = None
-    memory_gb: Literal[4, 8] = Field(default=4, exclude=True)
-    cpu_speed: Literal[1500, 2000] = 1500
+    memory_gb: Literal[4, 8] = Field(default=4, exclude=True, description="Memory in GB")
+    cpu_speed: Literal[1500, 2000] = Field(default=1500, description="CPU speed in MHz")

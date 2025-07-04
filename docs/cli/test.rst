@@ -5,7 +5,7 @@ hostedpi test
 .. program:: hostedpi-test
 
 Test a connection to the Mythic Beasts API using API ID and secret, using configuration as described
-in the :doc:`getting_started` section.
+in the :doc:`../getting_started` section.
 
 .. code-block:: text
 
