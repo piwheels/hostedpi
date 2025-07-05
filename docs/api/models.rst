@@ -55,5 +55,73 @@ SSH Key management
 ==================
 
 .. autoclass:: hostedpi.models.sshkeys.SSHKeySources
-    :members: ssh_keys, ssh_key_path, github_usernames, launchpad_usernames, collect
+    :members: ssh_keys, ssh_key_path, github_usernames, launchpad_usernames
     :undoc-members:
+
+Usage
+=====
+
+Define a specific Pi 4 configuration:
+
+.. code-block:: python
+
+    from hostedpi import Pi4ServerSpec
+
+    pi4_spec = Pi4ServerSpec(
+        memory_gb=8,
+        cpu_speed=2000,
+        disk=30,
+        os_image="rpi-bookworm-arm64",
+    )
+
+A Pi 3 is less configurable, so we don't need to define memory or CPU speed as the default values
+are sufficient:
+
+.. code-block:: python
+
+    from hostedpi import Pi3ServerSpec
+
+    pi3_spec = Pi3ServerSpec(
+        disk=20,
+        os_image="rpi-bookworm-armhf",
+    )
+
+Define a single SSH key source, for example, a public SSH key file:
+
+.. code-block:: python
+
+    from hostedpi import SSHKeySources
+
+    ssh_keys = SSHKeySources(ssh_key_path="/home/ben/.ssh/id_rsa.pub")
+
+Or a single GitHub username:
+
+.. code-block:: python
+
+    from hostedpi import SSHKeySources
+
+    ssh_keys = SSHKeySources(github_usernames={"bennuttall"})
+
+Or multiple GitHub and Launchpad usernames:
+
+.. code-block:: python
+
+    from hostedpi import SSHKeySources
+
+    ssh_keys = SSHKeySources(
+        github_usernames={"bennuttall", "waveform80"},
+        launchpad_usernames={"bennuttall", "waveform80"},
+    )
+
+Any combination of SSH key sources can be used:
+
+.. code-block:: python
+
+    from hostedpi import SSHKeySources
+
+    ssh_keys = SSHKeySources(
+        ssh_keys={"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."},
+        ssh_key_path="/path/to/mykey.pub",
+        github_usernames={"bennuttall", "waveform80"},
+        launchpad_usernames={"bennuttall", "waveform80"},
+    )

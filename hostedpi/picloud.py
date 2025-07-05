@@ -29,10 +29,10 @@ class PiCloud:
     """
     A connection to the Mythic Beasts Pi Cloud API for creating and managing cloud Pi servers.
 
-    :type ssh_keys: :class:`~hostedpi.models.sshkeys.SSHKeys` or None
+    :type ssh_keys: :class:`~hostedpi.models.sshkeys.SSHKeySources` or None
     :param ssh_keys:
-        An instance of :class:`~hostedpi.models.sshkeys.SSHKeys` containing sources of SSH keys to
-        use when creating new Pis. If not provided, no SSH keys will be used by default.
+        An instance of :class:`~hostedpi.models.sshkeys.SSHKeySources` containing sources of SSH
+        keys to use when creating new Pis. If not provided, no SSH keys will be used by default.
 
     :type api_url: str
     :param api_url:

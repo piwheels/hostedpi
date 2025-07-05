@@ -18,6 +18,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx_rtd_theme",
+    "sphinxcontrib.autodoc_pydantic",
 ]
 templates_path = ["_templates"]
 source_suffix = ".rst"
@@ -73,3 +74,8 @@ html_static_path = ["_static"]
 # html_use_opensearch = ''
 # html_file_suffix = None
 htmlhelp_basename = "%sdoc" % project
+
+autodoc_pydantic_model_show_json = False
+autodoc_pydantic_model_show_validators = False
+autodoc_pydantic_model_show_validator_members = False
+autodoc_pydantic_field_list_validators = False

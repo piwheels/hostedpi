@@ -1,15 +1,19 @@
 from typing import Union
 
-from pydantic import BaseModel, FilePath
+from pydantic import BaseModel, Field, FilePath
 
 from ..utils import collect_ssh_keys
 
 
 class SSHKeySources(BaseModel):
-    ssh_keys: Union[set[str], None] = None
-    ssh_key_path: Union[FilePath, None] = None
-    github_usernames: Union[set[str], None] = None
-    launchpad_usernames: Union[set[str], None] = None
+    ssh_keys: Union[set[str], None] = Field(default=None, description="Set of SSH key strings")
+    ssh_key_path: Union[FilePath, None] = Field(default=None, description="Path to an SSH key file")
+    github_usernames: Union[set[str], None] = Field(
+        default=None, description="Set of GitHub usernames to collect SSH keys from"
+    )
+    launchpad_usernames: Union[set[str], None] = Field(
+        default=None, description="Set of Launchpad usernames to collect SSH keys from"
+    )
 
     def collect(self) -> Union[set[str], None]:
         """
