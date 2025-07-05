@@ -1,3 +1,4 @@
+from typing import Union
 from datetime import datetime, timedelta
 from importlib.metadata import version
 
@@ -7,7 +8,7 @@ from structlog import get_logger
 
 from .exc import MythicAuthenticationError
 from .models.mythic.responses import AuthResponse
-from .settings import get_settings
+from .settings import get_settings, Settings
 
 
 hostedpi_version = version("hostedpi")
@@ -15,9 +16,16 @@ logger = get_logger()
 
 
 class MythicAuth:
-    def __init__(self, *, login_url: str = "https://auth.mythic-beasts.com/login"):
+    def __init__(
+        self,
+        *,
+        login_url: str = "https://auth.mythic-beasts.com/login",
+        settings: Union[Settings, None] = None,
+    ):
         self._url = login_url
-        self._settings = get_settings()
+        if settings is None:
+            settings = get_settings()
+        self._settings = settings
         self._token = None
         self._token_expiry = datetime.now()
         self._session = Session()
