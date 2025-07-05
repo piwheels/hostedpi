@@ -46,6 +46,12 @@ class PiCloud:
         The base URL of the Mythic Beasts Pi Cloud API. Default is
         "https://api.mythic-beasts.com/beta/pi/". You almost certainly won't need to change this.
 
+    :type auth: :class:`~hostedpi.auth.MythicAuth` or None
+    :param auth:
+        An instance of :class:`~hostedpi.auth.MythicAuth` to use for authentication with the API.
+        If not provided, a default instance will be created. You almost certainly won't need to
+        set this yourself.
+
     .. note::
         If any SSH keys are provided on class initialisation, they will be used when creating Pis
         but are overriden by any passed to the :meth:`~hostedpi.picloud.PiCloud.create_pi` method.
@@ -56,6 +62,7 @@ class PiCloud:
         ssh_keys: Union[SSHKeySources, None] = None,
         *,
         api_url: str = "https://api.mythic-beasts.com/beta/pi/",
+        auth: Union[MythicAuth, None] = None,
     ):
         self._api_url = api_url
         self.ssh_keys = None
@@ -63,7 +70,9 @@ class PiCloud:
             if not isinstance(ssh_keys, SSHKeySources):
                 raise TypeError("ssh_keys must be an instance of SSHKeySources or None")
             self.ssh_keys = ssh_keys.collect()
-        self._auth = MythicAuth()
+        if auth is None:
+            auth = MythicAuth()
+        self._auth = auth
 
     def __repr__(self):
         return f"<PiCloud id={self._auth._settings.id}>"

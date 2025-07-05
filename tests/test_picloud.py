@@ -433,3 +433,8 @@ def test_get_available_specs(mock_session, specs_response, api_url):
     assert mock_session.get.called
     assert mock_session.get.call_args[0][0] == api_url + "models"
     assert len(specs) == 4
+
+
+def test_get_ipv4_ssh_config(mock_session, pis_response, api_url):
+    cloud = PiCloud(api_url=api_url)
+    mock_session.get.return_value = specs_response
