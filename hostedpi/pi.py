@@ -79,9 +79,9 @@ class Pi:
     @property
     def info(self) -> PiInfo:
         """
-        The full Pi information as a :class:`~hostedpi.models.responses.PiInfo` object. Always fetch
-        the latest information from the API when this is called (with a cache timeout of 10
-        seconds).
+        The full Pi information as a :class:`~hostedpi.models.mythic.responses.PiInfo` object.
+        Always fetch the latest information from the API when this is called (with a cache timeout
+        of 10 seconds).
         """
         if self._info is None:
             self._get_info()
@@ -109,7 +109,7 @@ class Pi:
         return self.info.model_full
 
     @property
-    def memory(self) -> Union[int, None]:
+    def memory_mb(self) -> Union[int, None]:
         """
         The Pi's RAM size in MB
         """
@@ -484,8 +484,8 @@ class Pi:
     def get_provision_status(self) -> Union[str, PiInfo, None]:
         """
         Send a request to the server creation status endpoint and return the status as either a
-        string or :class:`~hostedpi.models.responses.PiInfo` or ``None`` if the status is not yet
-        available.
+        string or :class:`~hostedpi.models.mythic.responses.PiInfo.` or ``None`` if the status is
+        not yet available.
         """
         if self._status_url is None:
             return self.info

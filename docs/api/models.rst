@@ -58,6 +58,13 @@ SSH Key management
     :members: ssh_keys, ssh_key_path, github_usernames, launchpad_usernames
     :undoc-members:
 
+Pi info
+=======
+
+.. autoclass:: hostedpi.models.mythic.responses.PiInfo()
+    :members: boot_progress, disk_size, initialised_keys, ipv6_address, ipv6_network, is_booting, location, model_full, nic_speed, power, ssh_port
+    :undoc-members:
+
 Usage
 =====
 

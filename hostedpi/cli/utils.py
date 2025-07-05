@@ -72,7 +72,7 @@ def short_pis_table(pis: list[Pi]):
         table.add_row(
             pi.name,
             str(pi.model),
-            format.memory(pi.memory),
+            format.memory(pi.memory_mb),
             format.cpu_speed(pi.cpu_speed),
         )
     rich.print(table)
@@ -97,7 +97,7 @@ def full_pis_table(pis: list[Pi]):
             table.add_row(
                 pi.name,
                 pi.model_full,
-                format.memory(pi.memory),
+                format.memory(pi.memory_mb),
                 format.cpu_speed(pi.cpu_speed),
                 format.nic_speed(pi.nic_speed),
                 format.disk_size(pi.disk_size),
@@ -111,7 +111,7 @@ def create_pi(
     *,
     model: int,
     disk: int,
-    memory: Union[int, None],
+    memory_gb: Union[int, None],
     cpu_speed: Union[int, None],
     os_image: Union[str, None],
     wait: bool,
@@ -123,7 +123,7 @@ def create_pi(
 ):
     data = {
         "disk": disk,
-        "memory_gb": memory,
+        "memory_gb": memory_gb,
         "cpu_speed": cpu_speed,
         "os_image": os_image,
     }

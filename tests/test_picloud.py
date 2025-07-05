@@ -207,11 +207,11 @@ def test_get_pis(mock_session, pis_response):
     pi1, pi2 = pis.values()
     assert pi1.name == "pi1"
     assert pi1.model == 3
-    assert pi1.memory == 1024
+    assert pi1.memory_mb == 1024
     assert pi1.cpu_speed == 1200
     assert pi2.name == "pi2"
     assert pi2.model == 4
-    assert pi2.memory == 4096
+    assert pi2.memory_mb == 4096
     assert pi2.cpu_speed == 1500
 
 
@@ -241,7 +241,7 @@ def test_create_pi3_with_name(
     called_url = mock_session.post.call_args[0][0]
     assert called_url == f"{mythic_servers_url}/{pi3_name}"
     assert pi.name == pi3_name
-    assert pi.memory == 1024
+    assert pi.memory_mb == 1024
     assert pi.cpu_speed == 1200
 
 
@@ -257,7 +257,7 @@ def test_create_pi3_with_no_name(
     assert called_url == mythic_servers_url
     assert pi._status_url == mythic_async_location
     assert pi.name is None
-    assert pi.memory == 1024
+    assert pi.memory_mb == 1024
     assert pi.cpu_speed == 1200
 
 
@@ -272,7 +272,7 @@ def test_create_pi4_with_name(
     called_url = mock_session.post.call_args[0][0]
     assert called_url == f"{mythic_servers_url}/pi4"
     assert pi.name == "pi4"
-    assert pi.memory == 4096
+    assert pi.memory_mb == 4096
     assert pi.cpu_speed == 1500
 
 
@@ -288,7 +288,7 @@ def test_create_pi4_with_no_name(
     assert called_url == mythic_servers_url
     assert pi._status_url == mythic_async_location
     assert pi.name is None
-    assert pi.memory == 4096
+    assert pi.memory_mb == 4096
     assert pi.cpu_speed == 1500
 
 
@@ -364,7 +364,7 @@ def test_create_pi_named_with_wait(
     assert mock_session.get.call_count == 6
     assert pi.name == pi3_name
     assert pi.model == 3
-    assert pi.memory == 1024
+    assert pi.memory_mb == 1024
 
 
 def test_create_pi_unnamed_with_wait(
@@ -393,7 +393,7 @@ def test_create_pi_unnamed_with_wait(
     assert mock_session.get.call_count == 6
     assert pi.name == random_pi_name
     assert pi.model == 3
-    assert pi.memory == 1024
+    assert pi.memory_mb == 1024
 
 
 def test_create_pi_bad_spec(pi3_name):

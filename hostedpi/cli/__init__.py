@@ -116,7 +116,7 @@ def do_create(
                     name=name,
                     model=model,
                     disk=disk,
-                    memory=memory,
+                    memory_gb=memory,
                     cpu_speed=cpu_speed,
                     os_image=os_image,
                     wait=wait,
@@ -135,7 +135,7 @@ def do_create(
                 utils.create_pi(
                     model=model,
                     disk=disk,
-                    memory=memory,
+                    memory_gb=memory,
                     cpu_speed=cpu_speed,
                     os_image=os_image,
                     wait=wait,
