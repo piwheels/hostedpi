@@ -74,8 +74,8 @@ def collect_ssh_keys(
 
 def dedupe_ssh_keys(ssh_keys: set[str]) -> set[str]:
     """
-    Deduplicate SSH keys by removing any duplicates that are identical
-    except for the comment at the end of the key.
+    Deduplicate SSH keys by removing any duplicates that are identical except for the comment at the
+    end of the key
     """
 
     def keysort(key: str) -> int:

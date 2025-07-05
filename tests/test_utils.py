@@ -261,6 +261,9 @@ def test_remove_ssh_keys_by_label():
         "ssh-rsa barfoo # ssh-import-id lp:testuser2",
     }
 
+    result = remove_ssh_keys_by_label(ssh_keys, "")
+    assert result == ssh_keys
+
 
 def test_remove_imported_ssh_keys_github():
     ssh_keys = set()
