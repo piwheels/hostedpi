@@ -7,13 +7,12 @@ from structlog import get_logger
 
 from .auth import MythicAuth
 from .exc import (
-    HostedPiValidationError,
-    HostedPiServerError,
-    HostedPiUserError,
-    HostedPiServerError,
     HostedPiInvalidParametersError,
     HostedPiNotAuthorizedError,
     HostedPiOutOfStockError,
+    HostedPiServerError,
+    HostedPiUserError,
+    HostedPiValidationError,
 )
 from .logger import log_request
 from .models.mythic.payloads import NewServer

@@ -10,11 +10,10 @@ from requests import ConnectionError, HTTPError, Session
 from structlog import get_logger
 
 from .exc import (
-    HostedPiServerError,
-    HostedPiUserError,
-    HostedPiServerError,
     HostedPiNotAuthorizedError,
     HostedPiProvisioningError,
+    HostedPiServerError,
+    HostedPiUserError,
 )
 from .logger import log_request
 from .models.mythic.responses import (
