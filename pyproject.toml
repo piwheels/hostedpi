@@ -66,4 +66,14 @@ line-length = 100
 target-version = ['py39']
 
 [tool.pytest.ini_options]
-addopts = "--cov=hostedpi" 
+addopts = "--cov=hostedpi --cov-report=term-missing"
+
+[tool.coverage.run]
+omit = [
+    "hostedpi/__main__.py",
+    "hostedpi/cli/utils.py",
+    "hostedpi/cli/arguments.py",
+    "hostedpi/cli/format.py",
+    "hostedpi/cli/options.py",
+    "hostedpi/logger.py"
+]

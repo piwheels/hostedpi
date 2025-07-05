@@ -1,10 +1,41 @@
 from ipaddress import IPv6Address, IPv6Network
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
 from hostedpi.models.sshkeys import SSHKeySources
 from hostedpi.pi import Pi
+
+
+@pytest.fixture
+def pi_info_installing_response(pi_info_json):
+    pi_info_installing = pi_info_json.copy()
+    pi_info_installing["status"] = "installing"
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pi_info_installing),
+    )
+
+
+@pytest.fixture
+def pi_info_booting_response(pi_info_json):
+    pi_info_booting = pi_info_json.copy()
+    pi_info_booting["is_booting"] = True
+    pi_info_booting["boot_progress"] = "waiting for initial DHCP"
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pi_info_booting),
+    )
+
+
+@pytest.fixture
+def pi_info_powered_off_response(pi_info_json):
+    pi_info_powered_off = pi_info_json.copy()
+    pi_info_powered_off["power"] = False
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pi_info_powered_off),
+    )
 
 
 @pytest.fixture
@@ -103,7 +134,14 @@ def test_pi_init(pi_info_basic, mock_session, api_url):
     assert pi.model == 3
     assert pi.memory_mb == 1024
     assert pi.cpu_speed == 1200
-    assert repr(pi) == "<Pi name=test-pi>"
+    assert repr(pi) == "<Pi name=test-pi model=3>"
+
+
+def test_pi_init_with_full_info(pi_info_basic, mock_session, api_url, pi_info_full):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value.json.return_value = pi_info_full
+    assert pi.model_full == "3B"
+    assert repr(pi) == "<Pi name=test-pi model=3B>"
 
 
 def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_info_full):
@@ -119,6 +157,9 @@ def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_
     assert pi.power
     assert pi.ipv4_ssh_port == 5100
     assert pi.disk_size == 10
+    assert pi.memory_mb == 1024
+    assert pi.memory_gb == 1
+    assert pi.nic_speed == 100
     assert pi.ipv4_ssh_command == "ssh -p 5100 root@ssh.test-pi.hostedpi.com"
     assert pi.ipv6_ssh_command == "ssh root@[2a00:1098:8:64::1]"
     assert pi.ipv6_address == IPv6Address("2a00:1098:8:64::1")
@@ -133,6 +174,38 @@ def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_
     assert pi.provision_status == "live"
     assert pi.url == "http://www.test-pi.hostedpi.com"
     assert pi.url_ssl == "https://www.test-pi.hostedpi.com"
+
+
+def test_pi_get_info_installing(pi_info_basic, mock_session, api_url, pi_info_installing_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = pi_info_installing_response
+    pi_info = pi.info
+    assert mock_session.get.call_count == 1
+    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert pi.provision_status == "installing"
+    assert pi.status == "Provisioning: installing"
+
+
+def test_pi_get_info_booting(pi_info_basic, mock_session, api_url, pi_info_booting_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = pi_info_booting_response
+    pi_info = pi.info
+    assert mock_session.get.call_count == 1
+    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert pi.provision_status == "live"
+    assert pi.status == "Booting: waiting for initial DHCP"
+
+
+def test_pi_get_info_powered_off(
+    pi_info_basic, mock_session, api_url, pi_info_powered_off_response
+):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = pi_info_powered_off_response
+    pi_info = pi.info
+    assert mock_session.get.call_count == 1
+    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert pi.provision_status == "live"
+    assert pi.status == "Powered off"
 
 
 def test_pi_get_info_with_api_url(pi_info_basic, mock_session, api_url_2, pi_info_response):

@@ -75,7 +75,7 @@ class Pi:
         if self._cancelled:
             return f"<Pi name={self.name} cancelled>"
         if self._info is None:
-            return f"<Pi name={self.name}>"
+            return f"<Pi name={self.name} model={self.model}>"
         model = self.model_full if self.model_full else self.model
         return f"<Pi name={self.name} model={model}>"
 
@@ -172,9 +172,10 @@ class Pi:
         A string representing the Pi's current status (provisioning, booting, live, powered on or
         powered off).
         """
+        self._get_info()
         if self.provision_status != "live":
             return f"Provisioning: {self.provision_status}"
-        if self.info.boot_progress:
+        if self.info.is_booting:
             return f"Booting: {self.boot_progress}"
         if self.power:
             return "Powered on"

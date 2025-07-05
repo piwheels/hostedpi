@@ -45,7 +45,7 @@ class ErrorResponse(BaseModel):
     Response from the Mythic Beasts API when an API error occurs
     """
 
-    error: str = ""
+    error: str = "Error"
 
 
 class ProvisioningServer(BaseModel):

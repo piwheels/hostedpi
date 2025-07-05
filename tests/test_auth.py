@@ -2,9 +2,11 @@ from datetime import timedelta
 from unittest.mock import Mock, patch
 
 import pytest
+from requests import HTTPError
 
 from hostedpi.auth import MythicAuth
 from hostedpi.settings import Settings
+from hostedpi.exc import MythicAuthenticationError
 
 
 @pytest.fixture
@@ -83,3 +85,27 @@ def test_auth_with_login_url(
     assert repr(auth) == "<MythicAuth id=test_id>"
     assert auth.token == "foobar"
     assert mock_post.call_args_list[0][0][0] == login_url_2
+
+
+@patch("hostedpi.auth.Session.post")
+@patch("hostedpi.auth.get_settings")
+def test_auth_with_server_error(mock_get_settings, mock_post, mock_settings, auth_response):
+    mock_get_settings.return_value = mock_settings
+    mock_post.return_value = auth_response
+    auth_response.raise_for_status.side_effect = HTTPError
+    auth = MythicAuth()
+
+    with pytest.raises(MythicAuthenticationError):
+        auth.token
+
+
+@patch("hostedpi.auth.Session.post")
+@patch("hostedpi.auth.get_settings")
+def test_auth_with_invalid_response(mock_get_settings, mock_post, mock_settings, auth_response):
+    mock_get_settings.return_value = mock_settings
+    mock_post.return_value = auth_response
+    auth_response.json.return_value = {}
+    auth = MythicAuth()
+
+    with pytest.raises(MythicAuthenticationError):
+        auth.token

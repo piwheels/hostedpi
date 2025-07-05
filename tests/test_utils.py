@@ -229,6 +229,16 @@ def test_get_error_message_no_text():
     assert message == "Error 400"
 
 
+def test_get_error_message_different_key():
+    mock_response = Mock(
+        json=Mock(return_value={"error but different key": "Something went really wrong"}),
+        status_code=400,
+    )
+    mock_exc = Mock(response=mock_response)
+    message = get_error_message(mock_exc)
+    assert message == "Error"
+
+
 def test_remove_ssh_keys_by_label():
     ssh_keys = {
         "ssh-rsa foo ben@finn # ssh-import-id gh:testuser",

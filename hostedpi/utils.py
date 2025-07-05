@@ -99,7 +99,7 @@ def dedupe_ssh_keys(ssh_keys: set[str]) -> set[str]:
     return unique_keys
 
 
-def get_error_message(exc: HTTPError) -> Union[str, None]:
+def get_error_message(exc: HTTPError) -> str:
     """
     Try to retrieve an error message from the response
     """
@@ -110,10 +110,7 @@ def get_error_message(exc: HTTPError) -> Union[str, None]:
             return f"Error {exc.response.status_code}: {exc.response.text}"
         return f"Error {exc.response.status_code}"
 
-    try:
-        return ErrorResponse.model_validate(data).error
-    except Exception:
-        return
+    return ErrorResponse.model_validate(data).error
 
 
 def remove_ssh_keys_by_label(ssh_keys: set[str], label: str) -> set[str]:
