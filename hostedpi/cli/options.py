@@ -15,10 +15,12 @@ ssh_key_path = Annotated[
     Union[Path, None], Option(help="Path to the SSH key to install on the Raspberry Pi servers")
 ]
 ssh_import_github = Annotated[
-    Union[list[str], None], Option(help="GitHub usernames to source SSH keys from")
+    Union[list[str], None],
+    Option("--github", "--gh", help="GitHub usernames to source SSH keys from"),
 ]
 ssh_import_launchpad = Annotated[
-    Union[list[str], None], Option(help="Launchpad usernames to source SSH keys from")
+    Union[list[str], None],
+    Option("--launchpad", "--lp", help="Launchpad usernames to source SSH keys from"),
 ]
 ipv6 = Annotated[bool, Option(help="Use the IPv6 connection method")]
 yes = Annotated[bool, Option("--yes", "-y", help="Proceed without confirmation")]

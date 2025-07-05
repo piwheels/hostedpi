@@ -35,23 +35,44 @@ Options
 Usage
 =====
 
-Add your SSH key to one Pi:
+Add your SSH key to a Pi:
 
 .. code-block:: console
 
-    $ hostedpi add-key ~/.ssh/id_rsa.pub mypi
-    1 key added to mypi
+    $ hostedpi ssh keys add ~/.ssh/id_rsa.pub mypi
+    Added key /home/ben/.ssh/id_rsa.pub to mypi
 
 Add your SSH key to multiple Pis:
 
 .. code-block:: console
 
-    $ hostedpi add-key ~/.ssh/id_rsa.pub mypi mypi2 pypi3
-    0 keys added to mypi
-    1 key added to mypi2
-    1 key added to mypi3
+    $ hostedpi ssh keys add ~/.ssh/id_rsa.pub mypi mypi2 mypi3
+    Added key /home/ben/.ssh/id_rsa.pub to mypi
+    Key /home/ben/.ssh/id_rsa.pub already exists on mypi2
+    Added key /home/ben/.ssh/id_rsa.pub to mypi3
 
-.. note::
-    
-    Keys are counted before and after addition, and de-duplicated, so if the key is already found on
-    the Pi, it will show as not having been added, as above.
+Add your SSH key to all Pis matching a filter:
+
+.. code-block:: console
+
+    $ hostedpi ssh keys add ~/.ssh/id_rsa.pub --filter mypi
+    Added key /home/ben/.ssh/id_rsa.pub to mypi
+    Key /home/ben/.ssh/id_rsa.pub already exists on mypi2
+    Added key /home/ben/.ssh/id_rsa.pub to mypi3
+    Added key /home/ben/.ssh/id_rsa.pub to mypi4
+
+Add your SSH key to all Pis:
+
+.. code-block:: console
+
+    $ hostedpi ssh keys add ~/.ssh/id_rsa.pub
+    Added key /home/ben/.ssh/id_rsa.pub to mypi
+    Key /home/ben/.ssh/id_rsa.pub already exists on mypi2
+    Added key /home/ben/.ssh/id_rsa.pub to mypi3
+    Added key /home/ben/.ssh/id_rsa.pub to mypi4
+    Added key /home/ben/.ssh/id_rsa.pub to anotherpi
+
+.. warning:: 
+
+    Be sure to add your public key, not your private key. The public key is usually found in
+    ``~/.ssh/id_rsa.pub`` or similar, while the private key is in ``~/.ssh/id_rsa`` or similar.

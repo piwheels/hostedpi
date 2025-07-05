@@ -36,16 +36,16 @@ Copy the keys from one Pi to another:
 .. code-block:: console
 
     $ hostedpi copy-keys mypi mypi2
-    2 keys added to mypi2
+    Copied 2 keys from mypi to mypi2
 
 Copy the keys from one Pi to several others:
 
 .. code-block:: console
 
     $ hostedpi copy-keys mypi mypi2 mypi3 mypi4
-    0 keys added to mypi2
-    2 keys added to mypi3
-    1 keys added to mypi4
+    Copied 2 keys from mypi to mypi2
+    No new keys copied to mypi from mypi3
+    Copied 1 key from mypi to mypi4
 
 .. note::
     

@@ -35,22 +35,39 @@ Options
 Usage
 =====
 
-Remove all SSH keys from a Pi:
+Remove an SSH key from a Pi:
 
 .. code-block:: console
 
-    $ hostedpi remove-keys mypi
-    2 keys removed from mypi
+    $ hostedpi ssh keys remove ben@finn mypi
+    Removed 'ben@finn' key from mypi3
 
-Remove all SSH keys from multiple Pis:
+Remove an SSH key from multiple Pis:
 
 .. code-block:: console
 
-    $ hostedpi remove-keys mypi mypi2
-    2 keys removed from mypi
-    0 keys removed from mypi2
+    $ hostedpi ssh keys remove ben@finn mypi mypi2 mypi3
+    Removed 'ben@finn' key from mypi
+    Removed 'ben@finn' key from mypi2
+    Removed 'ben@finn' key from mypi3
 
-.. note::
-    
-    Unlike other commands, there is no implicit targeting of all Pis. Pis must be listed explicitly
-    to have keys removed.
+Remove an SSH key from all Pis matching a filter:
+
+.. code-block:: console
+
+    $ hostedpi ssh keys remove ben@finn --filter mypi
+    Removed 'ben@finn' key from mypi
+    Removed 'ben@finn' key from mypi2
+    Removed 'ben@finn' key from mypi3
+    Removed 'ben@finn' key from mypi4
+
+Remove an SSH key from all Pis:
+
+.. code-block:: console
+
+    $ hostedpi ssh keys remove ben@finn
+    Removed 'ben@finn' key from mypi
+    Removed 'ben@finn' key from mypi2
+    Removed 'ben@finn' key from mypi3
+    Removed 'ben@finn' key from mypi4
+    Removed 'ben@finn' key from anotherpi

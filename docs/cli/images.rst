@@ -72,5 +72,19 @@ List the available operating system images for Pi 3 and Pi 4:
 
 .. note::
     
-    The left hand column represents the image label which can be used when provisioning a new Pi
-    with :doc:`create` and :meth:`~hostedpi.picloud.PiCloud.create_pi`.
+    The ID column represents the image label which can be used when provisioning a new Pi with
+    :doc:`create` and :meth:`~hostedpi.picloud.PiCloud.create_pi`.
+
+Filter the list to just show Ubuntu images:
+
+.. code-block:: console
+    
+    $ hostedpi images 4 --filter ubuntu
+    ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃ ID               ┃ Name                                    ┃
+    ┡━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+    │ rpi-bionic-arm64 │ Ubuntu 18.04 (Bionic Beaver) (64 bit)   │
+    │ rpi-focal-arm64  │ Ubuntu 20.04 (Focal Fossa) (64 bit)     │
+    │ rpi-focal-armhf  │ Ubuntu 20.04 (Focal Fossa) (32 bit)     │
+    │ rpi-jammy-arm64  │ Ubuntu 22.04 (Jammy Jellyfish) (64 bit) │
+    └──────────────────┴─────────────────────────────────────────┘

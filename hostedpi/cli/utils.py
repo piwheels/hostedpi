@@ -39,7 +39,7 @@ def get_picloud() -> PiCloud:
     return PiCloud()
 
 
-def get_pi(name: str) -> Pi:
+def get_pi(name: str) -> Union[Pi, None]:
     cloud = get_picloud()
     return cloud.pis.get(name)
 
@@ -56,7 +56,7 @@ def get_pis(names: Union[list[str], None], filter: Union[str, None] = None) -> l
     all_pi_names = {pi.name for pi in all_pis}
     pis_not_found = [name for name in names if name not in all_pi_names]
     for pi in pis_not_found:
-        logger.warn("Pi server not found", name=pi)
+        print_warn(f"Pi server not found: {pi}")
     pis_found = [pi for pi in all_pis if pi.name in names]
     return filter_pis(pis_found, filter)
 

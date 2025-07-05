@@ -24,12 +24,12 @@ Subcommands
     :maxdepth: 1
     :titlesonly:
 
+    list
+    table
+    show
     add
-    clear
     copy
     import
-    list
-    remove
-    show
-    table
     unimport
+    remove
+    purge

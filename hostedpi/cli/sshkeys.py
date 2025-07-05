@@ -37,6 +37,9 @@ def do_show(name: arguments.server_name):
     List the SSH keys on a Raspberry Pi server as plaintext
     """
     pi = utils.get_pi(name)
+    if pi is None:
+        utils.print_error(f"Pi '{name}' not found")
+        return 1
     for key in pi.ssh_keys:
         try:
             print(key)
@@ -51,7 +54,14 @@ def do_list(name: arguments.server_name):
     List the SSH keys on a Raspberry Pi server, using the key label and note if available
     """
     pi = utils.get_pi(name)
-    for key in pi.ssh_keys:
+    if pi is None:
+        utils.print_error(f"Pi '{name}' not found")
+        return 1
+    keys = pi.ssh_keys
+    if not keys:
+        utils.print_warn(f"No SSH keys found on {pi.name}")
+        return 0
+    for key in keys:
         try:
             parts = key.split()
             print(" ".join(parts[2:]))
@@ -66,6 +76,9 @@ def do_table(name: arguments.server_name, filter: options.filter_pattern_pi = No
     List the SSH keys on a Raspberry Pi server in a table format
     """
     pi = utils.get_pi(name)
+    if pi is None:
+        utils.print_error(f"Pi '{name}' not found")
+        return 1
     headers = ["Type", "Label", "Note"]
     table = Table(*headers)
 
@@ -99,12 +112,17 @@ def do_add(
     """
     pis = utils.get_pis(names, filter)
     for pi in pis:
+        keys_before = len(pi.ssh_keys)
         try:
-            pi.ssh_keys = {ssh_key_path.read_text()}
+            pi.ssh_keys |= {ssh_key_path.read_text()}
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
-        utils.print_success(f"Added key {ssh_key_path} to {pi.name}")
+        keys_after = len(pi.ssh_keys)
+        if keys_after == keys_before:
+            utils.print_warn(f"Key {ssh_key_path} already exists on {pi.name}")
+        else:
+            utils.print_success(f"Added key {ssh_key_path} to {pi.name}")
 
 
 @keys_app.command("cp", hidden=True)
@@ -128,7 +146,14 @@ def do_copy(src: arguments.server_name, dests: arguments.server_names):
 
         num_keys_after = len(dest_pi.ssh_keys)
         num_keys_copied = num_keys_after - num_keys_before
-        utils.print_success(f"Copied {num_keys_copied} keys from {src_pi.name} to {dest_pi.name}")
+        if num_keys_copied == 0:
+            utils.print_warn(f"No new keys copied to {dest_pi.name} from {src_pi.name}")
+        elif num_keys_copied == 1:
+            utils.print_success(f"Copied 1 key from {src_pi.name} to {dest_pi.name}")
+        else:
+            utils.print_success(
+                f"Copied {num_keys_copied} keys from {src_pi.name} to {dest_pi.name}"
+            )
 
 
 @keys_app.command("rm", hidden=True)
@@ -155,22 +180,28 @@ def do_remove(
         if removed_keys == 0:
             utils.print_warn(f"No keys matching '{label}' found on {pi.name}")
         else:
-            utils.print_success(f"Removed {removed_keys} keys from {pi.name}")
+            utils.print_success(f"Removed '{label}' key from {pi.name}")
 
 
-@keys_app.command("clear")
-def do_clear(names: arguments.server_names = None, filter: options.filter_pattern_pi = None):
+@keys_app.command("purge")
+def do_purge(names: arguments.server_names = None, filter: options.filter_pattern_pi = None):
     """
     Remove all SSH keys from one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
     for pi in pis:
+        keys = len(pi.ssh_keys)
         try:
             pi.ssh_keys = None
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
-        utils.print_success(f"Removed all keys from {pi.name}")
+        if keys == 0:
+            utils.print_warn(f"No keys to remove from {pi.name}")
+        elif keys == 1:
+            utils.print_success(f"Removed 1 key from {pi.name}")
+        else:
+            utils.print_success(f"Removed {keys} keys from {pi.name}")
 
 
 @keys_app.command("import")
@@ -202,6 +233,8 @@ def do_import(
         keys_imported = keys_after - keys_before
         if keys_imported == 0:
             utils.print_warn(f"No new keys imported to {pi.name}")
+        elif keys_imported == 1:
+            utils.print_success(f"Imported 1 key to {pi.name}")
         else:
             utils.print_success(f"Imported {keys_imported} keys to {pi.name}")
 
@@ -237,5 +270,7 @@ def do_unimport(
         removed_keys = keys_before - len(keys)
         if removed_keys == 0:
             utils.print_warn(f"No keys matching import sources specified found on {pi.name}")
+        elif removed_keys == 1:
+            utils.print_success(f"Removed 1 key from {pi.name}")
         else:
             utils.print_success(f"Removed {removed_keys} keys from {pi.name}")

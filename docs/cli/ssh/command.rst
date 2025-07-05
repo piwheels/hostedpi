@@ -44,3 +44,19 @@ Output the IPv6 SSH command for a Pi:
 
     $ hostedpi ssh command mypi --ipv6
     ssh root@[2a00:1098:8:5b::1]
+
+.. note::
+
+    You will need to have an SSH key on the Pi to be able to connect. This can be done when the Pi
+    is provisioned with :doc:`../create` or added later with :doc:`keys/add`.
+
+SSH directly onto a Pi:
+
+.. code-block:: console
+
+    $ $(hostedpi ssh command mypi)
+
+.. warning:: 
+
+    This will not work if ``HOSTEDPI_LOG_LEVEL`` is set to ``DEBUG`` as the logging output will
+    obscure the SSH command.

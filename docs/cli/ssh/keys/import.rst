@@ -24,13 +24,13 @@ Options
 
     Search pattern for filtering server names
 
-.. option:: --github [str] [repeatable]
+.. option:: --github, --gh [str] [repeatable]
 
     A GitHub username to source SSH keys from
 
     Can be provided multiple times
 
-.. option:: --launchpad [str] [repeatable]
+.. option:: --launchpad, --lp [str] [repeatable]
 
     A Launchpad username to source SSH keys from
 
@@ -47,39 +47,41 @@ Import keys from GitHub onto a Pi:
 
 .. code-block:: console
 
-    $ hostedpi ssh-import-id mypi --gh bennuttall
-    4 keys retrieved from GitHub
-
-    4 keys added to mypi
+    $ hostedpi ssh keys import mypi --gh bennuttall
+    Imported 4 keys to mypi
 
 Import keys from GitHub onto multiple Pis:
 
 .. code-block:: console
 
-    $ hostedpi ssh-import-id mypi mypi2 --gh bennuttall
-    4 keys retrieved from GitHub
-
-    0 keys added to mypi
-    4 keys added to mypi2
-
-.. note::
-
-    If no names of Pis are given, the key count will be shown for all Pis in the account
-
-.. note::
-
-    Keys are counted before and after addition, and de-duplicated, so if a key is already found on
-    the Pi, it will show as not having been added, as above.
+    $ hostedpi ssh keys import mypi mypi2 --gh bennuttall
+    Imported 4 keys to mypi
+    No new keys imported to mypi2
 
 Import keys from GitHub and Launchpad onto a Pi:
 
 .. code-block:: console
 
-    $ hostedpi ssh-import-id mypi --gh bennuttall --lp bennuttall
-    4 keys retrieved from GitHub
-    1 key retrieved from Launchpad
+    $ hostedpi ssh keys import mypi --gh bennuttall --lp bennuttall
+    Imported 4 keys to mypi
 
-    1 key added to mypi
+Import keys from GitHub onto multiple Pis:
+
+.. code-block:: console
+
+    $ hostedpi ssh keys import mypi mypi2 --gh bennuttall
+    Imported 4 keys to mypi
+    No new keys imported to mypi2
+
+Import keys from GitHub and Launchpad onto multiple Pis matching a filter:
+
+.. code-block:: console
+
+    $ hostedpi ssh keys import --filter mypi --gh bennuttall --lp bennuttall
+    Imported 4 keys to mypi
+    No new keys imported to mypi2
+    No new keys imported to mypi3
+    Imported 2 keys to mypi4
 
 .. note::
     

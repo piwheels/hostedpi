@@ -116,6 +116,13 @@ class Pi:
         return self._memory
 
     @property
+    def memory_gb(self) -> Union[int, None]:
+        """
+        The Pi's RAM size in GB
+        """
+        return self._memory // 1024 if self._memory else None
+
+    @property
     def cpu_speed(self) -> Union[int, None]:
         """
         The Pi's CPU speed in MHz
