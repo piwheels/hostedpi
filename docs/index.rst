@@ -102,7 +102,6 @@ Table of Contents
     getting_started
     cli/index
     api/index
-    recipes
     specs
     env
     development

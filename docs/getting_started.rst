@@ -115,12 +115,4 @@ You can provision a new Pi with the following command:
 
 .. code-block:: console
 
-    $ hostedpi create mypi --model 3 --wait
-
-More
-====
-
-* See the :doc:`cli/index` page for details of the possibilities provided by ready-made scripts
-* See the API documentation for :class:`~hostedpi.picloud.PiCloud` and :class:`~hostedpi.pi.Pi` for
-  details of the Python module API
-* See the :doc:`recipes` page for ideas of what you can do with this module
+    $ hostedpi create --model 3 --wait
