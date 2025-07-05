@@ -55,7 +55,7 @@ SSH Key management
 ==================
 
 .. autoclass:: hostedpi.models.sshkeys.SSHKeySources
-    :members: ssh_keys, ssh_key_path, github_usernames, launchpad_usernames
+    :members: ssh_keys, ssh_key_path, github_usernames, launchpad_usernames, collect
     :undoc-members:
 
 Pi info

@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from hostedpi.pi import Pi
+from hostedpi.models.sshkeys import SSHKeySources
 
 
 @pytest.fixture
@@ -265,25 +266,35 @@ def test_cancel_pi(pi_info_basic, mock_session, api_url, pi_info_response):
     assert repr(pi) == "<Pi name=test-pi cancelled>"
 
 
-@patch("hostedpi.pi.collect_ssh_keys")
-def test_ssh_import_id(collect_ssh_keys, pi_info_basic, mock_session, api_url):
-    ssh_keys = {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
+def test_add_ssh_keys(pi_info_basic, mock_session, api_url):
     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    collect_ssh_keys.return_value = ssh_keys
     mock_session.get.return_value.json.return_value = {"ssh_key": ""}
-    pi.import_ssh_keys(github_usernames={"testuser"}, launchpad_usernames={"testuser"})
+    ssh_keys_set = {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
+    ssh_keys = SSHKeySources(ssh_keys=ssh_keys_set)
+    pi.add_ssh_keys(ssh_keys)
     assert mock_session.put.call_count == 1
     assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
     json_payload = mock_session.put.call_args[1]["json"]["ssh_key"]
-    for key in ssh_keys:
+    for key in ssh_keys_set:
         assert key in json_payload
-    assert json_payload.count("\r\n") == len(ssh_keys) - 1
+    assert json_payload.count("\r\n") == len(ssh_keys_set) - 1
+
+
+def test_remove_ssh_keys_no_label(pi_info_basic, mock_session, api_url, imported_ssh_keys_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+    mock_session.get.return_value = imported_ssh_keys_response
+    pi.remove_ssh_keys()
+    assert mock_session.get.call_count == 1
+    assert mock_session.put.call_count == 1
+    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    json_payload = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert json_payload == ""
 
 
 def test_remove_ssh_keys_by_label(pi_info_basic, mock_session, api_url, imported_ssh_keys_response):
     pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
     mock_session.get.return_value = imported_ssh_keys_response
-    pi.remove_ssh_keys_by_label("ben@finn")
+    pi.remove_ssh_keys("ben@finn")
     assert mock_session.get.call_count == 2
     assert mock_session.put.call_count == 1
     assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"

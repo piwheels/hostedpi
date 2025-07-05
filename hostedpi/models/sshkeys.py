@@ -6,6 +6,10 @@ from ..utils import collect_ssh_keys
 
 
 class SSHKeySources(BaseModel):
+    """
+    Sources for SSH keys to be added to Pi servers
+    """
+
     ssh_keys: Union[set[str], None] = Field(default=None, description="Set of SSH key strings")
     ssh_key_path: Union[FilePath, None] = Field(default=None, description="Path to an SSH key file")
     github_usernames: Union[set[str], None] = Field(
@@ -17,7 +21,8 @@ class SSHKeySources(BaseModel):
 
     def collect(self) -> Union[set[str], None]:
         """
-        Collect SSH keys from various sources
+        Collect SSH keys from various sources, and return them as a set of strings which can be
+        added to a Pi by setting :attr:`~hostedpi.pi.Pi.ssh_keys`.
         """
         keys = collect_ssh_keys(
             ssh_keys=self.ssh_keys,

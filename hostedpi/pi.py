@@ -12,8 +12,8 @@ from structlog import get_logger
 from .exc import HostedPiException
 from .logger import log_request
 from .models.mythic.responses import PiInfo, PiInfoBasic, ProvisioningServer, SSHKeysResponse
+from .models.sshkeys import SSHKeySources
 from .utils import (
-    collect_ssh_keys,
     dedupe_ssh_keys,
     get_error_message,
     remove_imported_ssh_keys,
@@ -405,30 +405,17 @@ class Pi:
 
         self._cancelled = True
 
-    def import_ssh_keys(
-        self,
-        *,
-        github_usernames: Union[set[str], None] = None,
-        launchpad_usernames: Union[set[str], None] = None,
-    ) -> set[str]:
+    def add_ssh_keys(self, ssh_keys: SSHKeySources) -> set[str]:
         """
-        Import SSH keys from GitHub or Launchpad, and add them to the Pi. Return the set of keys
-        added.
+        Add SSH keys to the Pi from the specified sources.
 
-        :type github_usernames: set[str] or None
-        :param github_usernames:
-            A set of GitHub usernames to import SSH keys from (keyword-only argument)
-
-        :type launchpad_usernames: set[str] or None
-        :param launchpad_usernames:
-            A set of Launchpad usernames to import SSH keys from (keyword-only argument)
+        :type ssh_keys: SSHKeySources
+        :param ssh_keys: The sources to find keys to add to the Pi
         """
-        ssh_keys_set = collect_ssh_keys(
-            github_usernames=github_usernames,
-            launchpad_usernames=launchpad_usernames,
-        )
-        self.ssh_keys |= ssh_keys_set
-        return ssh_keys_set
+        keys = ssh_keys.collect()
+        if keys:
+            self.ssh_keys |= keys
+        return self.ssh_keys
 
     def unimport_ssh_keys(
         self,
@@ -460,15 +447,18 @@ class Pi:
         self.ssh_keys = ssh_keys
         return self.ssh_keys
 
-    def remove_ssh_keys_by_label(self, label: str) -> set[str]:
+    def remove_ssh_keys(self, label: Union[str, None] = None) -> set[str]:
         """
-        Remove SSH keys from the Pi that have a specific label (e.g. ``user@hostname``) and return
-        the remaining set of keys.
+        Remove an SSH key from the Pi that has a specific label (e.g. ``user@hostname``) and return
+        the remaining set of keys. If *label* is ``None``, all keys will be removed.
 
-        :type label: str
-        :param label: The label to remove from the SSH keys
+        :type label: str or None
+        :param label: The label of the SSH key to remove
         """
-        self.ssh_keys = remove_ssh_keys_by_label(self.ssh_keys, label)
+        if label is None:
+            self.ssh_keys = None
+        else:
+            self.ssh_keys = remove_ssh_keys_by_label(self.ssh_keys, label)
         return self.ssh_keys
 
     def wait_until_provisioned(self):
