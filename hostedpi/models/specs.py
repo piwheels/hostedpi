@@ -35,6 +35,9 @@ class NewServerSpec(BaseModel):
 class Pi3ServerSpec(NewServerSpec):
     """
     Specification model for the Raspberry Pi 3
+
+    :raises pydantic_core.ValidationError:
+        If the server specification is invalid
     """
 
     model: int = 3
@@ -53,6 +56,9 @@ class Pi3ServerSpec(NewServerSpec):
 class Pi4ServerSpec(NewServerSpec):
     """
     Specification model for the Raspberry Pi 4
+
+    :raises pydantic_core.ValidationError:
+        If the server specification is invalid
     """
 
     model: int = 4

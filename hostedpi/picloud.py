@@ -77,6 +77,9 @@ class PiCloud:
         """
         A dict of all Raspberry Pi servers associated with the account, keyed by their names.
         Each value is an instance of :class:`~hostedpi.pi.Pi` representing the server.
+
+        :raises HostedPiServerError:
+            If there is an error retrieving the list from the server
         """
         servers = self._get_pis()
         return {
@@ -90,7 +93,7 @@ class PiCloud:
         A string containing the IPv4 SSH config for all Pis within the account. The contents could
         be added to an SSH config file for easy access to the Pis in the account.
         """
-        return "\n".join(pi.ipv4_ssh_config for pi in self.pis)
+        return "\n".join(pi.ipv4_ssh_config for pi in self.pis.values())
 
     @property
     def ipv6_ssh_config(self) -> str:
@@ -98,7 +101,7 @@ class PiCloud:
         A string containing the IPv6 SSH config for all Pis within the account. The contents could
         be added to an SSH config file for easy access to the Pis in the account.
         """
-        return "\n".join(pi.ipv6_ssh_config for pi in self.pis)
+        return "\n".join(pi.ipv6_ssh_config for pi in self.pis.values())
 
     def create_pi(
         self,
@@ -145,6 +148,21 @@ class PiCloud:
             When requesting a Pi 3, you will either get a model 3B or 3B+. It is not possible to
             request a particular model beyond 3 or 4. Some memory and CPU speed options are
             available when requesting a Pi 4.
+
+        :raises HostedPiValidationError:
+            If the provided name or spec is invalid
+
+        :raises HostedPiInvalidParametersError:
+            If the provided parameters are invalid, such as an unsupported model or disk size
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorized to create a new Pi server
+
+        :raises HostedPiOutOfStockError:
+            If there are no available Pi servers of the requested type
+
+        :raises HostedPiServerError:
+            If there is another error from the server
         """
         if name is None:
             # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piservers
@@ -211,6 +229,12 @@ class PiCloud:
         :type model: int
         :param model:
             The Raspberry Pi model (3 or 4) to get operating systems for (keyword-only argument)
+
+        :raises HostedPiUserError:
+            If the provided model is not 3 or 4
+
+        :raises HostedPiServerError:
+            If there is an error retrieving the operating systems from the server
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piimagesmodel
         if model not in {3, 4}:
@@ -230,6 +254,9 @@ class PiCloud:
     def _get_available_specs(self) -> list[ServerSpec]:
         """
         Retrieve all available Raspberry Pi server specifications
+
+        :raises HostedPiServerError:
+            If there is an error retrieving the specifications from the server
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-pimodels
         url = urllib.parse.urljoin(self._api_url, "models")

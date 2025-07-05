@@ -48,7 +48,7 @@ class Pi:
     it, cancel it and more.
 
     .. note::
-        The ``Pi`` class should not be initialised by the user, only internally within the module.
+        The ``Pi`` class should not be initialised by the user, only internally within the module
     """
 
     def __init__(
@@ -90,8 +90,21 @@ class Pi:
     def info(self) -> PiInfo:
         """
         The full Pi information as a :class:`~hostedpi.models.mythic.responses.PiInfo` object.
-        Always fetch the latest information from the API when this is called (with a cache timeout
+        Always fetches the latest information from the API when this is called (with a cache timeout
         of 10 seconds).
+
+        :raises HostedPiUserError:
+            If the Pi has not been initialised with a name yet, or if the name is ``None``
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server info
+
+        :raises HostedPiProvisioningError:
+            If there is an error retrieving the Pi information from the API because the Pi is still
+            provisioning
+
+        :raises HostedPiServerError:
+            If there is another error retrieving the Pi information from the API
         """
         if self._info is None:
             self._get_info()
@@ -299,6 +312,16 @@ class Pi:
         """
         Retrieve the SSH keys on the Pi, or use assignment to update them. Property value is a set
         of strings. Assigned value should also be a set of strings, or None to unset.
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiProvisioningError:
+            If the Pi is still provisioning
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
+
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piserversidentifierssh-key
         url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}/ssh-key")
@@ -347,6 +370,15 @@ class Pi:
         Power the Pi on. If *wait* is ``False`` (the default), return immediately. If *wait* is
         ``True``, wait until the power on request is completed, and return ``True`` on success, and
         ``False`` on failure.
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiProvisioningError:
+            If the server is still provisioning
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         self._power_on_off(on=True)
         if wait:
@@ -357,6 +389,15 @@ class Pi:
     def off(self):
         """
         Power the Pi off and return immediately
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiProvisioningError:
+            If the server is still provisioning
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         self._power_on_off(on=False)
 
@@ -370,6 +411,15 @@ class Pi:
             Note that if *wait* is ``False``, you can poll for the boot status while rebooting by
             inspecting the properties :attr:`~hostedpi.pi.Pi.is_booting` and
             :attr:`~hostedpi.pi.Pi.boot_progress`.
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiProvisioningError:
+            If the server is still provisioning
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-post-piserversidentifierreboot
         url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}/reboot")
@@ -397,7 +447,16 @@ class Pi:
 
     def cancel(self):
         """
-        Cancel the Pi service
+        Unprovision the Pi server immediately
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiProvisioningError:
+            If the server is still provisioning
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
         if self._cancelled:
@@ -432,6 +491,15 @@ class Pi:
 
         :type ssh_keys: SSHKeySources
         :param ssh_keys: The sources to find keys to add to the Pi
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiProvisioningError:
+            If the Pi is still provisioning
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         keys = ssh_keys.collect()
         if keys:
@@ -455,6 +523,15 @@ class Pi:
         :type launchpad_usernames: set[str] or None
         :param launchpad_usernames:
             A set of Launchpad usernames to remove SSH keys for (keyword-only argument)
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiProvisioningError:
+            If the Pi is still provisioning
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         ssh_keys = self.ssh_keys
         if github_usernames:
@@ -475,6 +552,15 @@ class Pi:
 
         :type label: str or None
         :param label: The label of the SSH key to remove
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiProvisioningError:
+            If the Pi is still provisioning
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         if label is None:
             self.ssh_keys = None
@@ -485,6 +571,12 @@ class Pi:
     def wait_until_provisioned(self):
         """
         Wait for the new Pi to be provisioned
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         while True:
             pi_info = self.get_provision_status()
@@ -497,6 +589,12 @@ class Pi:
         Send a request to the server creation status endpoint and return the status as either a
         string or :class:`~hostedpi.models.mythic.responses.PiInfo.` or ``None`` if the status is
         not yet available.
+
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorised to access the server
+
+        :raises HostedPiServerError:
+            If there is another error accessing the API
         """
         if self._status_url is None:
             return self.info
@@ -506,10 +604,12 @@ class Pi:
             response = self.session.get(self._status_url)
             response.raise_for_status()
         except ConnectionError as exc:
-            logger.warn("Error getting server provisioning status", exc=str(exc))
+            logger.warn("Temporary error getting server provisioning status", exc=str(exc))
             return
         except HTTPError as exc:
             error = get_error_message(exc)
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
             raise HostedPiServerError(error) from exc
 
         log_request(response)

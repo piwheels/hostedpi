@@ -48,6 +48,7 @@ autodoc_member_order = "groupwise"
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3.9", None),
+    "pydantic": ("https://docs.pydantic.dev/latest/", None),
 }
 
 # -- Options for HTML output ----------------------------------------------

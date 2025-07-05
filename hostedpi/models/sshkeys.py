@@ -8,6 +8,9 @@ from ..utils import collect_ssh_keys
 class SSHKeySources(BaseModel):
     """
     Sources for SSH keys to be added to Pi servers
+
+    :raises pydantic_core.ValidationError:
+        If the SSH key sources are invalid
     """
 
     ssh_keys: Union[set[str], None] = Field(default=None, description="Set of SSH key strings")
