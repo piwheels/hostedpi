@@ -7,7 +7,7 @@ from structlog import get_logger
 
 from .exc import HostedPiException
 from .logger import log_request
-from .models.responses import ErrorResponse
+from .models.mythic.responses import ErrorResponse
 
 
 logger = get_logger()

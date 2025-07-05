@@ -6,7 +6,7 @@ from requests import HTTPError, Session
 from structlog import get_logger
 
 from .exc import MythicAuthenticationError
-from .models.responses import AuthResponse
+from .models.mythic.responses import AuthResponse
 from .settings import get_settings
 
 

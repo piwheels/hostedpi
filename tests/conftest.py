@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from hostedpi.models.responses import PiInfo, PiInfoBasic
+from hostedpi.models.mythic.responses import PiInfo, PiInfoBasic
 from hostedpi.models.sshkeys import SSHKeySources
 
 

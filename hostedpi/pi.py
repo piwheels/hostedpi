@@ -11,7 +11,7 @@ from structlog import get_logger
 
 from .exc import HostedPiException
 from .logger import log_request
-from .models.responses import PiInfo, PiInfoBasic, ProvisioningServer, SSHKeysResponse
+from .models.mythic.responses import PiInfo, PiInfoBasic, ProvisioningServer, SSHKeysResponse
 from .utils import (
     collect_ssh_keys,
     dedupe_ssh_keys,

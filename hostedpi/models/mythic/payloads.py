@@ -3,7 +3,7 @@ from typing import Union
 
 from pydantic import BaseModel, field_validator
 
-from .specs import Pi3ServerSpec, Pi4ServerSpec
+from ..specs import Pi3ServerSpec, Pi4ServerSpec
 
 
 class NewServer(BaseModel):

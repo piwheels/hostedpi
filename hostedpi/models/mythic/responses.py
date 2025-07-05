@@ -3,8 +3,6 @@ from typing import Union
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
 
-from .specs import ServerSpec
-
 
 class AuthResponse(BaseModel):
     access_token: str
@@ -59,5 +57,21 @@ class PiImagesResponse(RootModel):
     root: dict[str, str]
 
 
+class ServerSpec(BaseModel):
+    disk: int = 10
+    model: int
+    memory: int
+    cpu_speed: int
+    nic_speed: int
+
+    @property
+    def memory_gb(self) -> int:
+        return self.memory // 1024
+
+
 class SpecsResponse(BaseModel):
+    """
+    Response model for retrieving available server specifications
+    """
+
     models: list[ServerSpec]

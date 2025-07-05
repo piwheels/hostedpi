@@ -8,14 +8,15 @@ from structlog import get_logger
 from .auth import MythicAuth
 from .exc import HostedPiException
 from .logger import log_request
-from .models.payloads import NewServer
-from .models.responses import (
+from .models.mythic.payloads import NewServer
+from .models.mythic.responses import (
     PiImagesResponse,
     PiInfoBasic,
+    ServerSpec,
     ServersResponse,
     SpecsResponse,
 )
-from .models.specs import Pi3ServerSpec, Pi4ServerSpec, ServerSpec
+from .models.specs import Pi3ServerSpec, Pi4ServerSpec
 from .models.sshkeys import SSHKeySources
 from .pi import Pi
 from .utils import get_error_message

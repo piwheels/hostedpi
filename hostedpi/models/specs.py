@@ -3,18 +3,6 @@ from typing import Literal, Union
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
-class ServerSpec(BaseModel):
-    disk: int = 10
-    model: int
-    memory: int
-    cpu_speed: int
-    nic_speed: int
-
-    @property
-    def memory_gb(self) -> int:
-        return self.memory // 1024
-
-
 class NewServerSpec(BaseModel):
     disk: int = 10
     model: int
