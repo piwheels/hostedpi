@@ -5,7 +5,6 @@ import requests
 from requests.exceptions import HTTPError
 from structlog import get_logger
 
-from .exc import HostedPiException
 from .logger import log_request
 from .models.mythic.responses import ErrorResponse
 
@@ -45,12 +44,7 @@ def fetch_keys_from_url(url: str, sep: str) -> set[str]:
     """
     response = requests.get(url)
     log_request(response)
-
-    try:
-        response.raise_for_status()
-    except HTTPError as exc:
-        raise HostedPiException(str(exc)) from exc
-
+    response.raise_for_status()
     return set(response.text.strip().split(sep))
 
 

@@ -9,7 +9,7 @@ from rich.live import Live
 from rich.table import Table
 from structlog import get_logger
 
-from ..exc import HostedPiException
+from ..exc import HostedPiValidationError
 from ..models.specs import Pi3ServerSpec, Pi4ServerSpec
 from ..models.sshkeys import SSHKeySources
 from ..pi import Pi
@@ -138,7 +138,7 @@ def create_pi(
     try:
         spec = validate_server_spec(model, data)
     except ValidationError as exc:
-        raise HostedPiException(f"Invalid server spec: {exc}") from exc
+        raise HostedPiValidationError(f"Invalid server spec: {exc}") from exc
 
     cloud = get_picloud()
     pi = cloud.create_pi(name=name, spec=spec, ssh_keys=ssh_keys, wait=wait)

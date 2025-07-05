@@ -9,7 +9,13 @@ from pydantic import ValidationError
 from requests import ConnectionError, HTTPError, Session
 from structlog import get_logger
 
-from .exc import HostedPiException
+from .exc import (
+    HostedPiServerError,
+    HostedPiUserError,
+    HostedPiServerError,
+    HostedPiNotAuthorizedError,
+    HostedPiProvisioningError,
+)
 from .logger import log_request
 from .models.mythic.responses import (
     PiInfo,
@@ -303,13 +309,12 @@ class Pi:
         try:
             response.raise_for_status()
         except HTTPError as exc:
-            if response.status_code == 500:
-                logger.debug(
-                    "Failed to fetch SSH keys, maybe the Pi is initialising", name=self.name
-                )
-            else:
-                error = get_error_message(exc)
-                raise HostedPiException(error) from exc
+            error = get_error_message(exc)
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
+            if response.status_code in {409, 500}:
+                raise HostedPiProvisioningError(error) from exc
+            raise HostedPiServerError(error) from exc
 
         data = SSHKeysResponse.model_validate(response.json())
 
@@ -332,7 +337,11 @@ class Pi:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
+            if response.status_code == 409:
+                raise HostedPiProvisioningError(error) from exc
+            raise HostedPiServerError(error) from exc
 
     def on(self, *, wait: bool = False) -> Union[bool, None]:
         """
@@ -376,7 +385,11 @@ class Pi:
                 pass
             else:
                 error = get_error_message(exc)
-                raise HostedPiException(error) from exc
+                if response.status_code == 403:
+                    raise HostedPiNotAuthorizedError(error) from exc
+                if response.status_code == 409:
+                    raise HostedPiProvisioningError(error) from exc
+                raise HostedPiServerError(error) from exc
 
         if wait:
             while self.info.is_booting:
@@ -387,6 +400,7 @@ class Pi:
         """
         Cancel the Pi service
         """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
         if self._cancelled:
             logger.warn("This Pi server is already cancelled", name=self.name)
             return
@@ -397,7 +411,6 @@ class Pi:
             logger.warn("Cannot cancel a server that is still provisioning", name=self.name)
             return
 
-        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-delete-piserversidentifier
         url = urllib.parse.urljoin(self._api_url, f"servers/{self.name}")
         response = self.session.delete(url)
         log_request(response)
@@ -406,7 +419,11 @@ class Pi:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
+            if response.status_code == 409:
+                raise HostedPiProvisioningError(error) from exc
+            raise HostedPiServerError(error) from exc
 
         self._cancelled = True
 
@@ -494,7 +511,7 @@ class Pi:
             return
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            raise HostedPiServerError(error) from exc
 
         log_request(response)
 
@@ -516,7 +533,7 @@ class Pi:
         less than 10 seconds ago.
         """
         if self.name is None:
-            raise HostedPiException("Cannot fetch info for a Pi without a name")
+            raise HostedPiUserError("Cannot fetch info for a Pi without a name")
         now = datetime.now(timezone.utc)
         if self._last_fetched_info is not None:
             if (now - self._last_fetched_info).total_seconds() < 10:
@@ -530,7 +547,11 @@ class Pi:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
+            if response.status_code == 409:
+                raise HostedPiProvisioningError(error) from exc
+            raise HostedPiServerError(error) from exc
 
         self._info = PiInfo.model_validate(response.json())
 
@@ -547,7 +568,11 @@ class Pi:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
+            if response.status_code == 409:
+                raise HostedPiProvisioningError(error) from exc
+            raise HostedPiServerError(error) from exc
 
     def _parse_status(self, data: dict) -> Union[ProvisioningServer, PiInfo, None]:
         """

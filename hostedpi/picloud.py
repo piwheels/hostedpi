@@ -6,7 +6,15 @@ from requests import HTTPError, Session
 from structlog import get_logger
 
 from .auth import MythicAuth
-from .exc import HostedPiException
+from .exc import (
+    HostedPiValidationError,
+    HostedPiServerError,
+    HostedPiUserError,
+    HostedPiServerError,
+    HostedPiInvalidParametersError,
+    HostedPiNotAuthorizedError,
+    HostedPiOutOfStockError,
+)
 from .logger import log_request
 from .models.mythic.payloads import NewServer
 from .models.mythic.responses import (
@@ -160,7 +168,7 @@ class PiCloud:
             data = NewServer(name=name, spec=spec, ssh_keys=ssh_keys)
         except ValidationError as exc:
             logger.error(f"Invalid server name or spec: {exc}")
-            raise HostedPiException("Invalid server name or spec") from exc
+            raise HostedPiValidationError("Invalid server name or spec") from exc
 
         num_ssh_keys = len(ssh_keys) if ssh_keys else 0
         logger.info("Creating new server", name=name, spec=spec, ssh_keys=num_ssh_keys)
@@ -171,7 +179,13 @@ class PiCloud:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            if response.status_code == 400:
+                raise HostedPiInvalidParametersError(error) from exc
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
+            if response.status_code == 503:
+                raise HostedPiOutOfStockError(error) from exc
+            raise HostedPiServerError(error) from exc
 
         status_url = response.headers["Location"]
 
@@ -201,7 +215,7 @@ class PiCloud:
         """
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-piimagesmodel
         if model not in {3, 4}:
-            raise HostedPiException("model must be 3 or 4")
+            raise HostedPiUserError("model must be 3 or 4")
         url = urllib.parse.urljoin(self._api_url, f"images/{model}")
         response = self.session.get(url)
         log_request(response)
@@ -210,7 +224,7 @@ class PiCloud:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            raise HostedPiServerError(error) from exc
 
         return PiImagesResponse.model_validate(response.json()).root
 
@@ -218,6 +232,7 @@ class PiCloud:
         """
         Retrieve all available Raspberry Pi server specifications
         """
+        # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-pimodels
         url = urllib.parse.urljoin(self._api_url, "models")
         response = self.session.get(url)
         log_request(response)
@@ -226,7 +241,7 @@ class PiCloud:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            raise HostedPiServerError(error) from exc
 
         data = SpecsResponse.model_validate(response.json())
         return data.models
@@ -245,7 +260,7 @@ class PiCloud:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
-            raise HostedPiException(error) from exc
+            raise HostedPiServerError(error) from exc
 
         response = ServersResponse.model_validate(response.json())
         return response.servers
