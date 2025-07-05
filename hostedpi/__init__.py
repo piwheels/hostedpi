@@ -1,8 +1,16 @@
 from . import logger
 from .auth import MythicAuth
-from .models import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources
+from .models import Pi3ServerSpec, Pi4ServerSpec, PiInfo, SSHKeySources
 from .pi import Pi
 from .picloud import PiCloud
 
 
-__all__ = ["PiCloud", "Pi", "MythicAuth", "Pi3ServerSpec", "Pi4ServerSpec", "SSHKeySources"]
+__all__ = [
+    "MythicAuth",
+    "Pi",
+    "PiCloud",
+    "Pi3ServerSpec",
+    "Pi4ServerSpec",
+    "PiInfo",
+    "SSHKeySources",
+]

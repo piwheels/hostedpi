@@ -12,7 +12,7 @@ Models are provided at the root of the module and can be imported as follows:
 
 .. code-block:: python
 
-    from hostedpi import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources
+    from hostedpi import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources, PiInfo
 
 They can be constructed using keyword arguments:
 
@@ -29,8 +29,6 @@ Alternatively, they can be constructed from a dictionary using ``model_validate`
 
 .. code-block:: python
 
-    from hostedpi import Pi4ServerSpec
-
     mypi = {
         "memory_gb": 8,
         "cpu_speed": 2000,
@@ -39,6 +37,12 @@ Alternatively, they can be constructed from a dictionary using ``model_validate`
     }
 
     pi4_spec = Pi4ServerSpec.model_validate(mypi)
+
+When using the models, you can access the attributes directly using dot notation:
+
+.. code-block:: python
+
+    print(pi.info.boot_progress)
 
 Raspberry Pi specifications
 ===========================
@@ -62,5 +66,5 @@ Pi info
 =======
 
 .. autoclass:: hostedpi.models.mythic.responses.PiInfo()
-    :members: boot_progress, disk_size, initialised_keys, ipv6_address, ipv6_network, is_booting, location, model_full, nic_speed, power, ssh_port
+    :members: boot_progress, disk_size, initialised_keys, ipv6_address, ipv6_network, is_booting, location, model_full, nic_speed, power, ssh_port, model, memory, cpu_speed, provision_status
     :undoc-members:

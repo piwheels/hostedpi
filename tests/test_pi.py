@@ -3,8 +3,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from hostedpi.pi import Pi
 from hostedpi.models.sshkeys import SSHKeySources
+from hostedpi.pi import Pi
 
 
 @pytest.fixture

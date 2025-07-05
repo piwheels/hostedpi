@@ -15,6 +15,8 @@ Once you have a connected :class:`~hostedpi.picloud.PiCloud` instance and access
 previously created :class:`~hostedpi.pi.Pi` instances, the following API documentation should prove
 useful to show what you can do with the API via the *hostedpi* module.
 
+For example usage, see :doc:`../usage`.
+
 Contents
 ========
 
@@ -24,4 +26,4 @@ Contents
    picloud
    pi
    models
-   exc
+   exceptions

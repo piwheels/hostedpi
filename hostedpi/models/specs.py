@@ -4,6 +4,10 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class NewServerSpec(BaseModel):
+    """
+    Base model for Pi server specifications
+    """
+
     disk: int = Field(default=10, description="Disk size in GB (must be a multiple of 10).")
     model: int
     memory: int
@@ -29,6 +33,10 @@ class NewServerSpec(BaseModel):
 
 
 class Pi3ServerSpec(NewServerSpec):
+    """
+    Specification model for the Raspberry Pi 3
+    """
+
     model: int = 3
     memory: Union[int, None] = None
     memory_gb: int = Field(
@@ -43,6 +51,10 @@ class Pi3ServerSpec(NewServerSpec):
 
 
 class Pi4ServerSpec(NewServerSpec):
+    """
+    Specification model for the Raspberry Pi 4
+    """
+
     model: int = 4
     memory: Union[int, None] = None
     memory_gb: Literal[4, 8] = Field(
