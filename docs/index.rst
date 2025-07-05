@@ -86,11 +86,13 @@ Write a Python script to provision a new Pi and output its SSH command:
 
     cloud = PiCloud()
     
-    pi = cloud.create_pi('mypi', spec=Pi4ServerSpec())
+    pi = cloud.create_pi(name="mypi", spec=Pi4ServerSpec())
     print(pi.ipv4_ssh_command)
 
-See the :doc:`getting_started` page for information on how to authenticate, and
-see the :doc:`cli/index` page for information on using the command line interface.
+* See the :doc:`getting_started` page for information on how to get API keys and authenticate
+* See the :doc:`cli/index` page for information on using the command line interface
+* See the :doc:`api/index` page for the module's API reference
+
 
 Table of Contents
 =================
@@ -102,6 +104,7 @@ Table of Contents
     getting_started
     cli/index
     api/index
+    usage
     specs
     env
     development
