@@ -1,5 +1,5 @@
 from ipaddress import IPv6Address, IPv6Network
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -126,6 +126,16 @@ def imported_ssh_keys_response(imported_ssh_keys_json):
         status_code=200,
         json=Mock(return_value=imported_ssh_keys_json),
     )
+
+
+@patch("hostedpi.pi.MythicAuth")
+def test_pi_init_no_auth(mythic_auth, pi_info_basic):
+    pi = Pi(name="test-pi", info=pi_info_basic)
+    assert pi.name == "test-pi"
+    assert pi.model == 3
+    assert pi.memory_mb == 1024
+    assert pi.cpu_speed == 1200
+    assert repr(pi) == "<Pi name=test-pi model=3>"
 
 
 def test_pi_init(pi_info_basic, auth):
