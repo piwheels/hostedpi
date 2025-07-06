@@ -29,6 +29,14 @@ def pi_info_provisioning_response(pi_info_provisioning_json):
 
 
 @pytest.fixture
+def pi_info_provisioning_bad_response():
+    return Mock(
+        status_code=200,
+        json=Mock(return_value={}),
+    )
+
+
+@pytest.fixture
 def pi_info_installing_json(pi_info_json):
     pi_info_installing = pi_info_json.copy()
     pi_info_installing["status"] = "installing"
@@ -183,13 +191,13 @@ def error_500():
 
 
 @patch("hostedpi.pi.MythicAuth")
-def test_pi_init_no_auth(pi_name, mythic_auth, pi_info_basic):
+def test_pi_init_no_auth(mythic_auth, pi_name, pi_info_basic):
     pi = Pi(name=pi_name, info=pi_info_basic)
     assert pi.name == pi_name
     assert pi.model == 3
     assert pi.memory_mb == 1024
     assert pi.cpu_speed == 1200
-    assert repr(pi) == "<Pi name=pi model=3>"
+    assert repr(pi) == "<Pi name=test-pi model=3>"
 
 
 def test_pi_init(pi_name, pi_info_basic, auth):
@@ -414,6 +422,30 @@ def test_power_on_pi(pi_name, pi_info_basic, auth, api_url):
     assert json_payload == {"power": True}
 
 
+def test_power_on_pi_error_403(pi_name, pi_info_basic, auth, error_403):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.put.return_value = error_403
+    with pytest.raises(HostedPiNotAuthorizedError):
+        pi.on()
+    assert auth._api_session.put.call_count == 1
+
+
+def test_power_on_pi_error_409(pi_name, pi_info_basic, auth, error_409):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.put.return_value = error_409
+    with pytest.raises(HostedPiProvisioningError):
+        pi.on()
+    assert auth._api_session.put.call_count == 1
+
+
+def test_power_on_pi_error_500(pi_name, pi_info_basic, auth, error_500):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.put.return_value = error_500
+    with pytest.raises(HostedPiServerError):
+        pi.on()
+    assert auth._api_session.put.call_count == 1
+
+
 # def test_power_on_pi_with_wait(
 #     pi_info_basic, auth, api_url, pi_info_booting_response, pi_info_response
 # ):
@@ -488,7 +520,7 @@ def test_cancel_pi_again(pi_name, pi_info_basic, auth, pi_info_response, api_url
 
 
 def test_cancel_pi_provisioning(
-    pi_info_basic, auth, pi_info_provisioning_response, mythic_async_location
+    pi_name, pi_info_basic, auth, pi_info_provisioning_response, mythic_async_location
 ):
     pi = Pi(name=pi_name, info=pi_info_basic, auth=auth, status_url=mythic_async_location)
     auth._api_session.get.return_value = pi_info_provisioning_response
@@ -651,6 +683,26 @@ def test_get_provision_status_error_500(
     with pytest.raises(HostedPiServerError):
         pi.get_provision_status()
     assert auth._api_session.get.call_count == 1
+
+
+def test_get_provision_status_provisioning(
+    pi_name, pi_info_basic, auth, mythic_async_location, pi_info_provisioning_response
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+    auth._api_session.get.return_value = pi_info_provisioning_response
+    status = pi.get_provision_status()
+    assert auth._api_session.get.call_count == 1
+    assert status.provision_status == "provisioning"
+
+
+def test_get_provision_status_provisioning_bad_response(
+    pi_name, pi_info_basic, auth, mythic_async_location, pi_info_provisioning_bad_response
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+    auth._api_session.get.return_value = pi_info_provisioning_bad_response
+    status = pi.get_provision_status()
+    assert auth._api_session.get.call_count == 1
+    assert status is None
 
 
 def test_get_pi_info_without_a_name(pi_name, pi_info_basic, auth):
