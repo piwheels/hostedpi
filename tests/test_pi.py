@@ -130,6 +130,34 @@ def imported_ssh_keys_response(imported_ssh_keys_json):
     )
 
 
+@pytest.fixture
+def error_403():
+    return Mock(
+        status_code=403,
+        raise_for_status=Mock(
+            side_effect=HTTPError(response=Mock(json={"error": "Not authorised"}))
+        ),
+    )
+
+
+@pytest.fixture
+def error_409():
+    return Mock(
+        status_code=409,
+        raise_for_status=Mock(
+            side_effect=HTTPError(response=Mock(json={"error": "Server provisioning"}))
+        ),
+    )
+
+
+@pytest.fixture
+def error_500():
+    return Mock(
+        status_code=500,
+        raise_for_status=Mock(side_effect=HTTPError(response=Mock(json={"error": "Server error"}))),
+    )
+
+
 @patch("hostedpi.pi.MythicAuth")
 def test_pi_init_no_auth(mythic_auth, pi_info_basic):
     pi = Pi(name="test-pi", info=pi_info_basic)
@@ -226,36 +254,23 @@ def test_pi_get_info_with_api_url(pi_info_basic, auth_2, pi_info_response, api_u
     assert auth_2._api_session.get.call_args[0][0] == api_url_2 + "servers/test-pi"
 
 
-def test_get_ssh_keys_403(pi_info_basic, auth):
+def test_get_ssh_keys_403(pi_info_basic, auth, error_403):
     pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
-    auth._api_session.get.return_value = Mock(
-        status_code=403,
-        raise_for_status=Mock(
-            side_effect=HTTPError(response=Mock(json={"error": "Not authorised"}))
-        ),
-    )
+    auth._api_session.get.return_value = error_403
     with pytest.raises(HostedPiNotAuthorizedError):
         keys = pi.ssh_keys
 
 
-def test_get_ssh_keys_409(pi_info_basic, auth):
+def test_get_ssh_keys_409(pi_info_basic, auth, error_409):
     pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
-    auth._api_session.get.return_value = Mock(
-        status_code=409,
-        raise_for_status=Mock(
-            side_effect=HTTPError(response=Mock(json={"error": "Server provisioning"}))
-        ),
-    )
+    auth._api_session.get.return_value = error_409
     with pytest.raises(HostedPiProvisioningError):
         keys = pi.ssh_keys
 
 
-def test_get_ssh_keys_500(pi_info_basic, auth):
+def test_get_ssh_keys_500(pi_info_basic, auth, error_500):
     pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
-    auth._api_session.get.return_value = Mock(
-        status_code=500,
-        raise_for_status=Mock(side_effect=HTTPError(response=Mock(json={"error": "Server error"}))),
-    )
+    auth._api_session.get.return_value = error_500
     with pytest.raises(HostedPiServerError):
         keys = pi.ssh_keys
 
