@@ -4,9 +4,15 @@ from unittest.mock import Mock, patch
 import pytest
 from requests.exceptions import HTTPError, ConnectionError
 
+from hostedpi.exc import HostedPiUserError
 from hostedpi.models.sshkeys import SSHKeySources
 from hostedpi.pi import Pi
-from hostedpi.pi import HostedPiNotAuthorizedError, HostedPiProvisioningError, HostedPiServerError
+from hostedpi.pi import (
+    HostedPiNotAuthorizedError,
+    HostedPiProvisioningError,
+    HostedPiServerError,
+    HostedPiUserError,
+)
 
 
 @pytest.fixture
@@ -177,8 +183,17 @@ def error_500():
 
 
 @patch("hostedpi.pi.MythicAuth")
-def test_pi_init_no_auth(mythic_auth, pi_info_basic):
-    pi = Pi(name="test-pi", info=pi_info_basic)
+def test_pi_init_no_auth(pi_name, mythic_auth, pi_info_basic):
+    pi = Pi(name=pi_name, info=pi_info_basic)
+    assert pi.name == pi_name
+    assert pi.model == 3
+    assert pi.memory_mb == 1024
+    assert pi.cpu_speed == 1200
+    assert repr(pi) == "<Pi name=pi model=3>"
+
+
+def test_pi_init(pi_name, pi_info_basic, auth):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     assert pi.name == "test-pi"
     assert pi.model == 3
     assert pi.memory_mb == 1024
@@ -186,24 +201,15 @@ def test_pi_init_no_auth(mythic_auth, pi_info_basic):
     assert repr(pi) == "<Pi name=test-pi model=3>"
 
 
-def test_pi_init(pi_info_basic, auth):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
-    assert pi.name == "test-pi"
-    assert pi.model == 3
-    assert pi.memory_mb == 1024
-    assert pi.cpu_speed == 1200
-    assert repr(pi) == "<Pi name=test-pi model=3>"
-
-
-def test_pi_init_with_full_info(pi_info_basic, auth, pi_info_full):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_pi_init_with_full_info(pi_name, pi_info_basic, auth, pi_info_full):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value.json.return_value = pi_info_full
     assert pi.model_full == "3B"
     assert repr(pi) == "<Pi name=test-pi model=3B>"
 
 
-def test_pi_get_info(pi_info_basic, auth, pi_info_response, pi_info_full, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_pi_get_info(pi_name, pi_info_basic, auth, pi_info_response, pi_info_full, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_response
     info = pi.info
     assert auth._api_session.get.call_count == 1
@@ -234,8 +240,8 @@ def test_pi_get_info(pi_info_basic, auth, pi_info_response, pi_info_full, api_ur
     assert pi.url_ssl == "https://www.test-pi.hostedpi.com"
 
 
-def test_pi_get_info_installing(pi_info_basic, auth, pi_info_installing_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_pi_get_info_installing(pi_name, pi_info_basic, auth, pi_info_installing_response, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_installing_response
     pi_info = pi.info
     assert auth._api_session.get.call_count == 1
@@ -244,8 +250,8 @@ def test_pi_get_info_installing(pi_info_basic, auth, pi_info_installing_response
     assert pi.status == "Provisioning: installing"
 
 
-def test_pi_get_info_booting(pi_info_basic, auth, pi_info_booting_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_pi_get_info_booting(pi_name, pi_info_basic, auth, pi_info_booting_response, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_booting_response
     pi_info = pi.info
     assert auth._api_session.get.call_count == 1
@@ -254,8 +260,10 @@ def test_pi_get_info_booting(pi_info_basic, auth, pi_info_booting_response, api_
     assert pi.status == "Booting: waiting for initial DHCP"
 
 
-def test_pi_get_info_powered_off(pi_info_basic, auth, pi_info_powered_off_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_pi_get_info_powered_off(
+    pi_name, pi_info_basic, auth, pi_info_powered_off_response, api_url
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_powered_off_response
     pi_info = pi.info
     assert auth._api_session.get.call_count == 1
@@ -264,37 +272,37 @@ def test_pi_get_info_powered_off(pi_info_basic, auth, pi_info_powered_off_respon
     assert pi.status == "Powered off"
 
 
-def test_pi_get_info_with_api_url(pi_info_basic, auth_2, pi_info_response, api_url_2):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth_2)
+def test_pi_get_info_with_api_url(pi_name, pi_info_basic, auth_2, pi_info_response, api_url_2):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth_2)
     auth_2._api_session.get.return_value = pi_info_response
     pi.info
     assert auth_2._api_session.get.call_count == 1
     assert auth_2._api_session.get.call_args[0][0] == api_url_2 + "servers/test-pi"
 
 
-def test_get_ssh_keys_403(pi_info_basic, auth, error_403):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_get_ssh_keys_403(pi_name, pi_info_basic, auth, error_403):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = error_403
     with pytest.raises(HostedPiNotAuthorizedError):
         keys = pi.ssh_keys
 
 
-def test_get_ssh_keys_409(pi_info_basic, auth, error_409):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_get_ssh_keys_409(pi_name, pi_info_basic, auth, error_409):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = error_409
     with pytest.raises(HostedPiProvisioningError):
         keys = pi.ssh_keys
 
 
-def test_get_ssh_keys_500(pi_info_basic, auth, error_500):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_get_ssh_keys_500(pi_name, pi_info_basic, auth, error_500):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = error_500
     with pytest.raises(HostedPiServerError):
         keys = pi.ssh_keys
 
 
-def test_get_ssh_keys_empty(pi_info_basic, auth, ssh_key_empty_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_get_ssh_keys_empty(pi_name, pi_info_basic, auth, ssh_key_empty_response, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = ssh_key_empty_response
     keys = pi.ssh_keys
     assert auth._api_session.get.call_count == 1
@@ -302,36 +310,36 @@ def test_get_ssh_keys_empty(pi_info_basic, auth, ssh_key_empty_response, api_url
     assert keys == set()
 
 
-def test_get_ssh_keys(pi_info_basic, auth, three_ssh_keys_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_get_ssh_keys(pi_name, pi_info_basic, auth, three_ssh_keys_response):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = three_ssh_keys_response
     keys = pi.ssh_keys
     assert keys == {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
 
 
-def test_set_ssh_keys_403(pi_info_basic, auth, error_403):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_set_ssh_keys_403(pi_name, pi_info_basic, auth, error_403):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.put.return_value = error_403
     with pytest.raises(HostedPiNotAuthorizedError):
         pi.ssh_keys = None
 
 
-def test_set_ssh_keys_409(pi_info_basic, auth, error_409):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_set_ssh_keys_409(pi_name, pi_info_basic, auth, error_409):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.put.return_value = error_409
     with pytest.raises(HostedPiProvisioningError):
         pi.ssh_keys = None
 
 
-def test_set_ssh_keys_500(pi_info_basic, auth, error_500):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_set_ssh_keys_500(pi_name, pi_info_basic, auth, error_500):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.put.return_value = error_500
     with pytest.raises(HostedPiServerError):
         pi.ssh_keys = None
 
 
-def test_unset_ssh_keys(pi_info_basic, auth, one_ssh_key_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_unset_ssh_keys(pi_name, pi_info_basic, auth, one_ssh_key_response):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.put.return_value = one_ssh_key_response
     pi.ssh_keys = None
     assert auth._api_session.put.call_count == 1
@@ -339,8 +347,8 @@ def test_unset_ssh_keys(pi_info_basic, auth, one_ssh_key_response):
     assert json_payload == {"ssh_key": ""}
 
 
-def test_set_one_ssh_key(pi_info_basic, auth, one_ssh_key_response, one_ssh_key):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_set_one_ssh_key(pi_name, pi_info_basic, auth, one_ssh_key_response, one_ssh_key):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.put.return_value = one_ssh_key_response
     pi.ssh_keys = one_ssh_key
     assert auth._api_session.put.call_count == 1
@@ -349,9 +357,9 @@ def test_set_one_ssh_key(pi_info_basic, auth, one_ssh_key_response, one_ssh_key)
 
 
 def test_add_one_ssh_key(
-    pi_info_basic, auth, ssh_key_empty_response, one_ssh_key_response, one_ssh_key
+    pi_name, pi_info_basic, auth, ssh_key_empty_response, one_ssh_key_response, one_ssh_key
 ):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = ssh_key_empty_response
     auth._api_session.put.return_value = one_ssh_key_response
     pi.ssh_keys |= one_ssh_key
@@ -362,9 +370,9 @@ def test_add_one_ssh_key(
 
 
 def test_add_ssh_keys(
-    pi_info_basic, auth, ssh_key_empty_response, one_ssh_key_response, three_ssh_keys
+    pi_name, pi_info_basic, auth, ssh_key_empty_response, one_ssh_key_response, three_ssh_keys
 ):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = ssh_key_empty_response
     auth._api_session.put.return_value = one_ssh_key_response
     pi.ssh_keys |= three_ssh_keys
@@ -378,13 +386,14 @@ def test_add_ssh_keys(
 
 
 def test_add_another_ssh_key(
+    pi_name,
     pi_info_basic,
     auth,
     one_ssh_key_response,
     another_ssh_key,
     another_ssh_key_response,
 ):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = one_ssh_key_response
     auth._api_session.put.return_value = another_ssh_key_response
     pi.ssh_keys |= another_ssh_key
@@ -396,8 +405,8 @@ def test_add_another_ssh_key(
     assert ssh_keys_data.count("\r\n") == 1
 
 
-def test_power_on_pi(pi_info_basic, auth, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_power_on_pi(pi_name, pi_info_basic, auth, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     pi.on()
     assert auth._api_session.put.call_count == 1
     assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
@@ -409,7 +418,7 @@ def test_power_on_pi(pi_info_basic, auth, api_url):
 #     pi_info_basic, auth, api_url, pi_info_booting_response, pi_info_response
 # ):
 #     auth._api_session.get.side_effect = [pi_info_booting_response, pi_info_response]
-#     pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+#     pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
 #     pi.on(wait=True)
 #     assert auth._api_session.put.call_count == 1
 #     assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
@@ -420,8 +429,8 @@ def test_power_on_pi(pi_info_basic, auth, api_url):
 #     assert auth._api_session.get.call_args[1][0] == api_url + "servers/test-pi"
 
 
-def test_power_off_pi(pi_info_basic, auth, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_power_off_pi(pi_name, pi_info_basic, auth, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     pi.off()
     assert auth._api_session.put.call_count == 1
     assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
@@ -429,35 +438,35 @@ def test_power_off_pi(pi_info_basic, auth, api_url):
     assert json_payload == {"power": False}
 
 
-def test_reboot_pi(pi_info_basic, auth, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_reboot_pi(pi_name, pi_info_basic, auth, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     pi.reboot()
     assert auth._api_session.post.call_count == 1
     assert auth._api_session.post.call_args[0][0] == api_url + "servers/test-pi/reboot"
 
 
-def test_reboot_pi_403(pi_info_basic, auth, error_403):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_reboot_pi_403(pi_name, pi_info_basic, auth, error_403):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.post.return_value = error_403
     with pytest.raises(HostedPiNotAuthorizedError):
         pi.reboot()
 
 
-def test_reboot_pi_409(pi_info_basic, auth, error_409):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_reboot_pi_409(pi_name, pi_info_basic, auth, error_409):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.post.return_value = error_409
     pi.reboot()  # should not raise an error, 409 means already rebooting
 
 
-def test_reboot_pi_500(pi_info_basic, auth, error_500):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_reboot_pi_500(pi_name, pi_info_basic, auth, error_500):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.post.return_value = error_500
     with pytest.raises(HostedPiServerError):
         pi.reboot()
 
 
-def test_cancel_pi(pi_info_basic, auth, pi_info_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_cancel_pi(pi_name, pi_info_basic, auth, pi_info_response, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_response
     pi.cancel()
     assert auth._api_session.delete.call_count == 1
@@ -466,8 +475,8 @@ def test_cancel_pi(pi_info_basic, auth, pi_info_response, api_url):
     assert repr(pi) == "<Pi name=test-pi cancelled>"
 
 
-def test_cancel_pi_again(pi_info_basic, auth, pi_info_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_cancel_pi_again(pi_name, pi_info_basic, auth, pi_info_response, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_response
     pi.cancel()
     pi.cancel()  # should not raise an error, already cancelled
@@ -481,7 +490,7 @@ def test_cancel_pi_again(pi_info_basic, auth, pi_info_response, api_url):
 def test_cancel_pi_provisioning(
     pi_info_basic, auth, pi_info_provisioning_response, mythic_async_location
 ):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth, status_url=mythic_async_location)
     auth._api_session.get.return_value = pi_info_provisioning_response
     pi.cancel()
     # should not call the API again
@@ -492,8 +501,8 @@ def test_cancel_pi_provisioning(
     assert repr(pi) == "<Pi name=test-pi model=3>"
 
 
-def test_cancel_pi_error_403(pi_info_basic, auth, api_url, pi_info_response, error_403):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_cancel_pi_error_403(pi_name, pi_info_basic, auth, api_url, pi_info_response, error_403):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_response
     auth._api_session.delete.return_value = error_403
     with pytest.raises(HostedPiNotAuthorizedError):
@@ -505,8 +514,8 @@ def test_cancel_pi_error_403(pi_info_basic, auth, api_url, pi_info_response, err
     assert repr(pi) == "<Pi name=test-pi model=3B>"
 
 
-def test_cancel_pi_error_409(pi_info_basic, auth, api_url, pi_info_response, error_409):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_cancel_pi_error_409(pi_name, pi_info_basic, auth, api_url, pi_info_response, error_409):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_response
     auth._api_session.delete.return_value = error_409
     with pytest.raises(HostedPiProvisioningError):
@@ -518,8 +527,8 @@ def test_cancel_pi_error_409(pi_info_basic, auth, api_url, pi_info_response, err
     assert repr(pi) == "<Pi name=test-pi model=3B>"
 
 
-def test_cancel_pi_error_500(pi_info_basic, auth, api_url, pi_info_response, error_500):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_cancel_pi_error_500(pi_name, pi_info_basic, auth, api_url, pi_info_response, error_500):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_response
     auth._api_session.delete.return_value = error_500
     with pytest.raises(HostedPiServerError):
@@ -531,8 +540,8 @@ def test_cancel_pi_error_500(pi_info_basic, auth, api_url, pi_info_response, err
     assert repr(pi) == "<Pi name=test-pi model=3B>"
 
 
-def test_add_ssh_keys(pi_info_basic, auth, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_add_ssh_keys(pi_name, pi_info_basic, auth, api_url):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value.json.return_value = {"ssh_key": ""}
     ssh_keys_set = {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
     ssh_keys = SSHKeySources(ssh_keys=ssh_keys_set)
@@ -545,8 +554,10 @@ def test_add_ssh_keys(pi_info_basic, auth, api_url):
     assert json_payload.count("\r\n") == len(ssh_keys_set) - 1
 
 
-def test_remove_ssh_keys_no_label(pi_info_basic, auth, imported_ssh_keys_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_remove_ssh_keys_no_label(
+    pi_name, pi_info_basic, auth, imported_ssh_keys_response, api_url
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = imported_ssh_keys_response
     pi.remove_ssh_keys()
     assert auth._api_session.get.call_count == 1
@@ -556,8 +567,10 @@ def test_remove_ssh_keys_no_label(pi_info_basic, auth, imported_ssh_keys_respons
     assert json_payload == ""
 
 
-def test_remove_ssh_keys_by_label(pi_info_basic, auth, imported_ssh_keys_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_remove_ssh_keys_by_label(
+    pi_name, pi_info_basic, auth, imported_ssh_keys_response, api_url
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = imported_ssh_keys_response
     pi.remove_ssh_keys("ben@finn")
     assert auth._api_session.get.call_count == 2
@@ -572,8 +585,10 @@ def test_remove_ssh_keys_by_label(pi_info_basic, auth, imported_ssh_keys_respons
     assert "ssh-rsa FFFF" in json_payload
 
 
-def test_unimport_ssh_keys_github(pi_info_basic, auth, imported_ssh_keys_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_unimport_ssh_keys_github(
+    pi_name, pi_info_basic, auth, imported_ssh_keys_response, api_url
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = imported_ssh_keys_response
     pi.unimport_ssh_keys(github_usernames={"testuser"})
     assert auth._api_session.get.call_count == 2
@@ -589,8 +604,10 @@ def test_unimport_ssh_keys_github(pi_info_basic, auth, imported_ssh_keys_respons
     assert "ssh-rsa GGGG" in json_payload
 
 
-def test_unimport_ssh_keys_launchpad(pi_info_basic, auth, imported_ssh_keys_response, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+def test_unimport_ssh_keys_launchpad(
+    pi_name, pi_info_basic, auth, imported_ssh_keys_response, api_url
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = imported_ssh_keys_response
     pi.unimport_ssh_keys(launchpad_usernames={"testuser4"})
     assert auth._api_session.get.call_count == 2
@@ -606,25 +623,61 @@ def test_unimport_ssh_keys_launchpad(pi_info_basic, auth, imported_ssh_keys_resp
     assert "ssh-rsa GGGG" not in json_payload
 
 
-def test_get_provision_status_connnection_error(pi_info_basic, auth, mythic_async_location):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+def test_get_provision_status_connnection_error(
+    pi_name, pi_info_basic, auth, mythic_async_location
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth, status_url=mythic_async_location)
     auth._api_session.get.side_effect = ConnectionError("Connection error")
     status = pi.get_provision_status()
     assert status is None
     assert auth._api_session.get.call_count == 1
 
 
-def test_get_provision_status_error_403(pi_info_basic, auth, mythic_async_location, error_403):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+def test_get_provision_status_error_403(
+    pi_name, pi_info_basic, auth, mythic_async_location, error_403
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth, status_url=mythic_async_location)
     auth._api_session.get.return_value = error_403
     with pytest.raises(HostedPiNotAuthorizedError):
         pi.get_provision_status()
     assert auth._api_session.get.call_count == 1
 
 
-def test_get_provision_status_error_500(pi_info_basic, auth, mythic_async_location, error_500):
-    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+def test_get_provision_status_error_500(
+    pi_name, pi_info_basic, auth, mythic_async_location, error_500
+):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth, status_url=mythic_async_location)
     auth._api_session.get.return_value = error_500
     with pytest.raises(HostedPiServerError):
         pi.get_provision_status()
+    assert auth._api_session.get.call_count == 1
+
+
+def test_get_pi_info_without_a_name(pi_name, pi_info_basic, auth):
+    pi = Pi(name=None, info=pi_info_basic, auth=auth)
+    with pytest.raises(HostedPiUserError):
+        pi.info
+
+
+def test_get_pi_info_error_403(pi_name, pi_info_basic, auth, error_403):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = error_403
+    with pytest.raises(HostedPiNotAuthorizedError):
+        pi.info
+    assert auth._api_session.get.call_count == 1
+
+
+def test_get_pi_info_error_409(pi_name, pi_info_basic, auth, error_409):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = error_409
+    with pytest.raises(HostedPiProvisioningError):
+        pi.info
+    assert auth._api_session.get.call_count == 1
+
+
+def test_get_pi_info_error_500(pi_name, pi_info_basic, auth, error_500):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = error_500
+    with pytest.raises(HostedPiServerError):
+        pi.info
     assert auth._api_session.get.call_count == 1

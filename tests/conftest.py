@@ -135,6 +135,11 @@ def mythic_async_location() -> str:
 
 
 @pytest.fixture
+def pi_name() -> str:
+    return "test-pi"
+
+
+@pytest.fixture
 def pi3_name() -> str:
     return "pi3"
 
