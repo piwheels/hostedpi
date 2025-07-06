@@ -2,7 +2,7 @@ from ipaddress import IPv6Address, IPv6Network
 from unittest.mock import Mock, patch
 
 import pytest
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, ConnectionError
 
 from hostedpi.models.sshkeys import SSHKeySources
 from hostedpi.pi import Pi
@@ -10,12 +10,30 @@ from hostedpi.pi import HostedPiNotAuthorizedError, HostedPiProvisioningError, H
 
 
 @pytest.fixture
-def pi_info_installing_response(pi_info_json):
-    pi_info_installing = pi_info_json.copy()
-    pi_info_installing["status"] = "installing"
+def pi_info_provisioning_json():
+    return {"status": "provisioning"}
+
+
+@pytest.fixture
+def pi_info_provisioning_response(pi_info_provisioning_json):
     return Mock(
         status_code=200,
-        json=Mock(return_value=pi_info_installing),
+        json=Mock(return_value=pi_info_provisioning_json),
+    )
+
+
+@pytest.fixture
+def pi_info_installing_json(pi_info_json):
+    pi_info_installing = pi_info_json.copy()
+    pi_info_installing["status"] = "installing"
+    return pi_info_installing
+
+
+@pytest.fixture
+def pi_info_installing_response(pi_info_installing_json):
+    return Mock(
+        status_code=200,
+        json=Mock(return_value=pi_info_installing_json),
     )
 
 
@@ -291,6 +309,27 @@ def test_get_ssh_keys(pi_info_basic, auth, three_ssh_keys_response):
     assert keys == {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
 
 
+def test_set_ssh_keys_403(pi_info_basic, auth, error_403):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.put.return_value = error_403
+    with pytest.raises(HostedPiNotAuthorizedError):
+        pi.ssh_keys = None
+
+
+def test_set_ssh_keys_409(pi_info_basic, auth, error_409):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.put.return_value = error_409
+    with pytest.raises(HostedPiProvisioningError):
+        pi.ssh_keys = None
+
+
+def test_set_ssh_keys_500(pi_info_basic, auth, error_500):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.put.return_value = error_500
+    with pytest.raises(HostedPiServerError):
+        pi.ssh_keys = None
+
+
 def test_unset_ssh_keys(pi_info_basic, auth, one_ssh_key_response):
     pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
     auth._api_session.put.return_value = one_ssh_key_response
@@ -366,6 +405,21 @@ def test_power_on_pi(pi_info_basic, auth, api_url):
     assert json_payload == {"power": True}
 
 
+# def test_power_on_pi_with_wait(
+#     pi_info_basic, auth, api_url, pi_info_booting_response, pi_info_response
+# ):
+#     auth._api_session.get.side_effect = [pi_info_booting_response, pi_info_response]
+#     pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+#     pi.on(wait=True)
+#     assert auth._api_session.put.call_count == 1
+#     assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
+#     json_payload = auth._api_session.put.call_args[1]["json"]
+#     assert json_payload == {"power": True}
+#     assert auth._api_session.get.call_count == 2
+#     assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi"
+#     assert auth._api_session.get.call_args[1][0] == api_url + "servers/test-pi"
+
+
 def test_power_off_pi(pi_info_basic, auth, api_url):
     pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
     pi.off()
@@ -382,6 +436,26 @@ def test_reboot_pi(pi_info_basic, auth, api_url):
     assert auth._api_session.post.call_args[0][0] == api_url + "servers/test-pi/reboot"
 
 
+def test_reboot_pi_403(pi_info_basic, auth, error_403):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.post.return_value = error_403
+    with pytest.raises(HostedPiNotAuthorizedError):
+        pi.reboot()
+
+
+def test_reboot_pi_409(pi_info_basic, auth, error_409):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.post.return_value = error_409
+    pi.reboot()  # should not raise an error, 409 means already rebooting
+
+
+def test_reboot_pi_500(pi_info_basic, auth, error_500):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.post.return_value = error_500
+    with pytest.raises(HostedPiServerError):
+        pi.reboot()
+
+
 def test_cancel_pi(pi_info_basic, auth, pi_info_response, api_url):
     pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_response
@@ -390,6 +464,71 @@ def test_cancel_pi(pi_info_basic, auth, pi_info_response, api_url):
     assert auth._api_session.delete.call_args[0][0] == api_url + "servers/test-pi"
     assert pi._cancelled
     assert repr(pi) == "<Pi name=test-pi cancelled>"
+
+
+def test_cancel_pi_again(pi_info_basic, auth, pi_info_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
+    pi.cancel()
+    pi.cancel()  # should not raise an error, already cancelled
+    # should not call the API again
+    assert auth._api_session.delete.call_count == 1
+    assert auth._api_session.delete.call_args[0][0] == api_url + "servers/test-pi"
+    assert pi._cancelled
+    assert repr(pi) == "<Pi name=test-pi cancelled>"
+
+
+def test_cancel_pi_provisioning(
+    pi_info_basic, auth, pi_info_provisioning_response, mythic_async_location
+):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+    auth._api_session.get.return_value = pi_info_provisioning_response
+    pi.cancel()
+    # should not call the API again
+    assert auth._api_session.delete.call_count == 0
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == mythic_async_location
+    assert not pi._cancelled
+    assert repr(pi) == "<Pi name=test-pi model=3>"
+
+
+def test_cancel_pi_error_403(pi_info_basic, auth, api_url, pi_info_response, error_403):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
+    auth._api_session.delete.return_value = error_403
+    with pytest.raises(HostedPiNotAuthorizedError):
+        pi.cancel()
+    assert auth._api_session.delete.call_count == 1
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert not pi._cancelled
+    assert repr(pi) == "<Pi name=test-pi model=3B>"
+
+
+def test_cancel_pi_error_409(pi_info_basic, auth, api_url, pi_info_response, error_409):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
+    auth._api_session.delete.return_value = error_409
+    with pytest.raises(HostedPiProvisioningError):
+        pi.cancel()
+    assert auth._api_session.delete.call_count == 1
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert not pi._cancelled
+    assert repr(pi) == "<Pi name=test-pi model=3B>"
+
+
+def test_cancel_pi_error_500(pi_info_basic, auth, api_url, pi_info_response, error_500):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
+    auth._api_session.delete.return_value = error_500
+    with pytest.raises(HostedPiServerError):
+        pi.cancel()
+    assert auth._api_session.delete.call_count == 1
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert not pi._cancelled
+    assert repr(pi) == "<Pi name=test-pi model=3B>"
 
 
 def test_add_ssh_keys(pi_info_basic, auth, api_url):
@@ -465,3 +604,27 @@ def test_unimport_ssh_keys_launchpad(pi_info_basic, auth, imported_ssh_keys_resp
     assert "ssh-rsa EEEE" in json_payload
     assert "ssh-rsa FFFF" not in json_payload
     assert "ssh-rsa GGGG" not in json_payload
+
+
+def test_get_provision_status_connnection_error(pi_info_basic, auth, mythic_async_location):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+    auth._api_session.get.side_effect = ConnectionError("Connection error")
+    status = pi.get_provision_status()
+    assert status is None
+    assert auth._api_session.get.call_count == 1
+
+
+def test_get_provision_status_error_403(pi_info_basic, auth, mythic_async_location, error_403):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+    auth._api_session.get.return_value = error_403
+    with pytest.raises(HostedPiNotAuthorizedError):
+        pi.get_provision_status()
+    assert auth._api_session.get.call_count == 1
+
+
+def test_get_provision_status_error_500(pi_info_basic, auth, mythic_async_location, error_500):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth, status_url=mythic_async_location)
+    auth._api_session.get.return_value = error_500
+    with pytest.raises(HostedPiServerError):
+        pi.get_provision_status()
+    assert auth._api_session.get.call_count == 1

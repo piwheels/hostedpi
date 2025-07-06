@@ -418,9 +418,6 @@ class Pi:
         :raises HostedPiNotAuthorizedError:
             If the user is not authorised to access the server
 
-        :raises HostedPiProvisioningError:
-            If the server is still provisioning
-
         :raises HostedPiServerError:
             If there is another error accessing the API
         """
@@ -439,8 +436,6 @@ class Pi:
                 error = get_error_message(exc)
                 if response.status_code == 403:
                     raise HostedPiNotAuthorizedError(error) from exc
-                if response.status_code == 409:
-                    raise HostedPiProvisioningError(error) from exc
                 raise HostedPiServerError(error) from exc
 
         if wait:
@@ -587,7 +582,7 @@ class Pi:
                 return
             sleep(5)
 
-    def get_provision_status(self) -> Union[str, PiInfo, None]:
+    def get_provision_status(self) -> Union[PiInfo, ProvisioningServer, None]:
         """
         Send a request to the server creation status endpoint and return the status as either a
         string or :class:`~hostedpi.models.mythic.responses.PiInfo.` or ``None`` if the status is
@@ -605,10 +600,12 @@ class Pi:
         # https://www.mythic-beasts.com/support/api/raspberry-pi#ep-get-queuepitask
         try:
             response = self.session.get(self._status_url)
-            response.raise_for_status()
         except ConnectionError as exc:
             logger.warn("Temporary error getting server provisioning status", exc=str(exc))
             return
+
+        try:
+            response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
             if response.status_code == 403:
@@ -620,7 +617,7 @@ class Pi:
         status = self._parse_status(response.json())
         if type(status) is ProvisioningServer:
             logger.info("Server provisioning in progress", status=status.provision_status)
-            return status.provision_status
+            return status
         if type(status) is PiInfo:
             self._name = response.request.url.split("/")[-1]
             logger.info("Server provisioning complete", server_name=self._name)
@@ -676,7 +673,7 @@ class Pi:
                 raise HostedPiProvisioningError(error) from exc
             raise HostedPiServerError(error) from exc
 
-    def _parse_status(self, data: dict) -> Union[ProvisioningServer, PiInfo, None]:
+    def _parse_status(self, data: dict) -> Union[PiInfo, ProvisioningServer, None]:
         """
         Get the status of an async server creation request
         """
