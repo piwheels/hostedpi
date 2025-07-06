@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 from requests import ConnectionError, HTTPError
 
-from hostedpi.exc import HostedPiException
+from hostedpi.exc import HostedPiException, HostedPiValidationError
 from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec
 from hostedpi.picloud import PiCloud
 
@@ -148,59 +148,59 @@ def specs_response(specs_response_json):
     )
 
 
-def test_picloud_init(api_url):
-    cloud = PiCloud()
+def test_picloud_init(auth, api_url):
+    cloud = PiCloud(auth=auth)
     assert repr(cloud) == "<PiCloud id=test_id>"
     assert cloud.ssh_keys is None
     assert cloud._api_url == api_url
 
 
-def test_picloud_init_with_api_url(api_url_2):
-    cloud = PiCloud(api_url=api_url_2)
+def test_picloud_init_with_api_url(auth_2, api_url_2):
+    cloud = PiCloud(auth=auth_2)
     assert repr(cloud) == "<PiCloud id=test_id>"
     assert cloud._api_url == api_url_2
 
 
-def test_picloud_init_with_ssh_keys(ssh_keys, collected_ssh_keys):
-    cloud = PiCloud(ssh_keys)
+def test_picloud_init_with_ssh_keys(auth, ssh_keys, collected_ssh_keys):
+    cloud = PiCloud(ssh_keys, auth=auth)
     assert repr(cloud) == "<PiCloud id=test_id>"
     assert cloud.ssh_keys == collected_ssh_keys
 
 
-def test_picloud_init_with_bad_ssh_keys():
+def test_picloud_init_with_bad_ssh_keys(auth):
     with pytest.raises(TypeError):
-        PiCloud(ssh_keys={})
+        PiCloud(ssh_keys={}, auth=auth)
 
     with pytest.raises(TypeError):
-        PiCloud(ssh_keys="foo")
+        PiCloud(ssh_keys="foo", auth=auth)
 
 
-def test_get_pi3_operating_systems(mock_session, images_response, images_response_json):
-    cloud = PiCloud()
-    mock_session.get.return_value = images_response
+def test_get_pi3_operating_systems(auth, images_response, images_response_json):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = images_response
     images = cloud.get_operating_systems(model=3)
     assert images == images_response_json
 
 
-def test_get_pi4_operating_systems(mock_session, images_response, images_response_json):
-    cloud = PiCloud()
-    mock_session.get.return_value = images_response
+def test_get_pi4_operating_systems(auth, images_response, images_response_json):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = images_response
     images = cloud.get_operating_systems(model=4)
     assert images == images_response_json
 
 
-def test_get_pis_none(mock_session, pis_response_none, mythic_servers_url):
-    cloud = PiCloud()
-    mock_session.get.return_value = pis_response_none
+def test_get_pis_none(auth, pis_response_none, mythic_servers_url):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = pis_response_none
     pis = cloud.pis
-    assert mock_session.get.called
-    assert mock_session.get.call_args[0][0] == mythic_servers_url
+    assert auth._api_session.get.called
+    assert auth._api_session.get.call_args[0][0] == mythic_servers_url
     assert len(pis) == 0
 
 
-def test_get_pis(mock_session, pis_response):
-    cloud = PiCloud()
-    mock_session.get.return_value = pis_response
+def test_get_pis(auth, pis_response):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = pis_response
     pis = cloud.pis
 
     assert len(pis) == 2
@@ -215,30 +215,30 @@ def test_get_pis(mock_session, pis_response):
     assert pi2.cpu_speed == 1500
 
 
-def test_new_pi_bad_name():
-    cloud = PiCloud()
+def test_new_pi_bad_name(auth, default_pi3_spec):
+    cloud = PiCloud(auth=auth)
     for name in ["pi 3", "pi_3", "pi3@server", "pi3#server", "pi3.hostedpi.com"]:
-        with pytest.raises(TypeError):
+        with pytest.raises(HostedPiValidationError):
             cloud.create_pi(name=name, spec=default_pi3_spec)
 
 
-def test_new_pi_good_name(mock_session, create_pi_response, default_pi3_spec):
-    cloud = PiCloud()
-    mock_session.post.return_value = create_pi_response
+def test_new_pi_good_name(auth, create_pi_response, default_pi3_spec):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = create_pi_response
     for name in ["pi3", "pi-3", "3-pi", "pi3-hostedpi-com"]:
         pi = cloud.create_pi(name=name, spec=default_pi3_spec)
         assert pi.name == name
 
 
 def test_create_pi3_with_name(
-    mock_session, create_pi_response, mythic_servers_url, default_pi3_spec, pi3_name
+    auth, create_pi_response, mythic_servers_url, default_pi3_spec, pi3_name
 ):
-    cloud = PiCloud()
-    mock_session.post.return_value = create_pi_response
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = create_pi_response
     pi = cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
 
-    assert mock_session.post.called
-    called_url = mock_session.post.call_args[0][0]
+    assert auth._api_session.post.called
+    called_url = auth._api_session.post.call_args[0][0]
     assert called_url == f"{mythic_servers_url}/{pi3_name}"
     assert pi.name == pi3_name
     assert pi.memory_mb == 1024
@@ -246,14 +246,14 @@ def test_create_pi3_with_name(
 
 
 def test_create_pi3_with_no_name(
-    mock_session, create_pi_response, default_pi3_spec, mythic_servers_url, mythic_async_location
+    auth, create_pi_response, default_pi3_spec, mythic_servers_url, mythic_async_location
 ):
-    cloud = PiCloud()
-    mock_session.post.return_value = create_pi_response
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = create_pi_response
     pi = cloud.create_pi(spec=default_pi3_spec)
 
-    assert mock_session.post.called
-    called_url = mock_session.post.call_args[0][0]
+    assert auth._api_session.post.called
+    called_url = auth._api_session.post.call_args[0][0]
     assert called_url == mythic_servers_url
     assert pi._status_url == mythic_async_location
     assert pi.name is None
@@ -261,15 +261,13 @@ def test_create_pi3_with_no_name(
     assert pi.cpu_speed == 1200
 
 
-def test_create_pi4_with_name(
-    mock_session, create_pi_response, default_pi4_spec, mythic_servers_url
-):
-    cloud = PiCloud()
-    mock_session.post.return_value = create_pi_response
+def test_create_pi4_with_name(auth, create_pi_response, default_pi4_spec, mythic_servers_url):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = create_pi_response
     pi = cloud.create_pi(name="pi4", spec=default_pi4_spec)
 
-    assert mock_session.post.called
-    called_url = mock_session.post.call_args[0][0]
+    assert auth._api_session.post.called
+    called_url = auth._api_session.post.call_args[0][0]
     assert called_url == f"{mythic_servers_url}/pi4"
     assert pi.name == "pi4"
     assert pi.memory_mb == 4096
@@ -277,14 +275,14 @@ def test_create_pi4_with_name(
 
 
 def test_create_pi4_with_no_name(
-    mock_session, create_pi_response, default_pi4_spec, mythic_servers_url, mythic_async_location
+    auth, create_pi_response, default_pi4_spec, mythic_servers_url, mythic_async_location
 ):
-    cloud = PiCloud()
-    mock_session.post.return_value = create_pi_response
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = create_pi_response
     pi = cloud.create_pi(spec=default_pi4_spec)
 
-    assert mock_session.post.called
-    called_url = mock_session.post.call_args[0][0]
+    assert auth._api_session.post.called
+    called_url = auth._api_session.post.call_args[0][0]
     assert called_url == mythic_servers_url
     assert pi._status_url == mythic_async_location
     assert pi.name is None
@@ -293,21 +291,21 @@ def test_create_pi4_with_no_name(
 
 
 def test_create_pi_with_default_ssh_keys(
-    mock_session,
+    auth,
     ssh_keys,
     create_pi_response,
     default_pi3_spec,
     mythic_servers_url,
     collected_ssh_keys,
 ):
-    cloud = PiCloud(ssh_keys)
-    mock_session.post.return_value = create_pi_response
+    cloud = PiCloud(ssh_keys, auth=auth)
+    auth._api_session.post.return_value = create_pi_response
     cloud.create_pi(name="pi3", spec=default_pi3_spec)
-    assert mock_session.post.called
-    called_url = mock_session.post.call_args[0][0]
+    assert auth._api_session.post.called
+    called_url = auth._api_session.post.call_args[0][0]
     assert called_url == f"{mythic_servers_url}/pi3"
-    assert "json" in mock_session.post.call_args[1]
-    called_json = mock_session.post.call_args[1]["json"]
+    assert "json" in auth._api_session.post.call_args[1]
+    called_json = auth._api_session.post.call_args[1]["json"]
     assert "ssh_key" in called_json
     assert type(called_json["ssh_key"]) is str
     for key in collected_ssh_keys:
@@ -316,21 +314,21 @@ def test_create_pi_with_default_ssh_keys(
 
 
 def test_create_pi_with_ssh_keys(
-    mock_session,
+    auth,
     ssh_keys,
     create_pi_response,
     default_pi3_spec,
     mythic_servers_url,
     collected_ssh_keys,
 ):
-    cloud = PiCloud()
-    mock_session.post.return_value = create_pi_response
+    cloud = PiCloud(ssh_keys, auth=auth)
+    auth._api_session.post.return_value = create_pi_response
     cloud.create_pi(name="pi3", spec=default_pi3_spec, ssh_keys=ssh_keys)
-    assert mock_session.post.called
-    called_url = mock_session.post.call_args[0][0]
+    assert auth._api_session.post.called
+    called_url = auth._api_session.post.call_args[0][0]
     assert called_url == f"{mythic_servers_url}/pi3"
-    assert "json" in mock_session.post.call_args[1]
-    called_json = mock_session.post.call_args[1]["json"]
+    assert "json" in auth._api_session.post.call_args[1]
+    called_json = auth._api_session.post.call_args[1]["json"]
     assert "ssh_key" in called_json
     assert type(called_json["ssh_key"]) is str
     for key in collected_ssh_keys:
@@ -339,7 +337,7 @@ def test_create_pi_with_ssh_keys(
 
 
 def test_create_pi_named_with_wait(
-    mock_session,
+    auth,
     create_pi_response,
     default_pi3_spec,
     provision_status_provisioning,
@@ -348,9 +346,9 @@ def test_create_pi_named_with_wait(
     pi_info_response,
     pi3_name,
 ):
-    cloud = PiCloud()
-    mock_session.post.return_value = create_pi_response
-    mock_session.get.side_effect = [
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = create_pi_response
+    auth._api_session.get.side_effect = [
         provision_status_provisioning,
         provision_status_installing,
         provision_status_installing,
@@ -360,15 +358,15 @@ def test_create_pi_named_with_wait(
     ]
 
     pi = cloud.create_pi(name=pi3_name, spec=default_pi3_spec, wait=True)
-    assert mock_session.get.called
-    assert mock_session.get.call_count == 6
+    assert auth._api_session.get.called
+    assert auth._api_session.get.call_count == 6
     assert pi.name == pi3_name
     assert pi.model == 3
     assert pi.memory_mb == 1024
 
 
 def test_create_pi_unnamed_with_wait(
-    mock_session,
+    auth,
     create_pi_response,
     default_pi3_spec,
     provision_status_provisioning,
@@ -377,9 +375,9 @@ def test_create_pi_unnamed_with_wait(
     random_pi_name,
     pi_info_response_random_name,
 ):
-    cloud = PiCloud()
-    mock_session.post.return_value = create_pi_response
-    mock_session.get.side_effect = [
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = create_pi_response
+    auth._api_session.get.side_effect = [
         provision_status_provisioning,
         provision_status_installing,
         provision_status_installing,
@@ -389,15 +387,15 @@ def test_create_pi_unnamed_with_wait(
     ]
 
     pi = cloud.create_pi(spec=default_pi3_spec, wait=True)
-    assert mock_session.get.called
-    assert mock_session.get.call_count == 6
+    assert auth._api_session.get.called
+    assert auth._api_session.get.call_count == 6
     assert pi.name == random_pi_name
     assert pi.model == 3
     assert pi.memory_mb == 1024
 
 
-def test_create_pi_bad_spec(pi3_name):
-    cloud = PiCloud()
+def test_create_pi_bad_spec(auth, pi3_name):
+    cloud = PiCloud(auth=auth)
 
     with pytest.raises(TypeError):
         cloud.create_pi(name=pi3_name, spec={})
@@ -406,8 +404,8 @@ def test_create_pi_bad_spec(pi3_name):
         cloud.create_pi(name=pi3_name, spec="foo")
 
 
-def test_create_pi_bad_ssh_keys(pi3_name):
-    cloud = PiCloud()
+def test_create_pi_bad_ssh_keys(auth, pi3_name, default_pi3_spec):
+    cloud = PiCloud(auth=auth)
 
     with pytest.raises(TypeError):
         cloud.create_pi(name=pi3_name, spec=default_pi3_spec, ssh_keys={})
@@ -416,25 +414,66 @@ def test_create_pi_bad_ssh_keys(pi3_name):
         cloud.create_pi(name=pi3_name, spec=default_pi3_spec, ssh_keys="foo")
 
 
-def test_create_pi_with_error(mock_session, out_of_stock_response, default_pi3_spec, pi3_name):
-    cloud = PiCloud()
-    mock_session.post.return_value = out_of_stock_response
+def test_create_pi_with_error(auth, out_of_stock_response, default_pi3_spec, pi3_name):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = out_of_stock_response
 
     with pytest.raises(HostedPiException):
         cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
 
 
-def test_get_available_specs(mock_session, specs_response, api_url):
-    cloud = PiCloud(api_url=api_url)
-    mock_session.get.return_value = specs_response
+def test_get_available_specs(auth, specs_response, api_url):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = specs_response
 
     specs = cloud._get_available_specs()
 
-    assert mock_session.get.called
-    assert mock_session.get.call_args[0][0] == api_url + "models"
+    assert auth._api_session.get.called
+    assert auth._api_session.get.call_args[0][0] == api_url + "models"
     assert len(specs) == 4
 
 
-def test_get_ipv4_ssh_config(mock_session, pis_response, api_url):
-    cloud = PiCloud(api_url=api_url)
-    mock_session.get.return_value = specs_response
+def test_get_ipv4_ssh_config(auth, pis_response, pi_info_response, pi_info_response_2):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.side_effect = [
+        pis_response,
+        pi_info_response,
+        pi_info_response_2,
+    ]
+    ipv4_config = cloud.ipv4_ssh_config
+    assert auth._api_session.get.call_count == 3
+    assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
+    assert auth._api_session.get.call_args_list[1][0][0] == cloud._api_url + "servers/pi1"
+    assert auth._api_session.get.call_args_list[2][0][0] == cloud._api_url + "servers/pi2"
+    assert ipv4_config.count("\n") == 7
+    lines = ipv4_config.splitlines()
+    assert lines[0] == "Host pi1"
+    assert lines[1] == "    user root"
+    assert lines[2] == "    port 5100"
+    assert lines[3] == "    hostname ssh.pi1.hostedpi.com"
+    assert lines[4] == "Host pi2"
+    assert lines[5] == "    user root"
+    assert lines[6] == "    port 5123"
+    assert lines[7] == "    hostname ssh.pi2.hostedpi.com"
+
+
+def test_get_ipv6_ssh_config(auth, pis_response, pi_info_response, pi_info_response_2):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.side_effect = [
+        pis_response,
+        pi_info_response,
+        pi_info_response_2,
+    ]
+    ipv6_config = cloud.ipv6_ssh_config
+    assert auth._api_session.get.call_count == 3
+    assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
+    assert auth._api_session.get.call_args_list[1][0][0] == cloud._api_url + "servers/pi1"
+    assert auth._api_session.get.call_args_list[2][0][0] == cloud._api_url + "servers/pi2"
+    assert ipv6_config.count("\n") == 5
+    lines = ipv6_config.splitlines()
+    assert lines[0] == "Host pi1"
+    assert lines[1] == "    user root"
+    assert lines[2] == "    hostname 2a00:1098:8:64::1"
+    assert lines[3] == "Host pi2"
+    assert lines[4] == "    user root"
+    assert lines[5] == "    hostname 2a00:1098:8:64::2"

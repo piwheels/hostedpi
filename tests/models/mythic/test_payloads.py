@@ -1,5 +1,5 @@
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from hostedpi.models.mythic.payloads import NewServer
 from hostedpi.models.specs import Pi3ServerSpec

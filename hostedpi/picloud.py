@@ -41,11 +41,6 @@ class PiCloud:
         An instance of :class:`~hostedpi.models.sshkeys.SSHKeySources` containing sources of SSH
         keys to use when creating new Pis. If not provided, no SSH keys will be used by default.
 
-    :type api_url: str
-    :param api_url:
-        The base URL of the Mythic Beasts Pi Cloud API. Default is
-        "https://api.mythic-beasts.com/beta/pi/". You almost certainly won't need to change this.
-
     :type auth: :class:`~hostedpi.auth.MythicAuth` or None
     :param auth:
         An instance of :class:`~hostedpi.auth.MythicAuth` to use for authentication with the API.
@@ -61,10 +56,9 @@ class PiCloud:
         self,
         ssh_keys: Union[SSHKeySources, None] = None,
         *,
-        api_url: str = "https://api.mythic-beasts.com/beta/pi/",
         auth: Union[MythicAuth, None] = None,
     ):
-        self._api_url = api_url
+        self._api_url = str(auth.settings.api_url)
         self.ssh_keys = None
         if ssh_keys is not None:
             if not isinstance(ssh_keys, SSHKeySources):
@@ -87,13 +81,15 @@ class PiCloud:
         A dict of all Raspberry Pi servers associated with the account, keyed by their names.
         Each value is an instance of :class:`~hostedpi.pi.Pi` representing the server.
 
+        :raises HostedPiNotAuthorizedError:
+            If the user is not authorized to retrieve the list of Pis
+
         :raises HostedPiServerError:
             If there is an error retrieving the list from the server
         """
         servers = self._get_pis()
         return {
-            name: Pi(name, info=info, api_url=self._api_url, session=self.session)
-            for name, info in sorted(servers.items())
+            name: Pi(name, info=info, auth=self._auth) for name, info in sorted(servers.items())
         }
 
     @property
@@ -220,8 +216,7 @@ class PiCloud:
         pi = Pi(
             name=name,
             info=basic_info,
-            api_url=self._api_url,
-            session=self.session,
+            auth=self._auth,
             status_url=status_url,
         )
         if wait:
@@ -295,6 +290,8 @@ class PiCloud:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
             raise HostedPiServerError(error) from exc
 
         response = ServersResponse.model_validate(response.json())

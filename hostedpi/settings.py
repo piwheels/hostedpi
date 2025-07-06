@@ -1,7 +1,7 @@
 from functools import cache
 from typing import Literal
 
-from pydantic import SecretStr, field_validator
+from pydantic import AnyHttpUrl, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     id: str
     secret: SecretStr
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "ERROR"
+    auth_url: AnyHttpUrl = "https://auth.mythic-beasts.com/login"
+    api_url: AnyHttpUrl = "https://api.mythic-beasts.com/beta/pi/"
 
     @field_validator("log_level", mode="before")
     @classmethod

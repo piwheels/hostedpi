@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from requests import ConnectionError, HTTPError, Session
 from structlog import get_logger
 
+from .auth import MythicAuth
 from .exc import (
     HostedPiNotAuthorizedError,
     HostedPiProvisioningError,
@@ -56,16 +57,17 @@ class Pi:
         name: Union[str, None],
         *,
         info: PiInfoBasic,
-        api_url: str,
-        session: Session,
+        auth: Union[MythicAuth, None] = None,
         status_url: Union[str, None] = None,
     ):
         self._name = name
         self._model = info.model
         self._memory = info.memory
         self._cpu_speed = info.cpu_speed
-        self._api_url = api_url
-        self._session = session
+        if auth is None:
+            auth = MythicAuth()
+        self._auth = auth
+        self._api_url = str(auth.settings.api_url)
         self._cancelled = False
         self._info: Union[PiInfoBasic, PiInfo, None] = None
         self._last_fetched_info: Union[datetime, None] = None
@@ -84,7 +86,7 @@ class Pi:
         """
         The authenticated requests session used to communicate with the API
         """
-        return self._session
+        return self._auth.session
 
     @property
     def info(self) -> PiInfo:

@@ -1,13 +1,14 @@
 import os
 import sys
 from datetime import datetime
+from importlib.metadata import version
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
 import sphinx_rtd_theme
 
 
-VERSION = "0.4.0"
+hostedpi_version = version("hostedpi")
 
 
 # -- General configuration ------------------------------------------------
@@ -26,8 +27,8 @@ source_suffix = ".rst"
 master_doc = "index"
 copyright = "2020-%s %s" % (datetime.now().year, author)
 project = "hostedpi"
-version = VERSION
-release = VERSION
+version = hostedpi_version
+release = version
 # language = None
 # today_fmt = '%B %d, %Y'
 exclude_patterns = ["_build"]

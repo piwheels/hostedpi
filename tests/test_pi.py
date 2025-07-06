@@ -128,8 +128,8 @@ def imported_ssh_keys_response(imported_ssh_keys_json):
     )
 
 
-def test_pi_init(pi_info_basic, mock_session, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+def test_pi_init(pi_info_basic, auth):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
     assert pi.name == "test-pi"
     assert pi.model == 3
     assert pi.memory_mb == 1024
@@ -137,19 +137,19 @@ def test_pi_init(pi_info_basic, mock_session, api_url):
     assert repr(pi) == "<Pi name=test-pi model=3>"
 
 
-def test_pi_init_with_full_info(pi_info_basic, mock_session, api_url, pi_info_full):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value.json.return_value = pi_info_full
+def test_pi_init_with_full_info(pi_info_basic, auth, pi_info_full):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value.json.return_value = pi_info_full
     assert pi.model_full == "3B"
     assert repr(pi) == "<Pi name=test-pi model=3B>"
 
 
-def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_info_full):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = pi_info_response
+def test_pi_get_info(pi_info_basic, auth, pi_info_response, pi_info_full, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
     info = pi.info
-    assert mock_session.get.call_count == 1
-    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi"
     assert info == pi_info_full
     assert pi.model_full == "3B"
     assert not pi.is_booting
@@ -176,108 +176,101 @@ def test_pi_get_info(pi_info_basic, mock_session, api_url, pi_info_response, pi_
     assert pi.url_ssl == "https://www.test-pi.hostedpi.com"
 
 
-def test_pi_get_info_installing(pi_info_basic, mock_session, api_url, pi_info_installing_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = pi_info_installing_response
+def test_pi_get_info_installing(pi_info_basic, auth, pi_info_installing_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_installing_response
     pi_info = pi.info
-    assert mock_session.get.call_count == 1
-    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi"
     assert pi.provision_status == "installing"
     assert pi.status == "Provisioning: installing"
 
 
-def test_pi_get_info_booting(pi_info_basic, mock_session, api_url, pi_info_booting_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = pi_info_booting_response
+def test_pi_get_info_booting(pi_info_basic, auth, pi_info_booting_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_booting_response
     pi_info = pi.info
-    assert mock_session.get.call_count == 1
-    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi"
     assert pi.provision_status == "live"
     assert pi.status == "Booting: waiting for initial DHCP"
 
 
-def test_pi_get_info_powered_off(
-    pi_info_basic, mock_session, api_url, pi_info_powered_off_response
-):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = pi_info_powered_off_response
+def test_pi_get_info_powered_off(pi_info_basic, auth, pi_info_powered_off_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_powered_off_response
     pi_info = pi.info
-    assert mock_session.get.call_count == 1
-    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi"
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi"
     assert pi.provision_status == "live"
     assert pi.status == "Powered off"
 
 
-def test_pi_get_info_with_api_url(pi_info_basic, mock_session, api_url_2, pi_info_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url_2, session=mock_session)
-    mock_session.get.return_value = pi_info_response
+def test_pi_get_info_with_api_url(pi_info_basic, auth_2, pi_info_response, api_url_2):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth_2)
+    auth_2._api_session.get.return_value = pi_info_response
     pi.info
-    assert mock_session.get.call_count == 1
-    assert mock_session.get.call_args[0][0] == api_url_2 + "servers/test-pi"
+    assert auth_2._api_session.get.call_count == 1
+    assert auth_2._api_session.get.call_args[0][0] == api_url_2 + "servers/test-pi"
 
 
-def test_get_ssh_keys_empty(pi_info_basic, mock_session, api_url, ssh_key_empty_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = ssh_key_empty_response
+def test_get_ssh_keys_empty(pi_info_basic, auth, ssh_key_empty_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = ssh_key_empty_response
     keys = pi.ssh_keys
-    assert mock_session.get.call_count == 1
-    assert mock_session.get.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
     assert keys == set()
 
 
-def test_get_ssh_keys(pi_info_basic, mock_session, api_url, three_ssh_keys_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = three_ssh_keys_response
+def test_get_ssh_keys(pi_info_basic, auth, three_ssh_keys_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = three_ssh_keys_response
     keys = pi.ssh_keys
     assert keys == {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
 
 
-def test_unset_ssh_keys(pi_info_basic, mock_session, api_url, one_ssh_key_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.put.return_value = one_ssh_key_response
+def test_unset_ssh_keys(pi_info_basic, auth, one_ssh_key_response):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.put.return_value = one_ssh_key_response
     pi.ssh_keys = None
-    assert mock_session.put.call_count == 1
-    json_payload = mock_session.put.call_args[1]["json"]
+    assert auth._api_session.put.call_count == 1
+    json_payload = auth._api_session.put.call_args[1]["json"]
     assert json_payload == {"ssh_key": ""}
 
 
-def test_set_one_ssh_key(pi_info_basic, mock_session, api_url, one_ssh_key_response, one_ssh_key):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.put.return_value = one_ssh_key_response
+def test_set_one_ssh_key(pi_info_basic, auth, one_ssh_key_response, one_ssh_key):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.put.return_value = one_ssh_key_response
     pi.ssh_keys = one_ssh_key
-    assert mock_session.put.call_count == 1
-    json_payload = mock_session.put.call_args[1]["json"]
+    assert auth._api_session.put.call_count == 1
+    json_payload = auth._api_session.put.call_args[1]["json"]
     assert json_payload == {"ssh_key": "ssh-rsa AAA"}
 
 
 def test_add_one_ssh_key(
-    pi_info_basic, mock_session, api_url, ssh_key_empty_response, one_ssh_key_response, one_ssh_key
+    pi_info_basic, auth, ssh_key_empty_response, one_ssh_key_response, one_ssh_key
 ):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = ssh_key_empty_response
-    mock_session.put.return_value = one_ssh_key_response
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = ssh_key_empty_response
+    auth._api_session.put.return_value = one_ssh_key_response
     pi.ssh_keys |= one_ssh_key
-    assert mock_session.get.call_count == 1
-    assert mock_session.put.call_count == 1
-    json_payload = mock_session.put.call_args[1]["json"]
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.put.call_count == 1
+    json_payload = auth._api_session.put.call_args[1]["json"]
     assert json_payload == {"ssh_key": "ssh-rsa AAA"}
 
 
 def test_add_ssh_keys(
-    pi_info_basic,
-    mock_session,
-    api_url,
-    ssh_key_empty_response,
-    one_ssh_key_response,
-    three_ssh_keys,
+    pi_info_basic, auth, ssh_key_empty_response, one_ssh_key_response, three_ssh_keys
 ):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = ssh_key_empty_response
-    mock_session.put.return_value = one_ssh_key_response
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = ssh_key_empty_response
+    auth._api_session.put.return_value = one_ssh_key_response
     pi.ssh_keys |= three_ssh_keys
-    assert mock_session.get.call_count == 1
-    assert mock_session.put.call_count == 1
-    ssh_keys_data = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.put.call_count == 1
+    ssh_keys_data = auth._api_session.put.call_args[1]["json"]["ssh_key"]
     assert "ssh-rsa AAA" in ssh_keys_data
     assert "ssh-rsa BBB" in ssh_keys_data
     assert "ssh-rsa CCC" in ssh_keys_data
@@ -286,92 +279,91 @@ def test_add_ssh_keys(
 
 def test_add_another_ssh_key(
     pi_info_basic,
-    mock_session,
-    api_url,
+    auth,
     one_ssh_key_response,
     another_ssh_key,
     another_ssh_key_response,
 ):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = one_ssh_key_response
-    mock_session.put.return_value = another_ssh_key_response
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = one_ssh_key_response
+    auth._api_session.put.return_value = another_ssh_key_response
     pi.ssh_keys |= another_ssh_key
-    assert mock_session.get.call_count == 1
-    assert mock_session.put.call_count == 1
-    ssh_keys_data = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.put.call_count == 1
+    ssh_keys_data = auth._api_session.put.call_args[1]["json"]["ssh_key"]
     assert "ssh-rsa AAA" in ssh_keys_data
     assert "ssh-rsa ZZZ" in ssh_keys_data
     assert ssh_keys_data.count("\r\n") == 1
 
 
-def test_power_on_pi(pi_info_basic, mock_session, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+def test_power_on_pi(pi_info_basic, auth, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
     pi.on()
-    assert mock_session.put.call_count == 1
-    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
-    json_payload = mock_session.put.call_args[1]["json"]
+    assert auth._api_session.put.call_count == 1
+    assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
+    json_payload = auth._api_session.put.call_args[1]["json"]
     assert json_payload == {"power": True}
 
 
-def test_power_off_pi(pi_info_basic, mock_session, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+def test_power_off_pi(pi_info_basic, auth, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
     pi.off()
-    assert mock_session.put.call_count == 1
-    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
-    json_payload = mock_session.put.call_args[1]["json"]
+    assert auth._api_session.put.call_count == 1
+    assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/power"
+    json_payload = auth._api_session.put.call_args[1]["json"]
     assert json_payload == {"power": False}
 
 
-def test_reboot_pi(pi_info_basic, mock_session, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
+def test_reboot_pi(pi_info_basic, auth, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
     pi.reboot()
-    assert mock_session.post.call_count == 1
-    assert mock_session.post.call_args[0][0] == api_url + "servers/test-pi/reboot"
+    assert auth._api_session.post.call_count == 1
+    assert auth._api_session.post.call_args[0][0] == api_url + "servers/test-pi/reboot"
 
 
-def test_cancel_pi(pi_info_basic, mock_session, api_url, pi_info_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = pi_info_response
+def test_cancel_pi(pi_info_basic, auth, pi_info_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
     pi.cancel()
-    assert mock_session.delete.call_count == 1
-    assert mock_session.delete.call_args[0][0] == api_url + "servers/test-pi"
+    assert auth._api_session.delete.call_count == 1
+    assert auth._api_session.delete.call_args[0][0] == api_url + "servers/test-pi"
     assert pi._cancelled
     assert repr(pi) == "<Pi name=test-pi cancelled>"
 
 
-def test_add_ssh_keys(pi_info_basic, mock_session, api_url):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value.json.return_value = {"ssh_key": ""}
+def test_add_ssh_keys(pi_info_basic, auth, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value.json.return_value = {"ssh_key": ""}
     ssh_keys_set = {"ssh-rsa AAA", "ssh-rsa BBB", "ssh-rsa CCC"}
     ssh_keys = SSHKeySources(ssh_keys=ssh_keys_set)
     pi.add_ssh_keys(ssh_keys)
-    assert mock_session.put.call_count == 1
-    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
-    json_payload = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert auth._api_session.put.call_count == 1
+    assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    json_payload = auth._api_session.put.call_args[1]["json"]["ssh_key"]
     for key in ssh_keys_set:
         assert key in json_payload
     assert json_payload.count("\r\n") == len(ssh_keys_set) - 1
 
 
-def test_remove_ssh_keys_no_label(pi_info_basic, mock_session, api_url, imported_ssh_keys_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = imported_ssh_keys_response
+def test_remove_ssh_keys_no_label(pi_info_basic, auth, imported_ssh_keys_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = imported_ssh_keys_response
     pi.remove_ssh_keys()
-    assert mock_session.get.call_count == 1
-    assert mock_session.put.call_count == 1
-    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
-    json_payload = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.put.call_count == 1
+    assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    json_payload = auth._api_session.put.call_args[1]["json"]["ssh_key"]
     assert json_payload == ""
 
 
-def test_remove_ssh_keys_by_label(pi_info_basic, mock_session, api_url, imported_ssh_keys_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = imported_ssh_keys_response
+def test_remove_ssh_keys_by_label(pi_info_basic, auth, imported_ssh_keys_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = imported_ssh_keys_response
     pi.remove_ssh_keys("ben@finn")
-    assert mock_session.get.call_count == 2
-    assert mock_session.put.call_count == 1
-    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
-    json_payload = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert auth._api_session.get.call_count == 2
+    assert auth._api_session.put.call_count == 1
+    assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    json_payload = auth._api_session.put.call_args[1]["json"]["ssh_key"]
     assert "ssh-rsa AAAA" not in json_payload
     assert "ssh-rsa BBBB" in json_payload
     assert "ssh-rsa CCCC" in json_payload
@@ -380,14 +372,14 @@ def test_remove_ssh_keys_by_label(pi_info_basic, mock_session, api_url, imported
     assert "ssh-rsa FFFF" in json_payload
 
 
-def test_unimport_ssh_keys_github(pi_info_basic, mock_session, api_url, imported_ssh_keys_response):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = imported_ssh_keys_response
+def test_unimport_ssh_keys_github(pi_info_basic, auth, imported_ssh_keys_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = imported_ssh_keys_response
     pi.unimport_ssh_keys(github_usernames={"testuser"})
-    assert mock_session.get.call_count == 2
-    assert mock_session.put.call_count == 1
-    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
-    json_payload = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert auth._api_session.get.call_count == 2
+    assert auth._api_session.put.call_count == 1
+    assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    json_payload = auth._api_session.put.call_args[1]["json"]["ssh_key"]
     assert "ssh-rsa AAAA" not in json_payload
     assert "ssh-rsa BBBB" not in json_payload
     assert "ssh-rsa CCCC" in json_payload
@@ -397,16 +389,14 @@ def test_unimport_ssh_keys_github(pi_info_basic, mock_session, api_url, imported
     assert "ssh-rsa GGGG" in json_payload
 
 
-def test_unimport_ssh_keys_launchpad(
-    pi_info_basic, mock_session, api_url, imported_ssh_keys_response
-):
-    pi = Pi(name="test-pi", info=pi_info_basic, api_url=api_url, session=mock_session)
-    mock_session.get.return_value = imported_ssh_keys_response
+def test_unimport_ssh_keys_launchpad(pi_info_basic, auth, imported_ssh_keys_response, api_url):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = imported_ssh_keys_response
     pi.unimport_ssh_keys(launchpad_usernames={"testuser4"})
-    assert mock_session.get.call_count == 2
-    assert mock_session.put.call_count == 1
-    assert mock_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
-    json_payload = mock_session.put.call_args[1]["json"]["ssh_key"]
+    assert auth._api_session.get.call_count == 2
+    assert auth._api_session.put.call_count == 1
+    assert auth._api_session.put.call_args[0][0] == api_url + "servers/test-pi/ssh-key"
+    json_payload = auth._api_session.put.call_args[1]["json"]["ssh_key"]
     assert "ssh-rsa AAAA" in json_payload
     assert "ssh-rsa BBBB" in json_payload
     assert "ssh-rsa CCCC" in json_payload

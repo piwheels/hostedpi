@@ -5,59 +5,63 @@ import pytest
 from requests import HTTPError
 
 from hostedpi.auth import MythicAuth
-from hostedpi.settings import Settings
 from hostedpi.exc import MythicAuthenticationError
+from hostedpi.settings import Settings
 
 
 @pytest.fixture
-def login_url():
-    return "https://auth.mythic-beasts.com/login"
+def auth_id_2() -> str:
+    return "test_id_2"
 
 
 @pytest.fixture
-def login_url_2():
-    return "http://localhost:8000/"
+def auth_secret_2() -> str:
+    return "test_secret"
 
 
 @pytest.fixture
-def mock_settings():
-    return Settings(id="test_id", secret="test_secret")
+def auth_url_2() -> str:
+    return "http://localhost:8000/login"
 
 
 @pytest.fixture
-def auth_response():
+def api_url_2() -> str:
+    return "http://localhost:8000/pi/"
+
+
+@pytest.fixture
+def settings_2(auth_id_2, auth_secret_2, auth_url_2, api_url_2) -> Settings:
+    return Settings(id=auth_id_2, secret=auth_secret_2, auth_url=auth_url_2, api_url=api_url_2)
+
+
+@pytest.fixture
+def auth_2(settings_2) -> MythicAuth:
+    return MythicAuth(settings=settings_2, auth_session=Mock(), api_session=Mock())
+
+
+@pytest.fixture
+def auth_response_with_server_error() -> Mock:
     return Mock(
-        status_code=200,
-        json=Mock(return_value={"access_token": "foobar", "expires_in": 3600}),
+        status_code=500,
+        raise_for_status=Mock(side_effect=HTTPError),
     )
 
 
 @pytest.fixture
-def auth_response_2():
+def auth_response_with_invalid_body() -> Mock:
     return Mock(
         status_code=200,
-        json=Mock(return_value={"access_token": "barfoo", "expires_in": 3600}),
+        json=Mock(return_value={"error": "Invalid response"}),
     )
 
 
-@patch("hostedpi.auth.Session.post")
-@patch("hostedpi.auth.get_settings")
 @patch("hostedpi.auth.datetime")
-def test_auth_with_default_login_url(
-    mock_datetime,
-    mock_get_settings,
-    mock_post,
-    mock_settings,
-    mock_dt,
-    auth_response,
-    auth_response_2,
-    login_url,
+def test_auth_with_default_settings(
+    mock_datetime, mock_dt, auth, auth_response, auth_response_2, auth_url
 ):
     mock_datetime.now.return_value = mock_dt
-    mock_get_settings.return_value = mock_settings
-    mock_post.side_effect = [auth_response, auth_response_2]
+    auth._auth_session.post.side_effect = [auth_response, auth_response_2]
 
-    auth = MythicAuth()
     assert repr(auth) == "<MythicAuth id=test_id>"
 
     assert auth.token == "foobar"
@@ -68,44 +72,42 @@ def test_auth_with_default_login_url(
     assert auth.token == "barfoo"
     assert auth.session.headers["Authorization"] == "Bearer barfoo"
 
-    assert mock_post.call_count == 2
-    assert mock_post.call_args_list[0][0][0] == login_url
-    assert mock_post.call_args_list[1][0][0] == login_url
+    assert auth._auth_session.post.call_count == 2
+    assert auth._auth_session.post.call_args_list[0][0][0] == auth_url
+    assert auth._auth_session.post.call_args_list[1][0][0] == auth_url
 
 
-@patch("hostedpi.auth.Session.post")
-@patch("hostedpi.auth.get_settings")
-def test_auth_with_login_url(
-    mock_get_settings, mock_post, mock_settings, auth_response, login_url_2
+@patch("hostedpi.auth.datetime")
+def test_auth_with_different_settings(
+    mock_datetime, mock_dt, auth_2, auth_response, auth_response_2, auth_url_2
 ):
-    mock_get_settings.return_value = mock_settings
-    mock_post.return_value = auth_response
+    mock_datetime.now.return_value = mock_dt
+    auth_2._auth_session.post.side_effect = [auth_response, auth_response_2]
 
-    auth = MythicAuth(login_url=login_url_2)
-    assert repr(auth) == "<MythicAuth id=test_id>"
-    assert auth.token == "foobar"
-    assert mock_post.call_args_list[0][0][0] == login_url_2
+    assert repr(auth_2) == "<MythicAuth id=test_id_2>"
+
+    assert auth_2.token == "foobar"
+    assert auth_2._token_expiry == mock_dt + timedelta(seconds=3600)
+    assert auth_2.session.headers["Authorization"] == "Bearer foobar"
+
+    mock_datetime.now.return_value = mock_dt + timedelta(seconds=3601)
+    assert auth_2.token == "barfoo"
+    assert auth_2.session.headers["Authorization"] == "Bearer barfoo"
+
+    assert auth_2._auth_session.post.call_count == 2
+    assert auth_2._auth_session.post.call_args_list[0][0][0] == auth_url_2
+    assert auth_2._auth_session.post.call_args_list[1][0][0] == auth_url_2
 
 
-@patch("hostedpi.auth.Session.post")
-@patch("hostedpi.auth.get_settings")
-def test_auth_with_server_error(mock_get_settings, mock_post, mock_settings, auth_response):
-    mock_get_settings.return_value = mock_settings
-    mock_post.return_value = auth_response
-    auth_response.raise_for_status.side_effect = HTTPError
-    auth = MythicAuth()
+def test_auth_with_server_error(auth, auth_response_with_server_error):
+    auth._auth_session.post.return_value = auth_response_with_server_error
 
     with pytest.raises(MythicAuthenticationError):
         auth.token
 
 
-@patch("hostedpi.auth.Session.post")
-@patch("hostedpi.auth.get_settings")
-def test_auth_with_invalid_response(mock_get_settings, mock_post, mock_settings, auth_response):
-    mock_get_settings.return_value = mock_settings
-    mock_post.return_value = auth_response
-    auth_response.json.return_value = {}
-    auth = MythicAuth()
+def test_auth_with_invalid_response(auth, auth_response_with_invalid_body):
+    auth._auth_session.post.return_value = auth_response_with_invalid_body
 
     with pytest.raises(MythicAuthenticationError):
         auth.token
