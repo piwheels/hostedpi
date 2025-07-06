@@ -2,9 +2,11 @@ from ipaddress import IPv6Address, IPv6Network
 from unittest.mock import Mock, patch
 
 import pytest
+from requests.exceptions import HTTPError
 
 from hostedpi.models.sshkeys import SSHKeySources
 from hostedpi.pi import Pi
+from hostedpi.pi import HostedPiNotAuthorizedError, HostedPiProvisioningError, HostedPiServerError
 
 
 @pytest.fixture
@@ -222,6 +224,40 @@ def test_pi_get_info_with_api_url(pi_info_basic, auth_2, pi_info_response, api_u
     pi.info
     assert auth_2._api_session.get.call_count == 1
     assert auth_2._api_session.get.call_args[0][0] == api_url_2 + "servers/test-pi"
+
+
+def test_get_ssh_keys_403(pi_info_basic, auth):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = Mock(
+        status_code=403,
+        raise_for_status=Mock(
+            side_effect=HTTPError(response=Mock(json={"error": "Not authorised"}))
+        ),
+    )
+    with pytest.raises(HostedPiNotAuthorizedError):
+        keys = pi.ssh_keys
+
+
+def test_get_ssh_keys_409(pi_info_basic, auth):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = Mock(
+        status_code=409,
+        raise_for_status=Mock(
+            side_effect=HTTPError(response=Mock(json={"error": "Server provisioning"}))
+        ),
+    )
+    with pytest.raises(HostedPiProvisioningError):
+        keys = pi.ssh_keys
+
+
+def test_get_ssh_keys_500(pi_info_basic, auth):
+    pi = Pi(name="test-pi", info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = Mock(
+        status_code=500,
+        raise_for_status=Mock(side_effect=HTTPError(response=Mock(json={"error": "Server error"}))),
+    )
+    with pytest.raises(HostedPiServerError):
+        keys = pi.ssh_keys
 
 
 def test_get_ssh_keys_empty(pi_info_basic, auth, ssh_key_empty_response, api_url):

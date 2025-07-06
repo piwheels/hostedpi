@@ -337,7 +337,7 @@ class Pi:
             error = get_error_message(exc)
             if response.status_code == 403:
                 raise HostedPiNotAuthorizedError(error) from exc
-            if response.status_code in {409, 500}:
+            if response.status_code == 409:
                 raise HostedPiProvisioningError(error) from exc
             raise HostedPiServerError(error) from exc
 
