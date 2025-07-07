@@ -8,7 +8,7 @@ from . import arguments, options, utils
 from .ssh import ssh_app
 
 
-app = Typer(name="hostedpi", no_args_is_help=True)
+app = Typer(name="hostedpi", no_args_is_help=True, invoke_without_command=True)
 app.add_typer(ssh_app, name="ssh", no_args_is_help=True, help="SSH access management commands")
 console = Console()
 
