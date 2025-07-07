@@ -37,7 +37,7 @@ clean:
 	rm -rf dist
 
 build: clean
-	poetry build -f sdist -f wheel
+	poetry build
 
 release: build
 	twine upload dist/*
