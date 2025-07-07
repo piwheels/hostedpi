@@ -1,0 +1,78 @@
+[project]
+name = "hostedpi"
+version = "0.4.0"
+description = "Python interface to the Mythic Beasts Hosted Pi API"
+authors = [
+    {name = "Ben Nuttall", email = "ben@bennuttall.com"}
+]
+license = {text = "BSD 3-Clause License"}
+readme = "README.rst"
+requires-python = ">=3.9,<4.0"
+keywords = ["raspberrypi", "piwheels", "mythicbeasts", "hostedpi", "picloud"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Developers",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)",
+    "pydantic (>=2,<3.0.0)",
+    "pydantic-settings (>=2.7.1,<3.0.0)",
+    "structlog (>=25.1.0,<26.0.0)",
+]
+
+[project.urls]
+repository = "https://github.com/piwheels/hostedpi/issues"
+documentation = "https://hostedpi.readthedocs.io"
+"Bug Tracker" = "https://github.com/piwheels/hostedpi/issues"
+
+[project.scripts]
+hostedpi = 'hostedpi.cli:app'
+
+[project.optional-dependencies]
+cli = ["typer (>=0.15.1,<1.0.0)", "rich (>=13.9.4,<14.0.0)"]
+test = ["pytest (>=8.4.1,<9.0.0)", "pytest-cov (>=6.2.1,<7.0.0)"]
+
+[tool.poetry]
+include = ["LICENSE.txt", "README.rst"]
+
+[tool.poetry.group.dev.dependencies]
+sphinx = "*"
+sphinx-rtd-theme = "*"
+ipython = "*"
+twine = "*"
+black = "^25.1.0"
+isort = "^6.0.1"
+autodoc-pydantic = "^2.2.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+lines_after_imports = 2
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[tool.pytest.ini_options]
+addopts = "--cov=hostedpi --cov-report=term-missing"
+
+[tool.coverage.run]
+omit = [
+    "hostedpi/__main__.py",
+    "hostedpi/cli/utils.py",
+    "hostedpi/cli/arguments.py",
+    "hostedpi/cli/options.py",
+    "hostedpi/logger.py"
+]

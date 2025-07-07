@@ -1,10 +1,14 @@
-import sys
 import os
+import sys
 from datetime import datetime
+from importlib.metadata import version
+
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
-from hostedpi import __version__
 import sphinx_rtd_theme
+
+
+hostedpi_version = version("hostedpi")
 
 
 # -- General configuration ------------------------------------------------
@@ -15,6 +19,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx_rtd_theme",
+    "sphinxcontrib.autodoc_pydantic",
 ]
 templates_path = ["_templates"]
 source_suffix = ".rst"
@@ -22,8 +27,8 @@ source_suffix = ".rst"
 master_doc = "index"
 copyright = "2020-%s %s" % (datetime.now().year, author)
 project = "hostedpi"
-version = __version__
-release = __version__
+version = hostedpi_version
+release = version
 # language = None
 # today_fmt = '%B %d, %Y'
 exclude_patterns = ["_build"]
@@ -38,12 +43,14 @@ pygments_style = "sphinx"
 
 # -- Autodoc configuration ------------------------------------------------
 
-autodoc_member_order = "groupwise"
+autodoc_member_order = "bysource"
 
 # -- Intersphinx configuration --------------------------------------------
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.7", None),
+    "python": ("https://docs.python.org/3.9", None),
+    "pydantic": ("https://docs.pydantic.dev/latest/", None),
+    "requests": ("https://requests.readthedocs.io/en/latest/", None),
 }
 
 # -- Options for HTML output ----------------------------------------------
@@ -56,7 +63,7 @@ html_title = "%s %s Documentation" % (project, version)
 # html_short_title = None
 # html_logo = None
 # html_favicon = None
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 # html_extra_path = []
 # html_last_updated_fmt = '%b %d, %Y'
 # html_use_smartypants = True
@@ -70,3 +77,14 @@ html_static_path = ["_static"]
 # html_use_opensearch = ''
 # html_file_suffix = None
 htmlhelp_basename = "%sdoc" % project
+
+autodoc_pydantic_model_show_json = False
+autodoc_pydantic_model_show_validators = False
+autodoc_pydantic_model_show_validator_members = False
+autodoc_pydantic_field_list_validators = False
+
+nitpicky = True
+nitpick_ignore = [
+    ("py:class", "pydantic.types.PathType"),
+    ("py:class", "file"),
+]
