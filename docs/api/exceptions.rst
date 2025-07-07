@@ -36,3 +36,6 @@ They can be imported from ``hostedpi.exc``, for example:
 
 .. autoclass:: hostedpi.exc.HostedPiProvisioningError
     :show-inheritance:
+
+.. autoclass:: hostedpi.exc.HostedPiNameExistsError
+    :show-inheritance:
