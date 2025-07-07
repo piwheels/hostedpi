@@ -12,7 +12,7 @@ Models are provided at the root of the module and can be imported as follows:
 
 .. code-block:: python
 
-    from hostedpi import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources, PiInfo, Settings
+    from hostedpi import Pi3ServerSpec, Pi4ServerSpec, SSHKeySources, PiInfo, PiInfoBasic, Settings
 
 They can be constructed using keyword arguments:
 
