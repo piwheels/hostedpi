@@ -1,4 +1,4 @@
-from pydantic import Field, AnyHttpUrl, SecretStr, field_validator
+from pydantic import AnyHttpUrl, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

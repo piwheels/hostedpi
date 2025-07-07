@@ -7,7 +7,7 @@ def memory(v: Union[int, None]) -> str:
     """
     if v is None:
         return ""
-    return f"{v / 1024:.0f} GB"
+    return f"{v} GB"
 
 
 def cpu_speed(v: Union[int, None]) -> str:
