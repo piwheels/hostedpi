@@ -1,4 +1,4 @@
-from typer import Typer
+from typer import Typer, Exit
 
 from ..exc import HostedPiException
 from . import arguments, options
@@ -18,7 +18,7 @@ def do_command(name: arguments.server_name, ipv6: options.ipv6 = False):
     pi = get_pi(name)
     if pi is None:
         print_error(f"Pi '{name}' not found")
-        return 1
+        raise Exit(1)
     try:
         if ipv6:
             print(pi.ipv6_ssh_command)
@@ -26,7 +26,7 @@ def do_command(name: arguments.server_name, ipv6: options.ipv6 = False):
             print(pi.ipv4_ssh_command)
     except HostedPiException as exc:
         print(f"hostedpi error: {exc}")
-        return 1
+        raise Exit(1)
 
 
 @ssh_app.command("config")
@@ -47,4 +47,4 @@ def do_config(
                 print(pi.ipv4_ssh_config)
         except HostedPiException as exc:
             print(f"hostedpi error: {exc}")
-            return 1
+            raise Exit(1)

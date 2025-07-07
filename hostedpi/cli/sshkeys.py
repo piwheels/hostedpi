@@ -2,7 +2,7 @@ import rich
 from rich.console import Console
 from rich.live import Live
 from rich.table import Table
-from typer import Typer
+from typer import Typer, Exit
 
 from ..exc import HostedPiException
 from ..utils import collect_ssh_keys, remove_imported_ssh_keys, remove_ssh_keys_by_label
@@ -39,7 +39,7 @@ def do_show(name: arguments.server_name):
     pi = utils.get_pi(name)
     if pi is None:
         utils.print_error(f"Pi '{name}' not found")
-        return 1
+        raise Exit(1)
     for key in pi.ssh_keys:
         try:
             print(key)
@@ -56,11 +56,11 @@ def do_list(name: arguments.server_name):
     pi = utils.get_pi(name)
     if pi is None:
         utils.print_error(f"Pi '{name}' not found")
-        return 1
+        raise Exit(1)
     keys = pi.ssh_keys
     if not keys:
         utils.print_warn(f"No SSH keys found on {pi.name}")
-        return 0
+        return
     for key in keys:
         try:
             parts = key.split()
@@ -78,7 +78,7 @@ def do_table(name: arguments.server_name, filter: options.filter_pattern_pi = No
     pi = utils.get_pi(name)
     if pi is None:
         utils.print_error(f"Pi '{name}' not found")
-        return 1
+        raise Exit(1)
     headers = ["Type", "Label", "Note"]
     table = Table(*headers)
 
@@ -216,7 +216,7 @@ def do_import(
     """
     if not github and not launchpad:
         utils.print_error("You must specify at least one source to import from")
-        return 1
+        raise Exit(1)
     pis = utils.get_pis(names, filter)
     ssh_keys = collect_ssh_keys(
         github_usernames=set(github) if github else None,
@@ -251,7 +251,7 @@ def do_unimport(
     """
     if not github and not launchpad:
         utils.print_error("You must specify at least one source to unimport from")
-        return 1
+        raise Exit(1)
     github = set(github) if github else set()
     launchpad = set(launchpad) if launchpad else set()
     pis = utils.get_pis(names, filter)

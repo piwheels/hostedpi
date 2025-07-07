@@ -1,7 +1,7 @@
 import rich
 from rich.console import Console
 from rich.live import Live
-from typer import Typer
+from typer import Typer, Exit
 
 from ..exc import HostedPiException
 from . import arguments, options, utils
@@ -22,7 +22,7 @@ def do_test():
         utils.print_success("Connected to the Mythic Beasts API")
     except Exception:
         utils.print_error("Failed to authenticate")
-        return 2
+        raise Exit(1)
 
 
 @app.command("images")
@@ -96,16 +96,16 @@ def do_create(
     """
     if names and number:
         utils.print_error("You can't specify both names and a number")
-        return 1
+        raise Exit(1)
     if not names and not number:
         number = 1
     if full and not wait:
         utils.print_error("You can't use --full without --wait")
-        return 1
+        raise Exit(1)
     if ssh_key_path is not None:
         if not ssh_key_path.exists():
             utils.print_error(f"SSH key file not found: {ssh_key_path}")
-            return 1
+            raise Exit(1)
     ssh_import_gh_set = set(ssh_import_github) if ssh_import_github is not None else None
     ssh_import_lp_set = set(ssh_import_launchpad) if ssh_import_launchpad is not None else None
 
@@ -233,11 +233,11 @@ def do_cancel(
     pis_str = ", ".join([pis.name for pis in pis])
     if len(pis) == 0:
         utils.print_error("No servers to cancel")
-        return 1
+        raise Exit(1)
     if not yes:
         yn = input(f"Are you sure you want to cancel {pis_str}? [y/N] ")
         if yn.lower() != "y":
-            return 1
+            raise Exit(1)
     table = utils.make_table("Name", "Status")
     with Live(table, console=console, refresh_per_second=4):
         for pi in pis:
