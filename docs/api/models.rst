@@ -90,6 +90,6 @@ Settings
     This is for advanced use only. Most users should not need to interact with the settings
     directly, as they are automatically loaded from :doc:`../env`.
 
-.. autoclass:: hostedpi.settings.Settings()
+.. autoclass:: hostedpi.settings.Settings
     :members: id, secret, auth_url, api_url
     :undoc-members:
