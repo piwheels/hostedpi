@@ -1,9 +1,8 @@
 from unittest.mock import Mock, patch
-from pathlib import Path
 
-from typer.testing import CliRunner
 import pytest
 from requests import HTTPError
+from typer.testing import CliRunner
 
 from hostedpi.cli import app
 from hostedpi.pi import Pi

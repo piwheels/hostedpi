@@ -1,4 +1,4 @@
-from typer import Typer, Exit
+from typer import Exit, Typer
 
 from ..exc import HostedPiException
 from . import arguments, options

@@ -1,7 +1,7 @@
 import rich
 from rich.console import Console
 from rich.live import Live
-from typer import Typer, Exit
+from typer import Exit, Typer
 
 from ..exc import HostedPiException
 from . import arguments, options, utils

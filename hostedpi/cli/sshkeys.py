@@ -2,7 +2,7 @@ import rich
 from rich.console import Console
 from rich.live import Live
 from rich.table import Table
-from typer import Typer, Exit
+from typer import Exit, Typer
 
 from ..exc import HostedPiException
 from ..utils import collect_ssh_keys, remove_imported_ssh_keys, remove_ssh_keys_by_label
