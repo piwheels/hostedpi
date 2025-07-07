@@ -3,6 +3,7 @@ from typing import Union
 from unittest.mock import Mock, patch
 
 import pytest
+from requests.exceptions import HTTPError
 
 from hostedpi.auth import MythicAuth
 from hostedpi.models.mythic.responses import PiInfo, PiInfoBasic
@@ -226,4 +227,78 @@ def pi_info_response(pi_info_json, mythic_servers_url, pi3_name) -> Mock:
         status_code=200,
         json=Mock(return_value=pi_info_json),
         request=Mock(url=f"{mythic_servers_url}/{pi3_name}"),
+    )
+
+
+@pytest.fixture
+def error_400():
+    return Mock(
+        status_code=400,
+        raise_for_status=Mock(
+            side_effect=HTTPError(
+                response=Mock(json={"error": "Invalid model number"}),
+            )
+        ),
+    )
+
+
+@pytest.fixture
+def error_403():
+    return Mock(
+        status_code=403,
+        raise_for_status=Mock(
+            side_effect=HTTPError(
+                response=Mock(json={"error": "Not authorised"}),
+            )
+        ),
+    )
+
+
+@pytest.fixture
+def error_409_provisioning():
+    return Mock(
+        status_code=409,
+        raise_for_status=Mock(
+            side_effect=HTTPError(
+                response=Mock(json={"error": "Server provisioning"}),
+            )
+        ),
+    )
+
+
+@pytest.fixture
+def error_409_name_exists():
+    return Mock(
+        status_code=409,
+        raise_for_status=Mock(
+            side_effect=HTTPError(
+                response=Mock(json={"error": "Server name already exists"}),
+            )
+        ),
+    )
+
+
+@pytest.fixture
+def error_500():
+    return Mock(
+        status_code=500,
+        raise_for_status=Mock(
+            side_effect=HTTPError(
+                response=Mock(json={"error": "Server error"}),
+            ),
+        ),
+    )
+
+
+@pytest.fixture
+def error_503():
+    return Mock(
+        status_code=503,
+        raise_for_status=Mock(
+            side_effect=HTTPError(
+                response=Mock(
+                    json={"error": "We do not have any servers of the specified type available"}
+                ),
+            ),
+        ),
     )

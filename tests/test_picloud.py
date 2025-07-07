@@ -1,9 +1,17 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
-from requests import ConnectionError, HTTPError
+from requests import ConnectionError
 
-from hostedpi.exc import HostedPiException, HostedPiValidationError
+from hostedpi.exc import (
+    HostedPiException,
+    HostedPiNameExistsError,
+    HostedPiNotAuthorizedError,
+    HostedPiOutOfStockError,
+    HostedPiServerError,
+    HostedPiUserError,
+    HostedPiValidationError,
+)
 from hostedpi.models import Pi3ServerSpec, Pi4ServerSpec
 from hostedpi.picloud import PiCloud
 
@@ -78,18 +86,6 @@ def create_pi_response(mythic_async_location):
 
 
 @pytest.fixture
-def out_of_stock_response():
-    response = Mock(
-        status_code=503,
-        json=Mock(
-            return_value={"error": "We do not have any servers of the specified type available"}
-        ),
-    )
-    response.raise_for_status.side_effect = HTTPError(response=response)
-    return response
-
-
-@pytest.fixture
 def provision_status_provisioning():
     return Mock(
         status_code=200,
@@ -148,6 +144,11 @@ def specs_response(specs_response_json):
     )
 
 
+@patch("hostedpi.picloud.MythicAuth")
+def test_picloud_init_no_auth(mythic_auth):
+    cloud = PiCloud()
+
+
 def test_picloud_init(auth, api_url):
     cloud = PiCloud(auth=auth)
     assert repr(cloud) == "<PiCloud id=test_id>"
@@ -189,6 +190,19 @@ def test_get_pi4_operating_systems(auth, images_response, images_response_json):
     assert images == images_response_json
 
 
+def test_get_operating_systems_bad_model(auth):
+    cloud = PiCloud(auth=auth)
+    with pytest.raises(HostedPiUserError):
+        cloud.get_operating_systems(model=1)
+
+
+def test_get_operating_systems_error_500(auth, error_500):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = error_500
+    with pytest.raises(HostedPiServerError):
+        cloud.get_operating_systems(model=3)
+
+
 def test_get_pis_none(auth, pis_response_none, mythic_servers_url):
     cloud = PiCloud(auth=auth)
     auth._api_session.get.return_value = pis_response_none
@@ -213,6 +227,22 @@ def test_get_pis(auth, pis_response):
     assert pi2.model == 4
     assert pi2.memory_mb == 4096
     assert pi2.cpu_speed == 1500
+
+
+def test_get_pis_error_403(auth, error_403):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = error_403
+
+    with pytest.raises(HostedPiNotAuthorizedError):
+        cloud.pis
+
+
+def test_get_pis_error_500(auth, error_500):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = error_500
+
+    with pytest.raises(HostedPiServerError):
+        cloud.pis
 
 
 def test_new_pi_bad_name(auth, default_pi3_spec):
@@ -414,11 +444,43 @@ def test_create_pi_bad_ssh_keys(auth, pi3_name, default_pi3_spec):
         cloud.create_pi(name=pi3_name, spec=default_pi3_spec, ssh_keys="foo")
 
 
-def test_create_pi_with_error(auth, out_of_stock_response, default_pi3_spec, pi3_name):
+def test_create_pi_error_400(auth, error_400, default_pi3_spec, pi3_name):
     cloud = PiCloud(auth=auth)
-    auth._api_session.post.return_value = out_of_stock_response
+    auth._api_session.post.return_value = error_400
+
+    with pytest.raises(HostedPiUserError):
+        cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
+
+
+def test_create_pi_error_403(auth, error_403, default_pi3_spec, pi3_name):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = error_403
 
     with pytest.raises(HostedPiException):
+        cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
+
+
+def test_create_pi_error_409(auth, error_409_name_exists, default_pi3_spec, pi3_name):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = error_409_name_exists
+
+    with pytest.raises(HostedPiNameExistsError):
+        cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
+
+
+def test_create_pi_error_500(auth, error_500, default_pi3_spec, pi3_name):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = error_500
+
+    with pytest.raises(HostedPiServerError):
+        cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
+
+
+def test_create_pi_error_503(auth, error_503, default_pi3_spec, pi3_name):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.post.return_value = error_503
+
+    with pytest.raises(HostedPiOutOfStockError):
         cloud.create_pi(name=pi3_name, spec=default_pi3_spec)
 
 
@@ -431,6 +493,22 @@ def test_get_available_specs(auth, specs_response, api_url):
     assert auth._api_session.get.called
     assert auth._api_session.get.call_args[0][0] == api_url + "models"
     assert len(specs) == 4
+
+
+def test_get_available_specs_error_403(auth, error_403):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = error_403
+
+    with pytest.raises(HostedPiNotAuthorizedError):
+        cloud._get_available_specs()
+
+
+def test_get_available_specs_error_500(auth, error_500):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.return_value = error_500
+
+    with pytest.raises(HostedPiServerError):
+        cloud._get_available_specs()
 
 
 def test_get_ipv4_ssh_config(auth, pis_response, pi_info_response, pi_info_response_2):

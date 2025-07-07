@@ -2,16 +2,16 @@ from ipaddress import IPv6Address, IPv6Network
 from unittest.mock import Mock, patch
 
 import pytest
-from requests.exceptions import HTTPError, ConnectionError
+from requests.exceptions import ConnectionError
 
 from hostedpi.exc import HostedPiUserError
 from hostedpi.models.sshkeys import SSHKeySources
-from hostedpi.pi import Pi
 from hostedpi.pi import (
     HostedPiNotAuthorizedError,
     HostedPiProvisioningError,
     HostedPiServerError,
     HostedPiUserError,
+    Pi,
 )
 
 
@@ -162,34 +162,6 @@ def imported_ssh_keys_response(imported_ssh_keys_json):
     )
 
 
-@pytest.fixture
-def error_403():
-    return Mock(
-        status_code=403,
-        raise_for_status=Mock(
-            side_effect=HTTPError(response=Mock(json={"error": "Not authorised"}))
-        ),
-    )
-
-
-@pytest.fixture
-def error_409():
-    return Mock(
-        status_code=409,
-        raise_for_status=Mock(
-            side_effect=HTTPError(response=Mock(json={"error": "Server provisioning"}))
-        ),
-    )
-
-
-@pytest.fixture
-def error_500():
-    return Mock(
-        status_code=500,
-        raise_for_status=Mock(side_effect=HTTPError(response=Mock(json={"error": "Server error"}))),
-    )
-
-
 @patch("hostedpi.pi.MythicAuth")
 def test_pi_init_no_auth(mythic_auth, pi_name, pi_info_basic):
     pi = Pi(name=pi_name, info=pi_info_basic)
@@ -295,9 +267,9 @@ def test_get_ssh_keys_403(pi_name, pi_info_basic, auth, error_403):
         keys = pi.ssh_keys
 
 
-def test_get_ssh_keys_409(pi_name, pi_info_basic, auth, error_409):
+def test_get_ssh_keys_409(pi_name, pi_info_basic, auth, error_409_provisioning):
     pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
-    auth._api_session.get.return_value = error_409
+    auth._api_session.get.return_value = error_409_provisioning
     with pytest.raises(HostedPiProvisioningError):
         keys = pi.ssh_keys
 
@@ -332,9 +304,9 @@ def test_set_ssh_keys_403(pi_name, pi_info_basic, auth, error_403):
         pi.ssh_keys = None
 
 
-def test_set_ssh_keys_409(pi_name, pi_info_basic, auth, error_409):
+def test_set_ssh_keys_409(pi_name, pi_info_basic, auth, error_409_provisioning):
     pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
-    auth._api_session.put.return_value = error_409
+    auth._api_session.put.return_value = error_409_provisioning
     with pytest.raises(HostedPiProvisioningError):
         pi.ssh_keys = None
 
@@ -430,9 +402,9 @@ def test_power_on_pi_error_403(pi_name, pi_info_basic, auth, error_403):
     assert auth._api_session.put.call_count == 1
 
 
-def test_power_on_pi_error_409(pi_name, pi_info_basic, auth, error_409):
+def test_power_on_pi_error_409(pi_name, pi_info_basic, auth, error_409_provisioning):
     pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
-    auth._api_session.put.return_value = error_409
+    auth._api_session.put.return_value = error_409_provisioning
     with pytest.raises(HostedPiProvisioningError):
         pi.on()
     assert auth._api_session.put.call_count == 1
@@ -484,9 +456,9 @@ def test_reboot_pi_403(pi_name, pi_info_basic, auth, error_403):
         pi.reboot()
 
 
-def test_reboot_pi_409(pi_name, pi_info_basic, auth, error_409):
+def test_reboot_pi_409(pi_name, pi_info_basic, auth, error_409_provisioning):
     pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
-    auth._api_session.post.return_value = error_409
+    auth._api_session.post.return_value = error_409_provisioning
     pi.reboot()  # should not raise an error, 409 means already rebooting
 
 
@@ -546,10 +518,12 @@ def test_cancel_pi_error_403(pi_name, pi_info_basic, auth, api_url, pi_info_resp
     assert repr(pi) == "<Pi name=test-pi model=3B>"
 
 
-def test_cancel_pi_error_409(pi_name, pi_info_basic, auth, api_url, pi_info_response, error_409):
+def test_cancel_pi_error_409(
+    pi_name, pi_info_basic, auth, api_url, pi_info_response, error_409_provisioning
+):
     pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
     auth._api_session.get.return_value = pi_info_response
-    auth._api_session.delete.return_value = error_409
+    auth._api_session.delete.return_value = error_409_provisioning
     with pytest.raises(HostedPiProvisioningError):
         pi.cancel()
     assert auth._api_session.delete.call_count == 1
@@ -719,9 +693,9 @@ def test_get_pi_info_error_403(pi_name, pi_info_basic, auth, error_403):
     assert auth._api_session.get.call_count == 1
 
 
-def test_get_pi_info_error_409(pi_name, pi_info_basic, auth, error_409):
+def test_get_pi_info_error_409(pi_name, pi_info_basic, auth, error_409_provisioning):
     pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
-    auth._api_session.get.return_value = error_409
+    auth._api_session.get.return_value = error_409_provisioning
     with pytest.raises(HostedPiProvisioningError):
         pi.info
     assert auth._api_session.get.call_count == 1

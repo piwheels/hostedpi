@@ -8,6 +8,7 @@ from structlog import get_logger
 from .auth import MythicAuth
 from .exc import (
     HostedPiInvalidParametersError,
+    HostedPiNameExistsError,
     HostedPiNotAuthorizedError,
     HostedPiOutOfStockError,
     HostedPiServerError,
@@ -58,7 +59,6 @@ class PiCloud:
         *,
         auth: Union[MythicAuth, None] = None,
     ):
-        self._api_url = str(auth.settings.api_url)
         self.ssh_keys = None
         if ssh_keys is not None:
             if not isinstance(ssh_keys, SSHKeySources):
@@ -67,6 +67,7 @@ class PiCloud:
         if auth is None:
             auth = MythicAuth()
         self._auth = auth
+        self._api_url = str(auth.settings.api_url)
 
     def __repr__(self):
         return f"<PiCloud id={self._auth._settings.id}>"
@@ -205,6 +206,8 @@ class PiCloud:
                 raise HostedPiInvalidParametersError(error) from exc
             if response.status_code == 403:
                 raise HostedPiNotAuthorizedError(error) from exc
+            if response.status_code == 409:
+                raise HostedPiNameExistsError(error) from exc
             if response.status_code == 503:
                 raise HostedPiOutOfStockError(error) from exc
             raise HostedPiServerError(error) from exc
@@ -271,6 +274,8 @@ class PiCloud:
             response.raise_for_status()
         except HTTPError as exc:
             error = get_error_message(exc)
+            if response.status_code == 403:
+                raise HostedPiNotAuthorizedError(error) from exc
             raise HostedPiServerError(error) from exc
 
         data = SpecsResponse.model_validate(response.json())

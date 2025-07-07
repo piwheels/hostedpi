@@ -32,3 +32,7 @@ class HostedPiOutOfStockError(HostedPiServerError):
 
 class HostedPiProvisioningError(HostedPiServerError):
     "Exception raised when an action cannot be performed because the Pi is still being provisioned"
+
+
+class HostedPiNameExistsError(HostedPiServerError):
+    "Exception raised when a Pi with the specified name already exists"
