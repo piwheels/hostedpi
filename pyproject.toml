@@ -1,6 +1,6 @@
 [project]
 name = "hostedpi"
-version = "0.4.0"
+version = "0.4.1"
 description = "Python interface to the Mythic Beasts Hosted Pi API"
 authors = [
     {name = "Ben Nuttall", email = "ben@bennuttall.com"}
