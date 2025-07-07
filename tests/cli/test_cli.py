@@ -1,4 +1,3 @@
-import re
 from unittest.mock import Mock, patch
 
 import pytest
@@ -7,11 +6,6 @@ from typer.testing import CliRunner
 
 from hostedpi.cli import app
 from hostedpi.pi import Pi
-
-
-def strip_ansi(text):
-    ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
-    return ANSI_ESCAPE.sub("", text)
 
 
 runner = CliRunner()
@@ -61,32 +55,28 @@ def ssh_key_path(tmp_path) -> str:
 def test_implicit_help(usage_text, help_text):
     result = runner.invoke(app, [])
     assert result.exit_code == 0
-    output = strip_ansi(result.output)
-    assert usage_text in output
-    assert help_text in output
+    assert usage_text in result.output
+    assert help_text in result.output
 
 
 def test_explicit_help(usage_text, help_text):
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
-    output = strip_ansi(result.output)
-    assert usage_text in output
-    assert help_text in output
+    assert usage_text in result.output
+    assert help_text in result.output
 
 
 def test_test_with_auth():
     result = runner.invoke(app, ["test"])
     assert result.exit_code == 0
-    output = strip_ansi(result.output)
-    assert "Connected to the Mythic Beasts API" in output
+    assert "Connected to the Mythic Beasts API" in result.output
 
 
 def test_test_no_auth(mock_get_picloud):
     mock_get_picloud.side_effect = HTTPError
     result = runner.invoke(app, ["test"])
     assert result.exit_code > 0
-    output = strip_ansi(result.output)
-    assert "Failed to authenticate" in output
+    assert "Failed to authenticate" in result.output
 
 
 def test_images():
@@ -97,8 +87,7 @@ def test_images():
 def test_images_no_model():
     result = runner.invoke(app, ["images"])
     assert result.exit_code > 0
-    output = strip_ansi(result.output)
-    assert "Missing argument 'MODEL'" in output
+    assert "Missing argument 'MODEL'" in result.output
 
 
 def test_list():
