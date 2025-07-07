@@ -55,9 +55,9 @@ def auth_response_with_invalid_body() -> Mock:
     )
 
 
-@patch("hostedpi.auth.get_settings")
-def test_auth_init_with_no_args(get_settings, settings):
-    get_settings.return_value = settings
+@patch("hostedpi.auth.Settings")
+def test_auth_init_with_no_args(settings_cls, settings):
+    settings_cls.return_value = settings
     auth = MythicAuth()
     assert repr(auth) == "<MythicAuth id=test_id>"
 

@@ -3,6 +3,7 @@ from .auth import MythicAuth
 from .models import Pi3ServerSpec, Pi4ServerSpec, PiInfo, SSHKeySources
 from .pi import Pi
 from .picloud import PiCloud
+from .settings import Settings
 
 
 __all__ = [
@@ -13,4 +14,5 @@ __all__ = [
     "Pi4ServerSpec",
     "PiInfo",
     "SSHKeySources",
+    "Settings",
 ]

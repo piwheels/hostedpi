@@ -16,6 +16,8 @@ def unset_hostedpi_env(monkeypatch):
     monkeypatch.delenv("HOSTEDPI_ID", raising=False)
     monkeypatch.delenv("HOSTEDPI_SECRET", raising=False)
     monkeypatch.delenv("HOSTEDPI_LOG_LEVEL", raising=False)
+    monkeypatch.delenv("HOSTEDPI_AUTH_URL", raising=False)
+    monkeypatch.delenv("HOSTEDPI_API_URL", raising=False)
 
 
 @pytest.fixture

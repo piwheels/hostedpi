@@ -8,7 +8,7 @@ from structlog import get_logger
 
 from .exc import MythicAuthenticationError
 from .models.mythic.responses import AuthResponse
-from .settings import Settings, get_settings
+from .settings import Settings
 
 
 hostedpi_version = version("hostedpi")
@@ -16,6 +16,36 @@ logger = get_logger()
 
 
 class MythicAuth:
+    """
+    This class handles authentication with the Mythic Beasts Hosted Pi API.
+
+    It manages the access token used to authenticate requests to the API, and automatically
+    refreshes it when it expires.
+
+    :type settings: :class:`~hostedpi.settings.Settings` or None
+    :param settings:
+        The settings used to configure the API. If not provided, defaults to a new
+        instance of :class:`~hostedpi.settings.Settings`.
+
+    :type auth_session: :class:`requests.Session` or None
+    :param auth_session:
+        The session used to make authentication requests. If not provided, defaults to a new
+        :class:`requests.Session`.
+
+    :type api_session: :class:`requests.Session` or None
+    :param api_session:
+        The session used to make API requests. If not provided, defaults to a new
+        :class:`requests.Session`.
+
+    .. warning::
+        This is for advanced use only. Most users should not need to interact with the
+        authentication system directly, as it is handled automatically by
+        :class:`~hostedpi.picloud.PiCloud`.
+
+    :raises pydantic_core.ValidationError:
+        If the provided settings are invalid or missing required fields.
+    """
+
     def __init__(
         self,
         *,
@@ -24,7 +54,7 @@ class MythicAuth:
         api_session: Union[Session, None] = None,
     ):
         if settings is None:
-            settings = get_settings()
+            settings = Settings()
         if auth_session is None:
             auth_session = Session()
         if api_session is None:
@@ -43,15 +73,25 @@ class MythicAuth:
 
     @property
     def session(self) -> Session:
+        """
+        The session used to make requests to the Hosted Pi API
+        """
         self._api_session.headers["Authorization"] = f"Bearer {self.token}"
         return self._api_session
 
     @property
     def settings(self) -> Settings:
+        """
+        The settings used to configure the API
+        """
         return self._settings
 
     @property
     def token(self) -> str:
+        """
+        The access token used to authenticate requests to the API. The token is automatically
+        refreshed when it expires.
+        """
         if self._token is None or datetime.now() > self._token_expiry:
             data = {"grant_type": "client_credentials"}
             creds = (self.settings.id, self.settings.secret.get_secret_value())

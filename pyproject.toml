@@ -73,7 +73,6 @@ omit = [
     "hostedpi/__main__.py",
     "hostedpi/cli/utils.py",
     "hostedpi/cli/arguments.py",
-    "hostedpi/cli/format.py",
     "hostedpi/cli/options.py",
     "hostedpi/logger.py"
 ]

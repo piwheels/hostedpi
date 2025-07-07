@@ -585,7 +585,8 @@ class Pi:
     def get_provision_status(self) -> Union[PiInfo, ProvisioningServer, None]:
         """
         Send a request to the server creation status endpoint and return the status as either a
-        string or :class:`~hostedpi.models.mythic.responses.PiInfo.` or ``None`` if the status is
+        :class:`~hostedpi.models.mythic.responses.PiInfo` or
+        :class:`~hostedpi.models.mythic.responses.ProvisioningServer` or ``None`` if the status is
         not yet available.
 
         :raises HostedPiNotAuthorizedError:

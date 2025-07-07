@@ -43,13 +43,14 @@ pygments_style = "sphinx"
 
 # -- Autodoc configuration ------------------------------------------------
 
-autodoc_member_order = "groupwise"
+autodoc_member_order = "bysource"
 
 # -- Intersphinx configuration --------------------------------------------
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3.9", None),
     "pydantic": ("https://docs.pydantic.dev/latest/", None),
+    "requests": ("https://requests.readthedocs.io/en/latest/", None),
 }
 
 # -- Options for HTML output ----------------------------------------------
@@ -62,7 +63,7 @@ html_title = "%s %s Documentation" % (project, version)
 # html_short_title = None
 # html_logo = None
 # html_favicon = None
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 # html_extra_path = []
 # html_last_updated_fmt = '%b %d, %Y'
 # html_use_smartypants = True
@@ -81,3 +82,9 @@ autodoc_pydantic_model_show_json = False
 autodoc_pydantic_model_show_validators = False
 autodoc_pydantic_model_show_validator_members = False
 autodoc_pydantic_field_list_validators = False
+
+nitpicky = True
+nitpick_ignore = [
+    ("py:class", "pydantic.types.PathType"),
+    ("py:class", "file"),
+]

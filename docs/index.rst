@@ -40,27 +40,27 @@ View the information about Pis in your account from the command line:
     pi345
     pi456
     $ hostedpi table
-    ┏━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
-    ┃ Name            ┃ Model ┃ Memory ┃ CPU Speed ┃
-    ┡━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ pi123           │ 3     │ 1 GB   │ 1.2 GHz   │
-    │ pi234           │ 3     │ 1 GB   │ 1.2 GHz   │
-    │ pi345           │ 4     │ 8 GB   │ 2.0 GHz   │
-    │ pi456           │ 4     │ 4 GB   │ 1.5 GHz   │
-    └─────────────────┴───────┴────────┴───────────┘
+    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃
+    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
+    │ pi123 │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ pi234 │ 3     │ 1 GB   │ 1.2 GHz   │
+    │ pi345 │ 4     │ 8 GB   │ 2.0 GHz   │
+    │ pi456 │ 4     │ 4 GB   │ 1.5 GHz   │
+    └───────┴───────┴────────┴───────────┘
     $ hostedpi table pi123
-    ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
-    ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃
-    ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ pi123     │ 3     │ 1 GB   │ 1.2 GHz   │
-    └───────────┴───────┴────────┴───────────┘
+    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃
+    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
+    │ pi123 │ 3     │ 1 GB   │ 1.2 GHz   │
+    └───────┴───────┴────────┴───────────┘
 
     $ hostedpi table pi345 --full
-    ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
-    ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃ NIC Speed ┃ Disk size ┃ Status     ┃ Initialised keys ┃ IPv4 SSH port ┃
-    ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
-    │ pi123     │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 50 GB     │ Powered on │ Yes              │ 5387          │
-    └───────────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴──────────────────┴───────────────┘
+    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃ NIC Speed ┃ Disk size ┃ Status     ┃ Initialised keys ┃ IPv4 SSH port ┃
+    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+    │ pi345 │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 50 GB     │ Powered on │ Yes              │ 5387          │
+    └───────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴──────────────────┴───────────────┘
 
 Provision a new Pi with your public key and SSH into it:
 
@@ -68,11 +68,11 @@ Provision a new Pi with your public key and SSH into it:
 
     $ hostedpi create mypi --model 3 --ssh-key-path ~/.ssh/id_rsa.pub --wait
     Server provisioned
-    ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
-    ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃
-    ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ c8046pw79 │ 3     │ 1 GB   │ 1.2 GHz   │
-    └───────────┴───────┴────────┴───────────┘
+    ┏━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
+    ┃ Name ┃ Model ┃ Memory ┃ CPU Speed ┃
+    ┡━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
+    │ mypi | 3     │ 1 GB   │ 1.2 GHz   │
+    └──────┴───────┴────────┴───────────┘
     $ hostedpi ssh command mypi
     ssh -p 5063 root@ssh.mypi.hostedpi.com
     $ ssh -p 5063 root@ssh.mypi.hostedpi.com
@@ -103,8 +103,8 @@ Table of Contents
 
     getting_started
     cli/index
-    api/index
     usage
+    api/index
     specs
     env
     development

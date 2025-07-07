@@ -2,6 +2,8 @@
 Exceptions
 ==========
 
+.. currentmodule:: hostedpi.exc
+
 Exceptions raised by the **hostedpi** module are documented here.
 
 They can be imported from ``hostedpi.exc``, for example:
@@ -10,32 +12,32 @@ They can be imported from ``hostedpi.exc``, for example:
 
     from hostedpi.exc import HostedPiException
 
-.. autoclass:: hostedpi.exc.HostedPiException
+.. autoclass:: HostedPiException
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.MythicAuthenticationError
+.. autoclass:: MythicAuthenticationError
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.HostedPiUserError
+.. autoclass:: HostedPiUserError
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.HostedPiValidationError
+.. autoclass:: HostedPiValidationError
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.HostedPiServerError
+.. autoclass:: HostedPiServerError
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.HostedPiInvalidParametersError
+.. autoclass:: HostedPiInvalidParametersError
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.HostedPiNotAuthorizedError
+.. autoclass:: HostedPiNotAuthorizedError
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.HostedPiOutOfStockError
+.. autoclass:: HostedPiOutOfStockError
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.HostedPiProvisioningError
+.. autoclass:: HostedPiProvisioningError
     :show-inheritance:
 
-.. autoclass:: hostedpi.exc.HostedPiNameExistsError
+.. autoclass:: HostedPiNameExistsError
     :show-inheritance:

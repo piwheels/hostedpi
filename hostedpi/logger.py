@@ -1,19 +1,12 @@
 import json
+import os
 
 import structlog
-from pydantic import ValidationError
 from requests import Response
 from structlog import get_logger
 
-from .settings import get_settings
 
-
-try:
-    settings = get_settings()
-    log_level = settings.log_level
-except ValidationError:
-    log_level = "ERROR"
-
+log_level = os.getenv("HOSTEDPI_LOG_LEVEL", "ERROR")
 structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(log_level))
 logger = get_logger()
 

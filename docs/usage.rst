@@ -210,7 +210,7 @@ SSH keys can be added to an existing Pi by calling :meth:`~hostedpi.pi.Pi.add_ss
 
     pi.add_ssh_keys(ssh_keys)
 
-Alternatively, you can set the :attr:`~hostedpi.models.pis.Pi.ssh_keys` attribute directly:
+Alternatively, you can set the :attr:`~hostedpi.pi.Pi.ssh_keys` attribute directly:
 
 .. code-block:: python
 
@@ -224,6 +224,45 @@ Alternatively, you can set the :attr:`~hostedpi.models.pis.Pi.ssh_keys` attribut
 
 .. warning::
 
-    Setting :attr:`~hostedpi.models.pis.Pi.ssh_keys` will overwrite any existing SSH keys on the Pi.
-    If you want to add keys without removing existing ones, use ``|=`` instead of ``=`` or use
+    Setting :attr:`~hostedpi.pi.Pi.ssh_keys` will overwrite any existing SSH keys on the Pi.
+    If you want to add keys without removing existing ones, use ``|=`` instead of ``=``, or use
     :meth:`~hostedpi.pi.Pi.add_ssh_keys`.
+
+Advanced usage
+==============
+
+Handling authentication, and the connection between :class:`~hostedpi.picloud.PiCloud` and
+:class:`~hostedpi.pi.Pi` instances is handled automatically, so generally users don't need to manage
+this themselves. However, the :class:`~hostedpi.picloud.PiCloud` class *can* be constructed with
+a :class:`~hostedpi.auth.MythicAuth` instance for more fine-grained control over authentication
+and settings:
+
+.. code-block:: python
+
+    from hostedpi import PiCloud, MythicAuth, Settings
+    from requests import Session
+
+    settings = Settings(
+        id="your_api_id",
+        secret="your_api_secret",
+        auth_url="http://localhost:8000/login",
+        api_url="http://localhost:8000/api/",
+    )
+
+    auth = MythicAuth(
+        settings=settings,
+        auth_session=Session(),
+        api_session=Session(),
+    )
+
+    cloud = PiCloud(auth=auth)
+
+This is largely only useful for testing purposes. We use it for `dependency injection`_ purposes in
+our tests.
+
+.. _dependency injection: https://en.wikipedia.org/wiki/Dependency_injection
+
+.. warning::
+
+    The ``auth_session`` and ``api_session`` must be separate sessions, as the ``api_session``
+    requires a token which is fetched by the ``auth_session``.

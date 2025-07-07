@@ -27,3 +27,4 @@ Contents
    pi
    models
    exceptions
+   auth

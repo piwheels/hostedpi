@@ -4,11 +4,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class NewServerSpec(BaseModel):
-    """
-    Base model for Pi server specifications
-    """
-
-    disk: int = Field(default=10, description="Disk size in GB (must be a multiple of 10).")
+    disk: int = Field(default=10, description="Disk size in GB")
     model: int
     memory: int = 0
     memory_gb: Union[int, None] = Field(default=None, exclude=True)
@@ -36,6 +32,13 @@ class Pi3ServerSpec(NewServerSpec):
     """
     Specification model for the Raspberry Pi 3
 
+    :type disk: int
+    :param disk: Disk size in GB. Must be a multiple of 10, defaults to 10.
+
+    :type os_image: str | None
+    :param os_image:
+        Operating system image to use. Defaults to None, which uses Mythic's default image.
+
     :raises pydantic_core.ValidationError:
         If the server specification is invalid
     """
@@ -57,6 +60,19 @@ class Pi4ServerSpec(NewServerSpec):
     """
     Specification model for the Raspberry Pi 4
 
+    :type disk: int
+    :param disk: Disk size in GB. Must be a multiple of 10, defaults to 10.
+
+    :type memory_gb: int
+    :param memory_gb: Memory in GB. Can be 4 or 8, defaults to 4.
+
+    :type cpu_speed: int
+    :param cpu_speed: CPU speed in MHz. Can be 1500 or 2000, defaults to 1500.
+
+    :type os_image: str | None
+    :param os_image:
+        Operating system image to use. Defaults to None, which uses Mythic's default image.
+
     :raises pydantic_core.ValidationError:
         If the server specification is invalid
     """
@@ -66,11 +82,11 @@ class Pi4ServerSpec(NewServerSpec):
     memory_gb: Literal[4, 8] = Field(
         default=4,
         exclude=True,
-        description="Memory in GB. Pi 4 supports 4GB or 8GB, defaults to 4GB.",
+        description="Memory in GB. Pi 4 supports 4GB or 8GB",
     )
     cpu_speed: Literal[1500, 2000] = Field(
         default=1500,
-        description="CPU speed in MHz. Pi 4 supports 1500MHz or 2000MHz, defaults to 1500MHz.",
+        description="CPU speed in MHz. Pi 4 supports 1500MHz or 2000MHz.",
     )
 
     @model_validator(mode="after")
