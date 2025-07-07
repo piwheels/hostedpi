@@ -1,5 +1,5 @@
-from unittest.mock import Mock, patch
 import re
+from unittest.mock import Mock, patch
 
 import pytest
 from requests import HTTPError
