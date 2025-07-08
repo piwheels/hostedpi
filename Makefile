@@ -47,6 +47,6 @@ doc:
 	sphinx-build -b html -d $(DOC_TREES) docs/ $(DOC_HTML)
 
 doc-serve:
-	cd $(DOC_HTML) && python -m http.server
+	python -m http.server -d $(DOC_HTML)
 
 .PHONY: all install develop format test clean build release doc doc-serve
