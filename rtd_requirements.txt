@@ -1,4 +1,5 @@
-sphinx-jsonschema==1.19.1
+.
+Sphinx==7.4.7
 sphinx-rtd-theme==3.0.2
 sphinxcontrib-applehelp==2.0.0
 sphinxcontrib-devhelp==2.0.0
