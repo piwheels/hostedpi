@@ -2,6 +2,7 @@
 NAME=hostedpi
 DOC_HTML=docs/build/html
 DOC_TREES=docs/build/doctrees
+DOC_REQS=rtd_requirements.txt
 
 # Default target
 all:
@@ -49,4 +50,9 @@ doc:
 doc-serve:
 	python -m http.server -d $(DOC_HTML)
 
-.PHONY: all install develop format test clean build release doc doc-serve
+doc-reqs:
+	echo "." > $(DOC_REQS)
+	pip freeze | grep -i sphinx >> $(DOC_REQS)
+	pip freeze | grep -i autodoc >> $(DOC_REQS)
+
+.PHONY: all install develop format test clean build release doc doc-serve doc-reqs
