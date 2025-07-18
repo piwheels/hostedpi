@@ -17,6 +17,19 @@ def mock_get_picloud():
         yield get_picloud
 
 
+@pytest.fixture(autouse=True)
+def mock_utils_requests():
+    with patch("hostedpi.utils.requests") as requests:
+        requests.get.return_value.json.return_value = {}
+        yield requests
+
+
+@pytest.fixture(autouse=True)
+def patch_log_request():
+    with patch("hostedpi.utils.log_request") as log_request:
+        yield log_request
+
+
 @pytest.fixture()
 def mock_pi(pi_name) -> Pi:
     pi = Mock()
