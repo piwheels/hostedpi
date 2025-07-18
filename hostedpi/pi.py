@@ -251,11 +251,18 @@ class Pi:
         return self.info.provision_status
 
     @property
+    def ipv4_ssh_hostname(self) -> str:
+        """
+        The hostname to use when connecting to the Pi over IPv4
+        """
+        return f"ssh.{self.name}.hostedpi.com"
+
+    @property
     def ipv4_ssh_command(self) -> str:
         """
         The SSH command required to connect to the Pi over IPv4
         """
-        return f"ssh -p {self.ipv4_ssh_port} root@ssh.{self.name}.hostedpi.com"
+        return f"ssh -p {self.ipv4_ssh_port} root@{self.ipv4_ssh_hostname}"
 
     @property
     def ipv6_ssh_command(self) -> str:
