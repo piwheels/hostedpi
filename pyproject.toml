@@ -1,6 +1,6 @@
 [project]
 name = "hostedpi"
-version = "0.4.1"
+version = "0.4.2"
 description = "Python interface to the Mythic Beasts Hosted Pi API"
 authors = [
     {name = "Ben Nuttall", email = "ben@bennuttall.com"}
@@ -26,7 +26,7 @@ dependencies = [
     "requests (>=2.32.3,<3.0.0)",
     "pydantic (>=2,<3.0.0)",
     "pydantic-settings (>=2.7.1,<3.0.0)",
-    "structlog (>=25.1.0,<26.0.0)",
+    "structlog (>=25.1.0)",
 ]
 
 [project.urls]
@@ -49,8 +49,8 @@ sphinx = "*"
 sphinx-rtd-theme = "*"
 ipython = "*"
 twine = "*"
-black = "^25.1.0"
-isort = "^6.0.1"
+black = "*"
+isort = "*"
 autodoc-pydantic = "^2.2.0"
 
 [build-system]

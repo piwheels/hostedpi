@@ -108,6 +108,7 @@ Table of Contents
     specs
     env
     development
+    changelog
 
 Contributing
 ============
