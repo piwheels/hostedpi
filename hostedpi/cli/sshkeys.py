@@ -5,8 +5,9 @@ from rich.table import Table
 from typer import Exit, Typer
 
 from ..exc import HostedPiException
-from ..utils import collect_ssh_keys, remove_imported_ssh_keys, remove_ssh_keys_by_label
+from ..utils import remove_imported_ssh_keys, remove_ssh_keys_by_label
 from . import arguments, options, utils
+from ..models.sshkeys import SSHKeySources
 
 
 keys_app = Typer()
@@ -111,10 +112,11 @@ def do_add(
     Add an SSH key to one or more Raspberry Pi servers
     """
     pis = utils.get_pis(names, filter)
+    ssh_keys = SSHKeySources(ssh_key_path=ssh_key_path)
     for pi in pis:
         keys_before = len(pi.ssh_keys)
         try:
-            pi.ssh_keys |= {ssh_key_path.read_text()}
+            pi.add_ssh_keys(ssh_keys)
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
@@ -218,14 +220,14 @@ def do_import(
         utils.print_error("You must specify at least one source to import from")
         raise Exit(1)
     pis = utils.get_pis(names, filter)
-    ssh_keys = collect_ssh_keys(
+    ssh_keys = SSHKeySources(
         github_usernames=set(github) if github else None,
         launchpad_usernames=set(launchpad) if launchpad else None,
     )
     for pi in pis:
         keys_before = len(pi.ssh_keys)
         try:
-            pi.ssh_keys |= ssh_keys
+            pi.add_ssh_keys(ssh_keys)
         except HostedPiException as exc:
             utils.print_exc(exc)
             continue
