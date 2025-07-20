@@ -1,7 +1,6 @@
 import os
 import sys
 from datetime import datetime
-from importlib.metadata import version
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
