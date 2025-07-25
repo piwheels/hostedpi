@@ -543,15 +543,13 @@ def test_get_ipv6_ssh_config(auth, pis_response, pi_info_response, pi_info_respo
         pi_info_response_2,
     ]
     ipv6_config = cloud.ipv6_ssh_config
-    assert auth._api_session.get.call_count == 3
+    assert auth._api_session.get.call_count == 1
     assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
-    assert auth._api_session.get.call_args_list[1][0][0] == cloud._api_url + "servers/pi1"
-    assert auth._api_session.get.call_args_list[2][0][0] == cloud._api_url + "servers/pi2"
     assert ipv6_config.count("\n") == 5
     lines = ipv6_config.splitlines()
     assert lines[0] == "Host pi1"
     assert lines[1] == "    user root"
-    assert lines[2] == "    hostname 2a00:1098:8:64::1"
+    assert lines[2] == "    hostname pi1.hostedpi.com"
     assert lines[3] == "Host pi2"
     assert lines[4] == "    user root"
-    assert lines[5] == "    hostname 2a00:1098:8:64::2"
+    assert lines[5] == "    hostname pi2.hostedpi.com"

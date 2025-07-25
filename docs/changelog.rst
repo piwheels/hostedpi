@@ -8,6 +8,14 @@ Changelog
     Once the library reaches v1.0, it will be considered stable. Please consider giving feedback to
     help stabilise the API.
 
+Release 0.4.3 (2025-07-25)
+==========================
+
+- Added :attr:`~hostedpi.pi.Pi.ipv6_ssh_hostname` and :attr:`~hostedpi.pi.Pi.hostname` properties to
+  :class:`~hostedpi.pi.Pi`
+- Changed :attr:`~hostedpi.pi.Pi.ipv6_ssh_command` and :attr:`~hostedpi.pi.Pi.ipv6_ssh_config` to
+  use the hostname rather than the IPv6 address
+
 Release 0.4.2 (2025-07-19)
 ==========================
 

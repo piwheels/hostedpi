@@ -205,14 +205,14 @@ def test_pi_get_info(pi_name, pi_info_basic, auth, pi_info_response, pi_info_ful
     assert pi.memory_gb == 1
     assert pi.nic_speed == 100
     assert pi.ipv4_ssh_command == "ssh -p 5100 root@ssh.test-pi.hostedpi.com"
-    assert pi.ipv6_ssh_command == "ssh root@[2a00:1098:8:64::1]"
+    assert pi.ipv6_ssh_command == "ssh root@test-pi.hostedpi.com"
     assert pi.ipv6_address == IPv6Address("2a00:1098:8:64::1")
     assert pi.ipv6_network == IPv6Network("2a00:1098:0008:6400::/56")
     assert pi.initialised_keys is False
     assert pi.location == "CLL"
     v4c = "Host test-pi\n    user root\n    port 5100\n    hostname ssh.test-pi.hostedpi.com"
     assert pi.ipv4_ssh_config == v4c
-    v6c = "Host test-pi\n    user root\n    hostname 2a00:1098:8:64::1"
+    v6c = "Host test-pi\n    user root\n    hostname test-pi.hostedpi.com"
     assert pi.ipv6_ssh_config == v6c
     assert pi.status == "Powered on"
     assert pi.provision_status == "live"

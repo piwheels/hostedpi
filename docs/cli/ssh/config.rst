@@ -61,7 +61,7 @@ Output the IPv6 SSH config for a Pi:
     $ hostedpi ssh config mypi --ipv6
     Host mypi
         user root
-        hostname 2a00:1098:8:5b::1
+        hostname mypi.hostedpi.com
 
 Output the IPv4 SSH config for multiple Pis:
 
