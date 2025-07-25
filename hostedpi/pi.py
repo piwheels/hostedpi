@@ -251,25 +251,39 @@ class Pi:
         return self.info.provision_status
 
     @property
+    def hostname(self) -> str:
+        """
+        The hostname of the Pi
+        """
+        return f"{self.name}.hostedpi.com"
+
+    @property
     def ipv4_ssh_hostname(self) -> str:
         """
-        The hostname to use when connecting to the Pi over IPv4
+        The hostname to use when connecting to the Pi over SSH using IPv4
         """
-        return f"ssh.{self.name}.hostedpi.com"
+        return f"ssh.{self.hostname}"
+
+    @property
+    def ipv6_ssh_hostname(self) -> str:
+        """
+        The hostname to use when connecting to the Pi over SSH using IPv6
+        """
+        return self.hostname
 
     @property
     def ipv4_ssh_command(self) -> str:
         """
-        The SSH command required to connect to the Pi over IPv4
+        The SSH command required to connect to the Pi over SSH using IPv4
         """
         return f"ssh -p {self.ipv4_ssh_port} root@{self.ipv4_ssh_hostname}"
 
     @property
     def ipv6_ssh_command(self) -> str:
         """
-        The SSH command required to connect to the Pi over IPv6
+        The SSH command required to connect to the Pi over SSH using IPv6
         """
-        return f"ssh root@[{self.ipv6_address}]"
+        return f"ssh root@{self.ipv6_ssh_hostname}"
 
     @property
     def ipv4_ssh_config(self) -> str:
@@ -280,7 +294,7 @@ class Pi:
         return f"""Host {self.name}
     user root
     port {self.ipv4_ssh_port}
-    hostname ssh.{self.name}.hostedpi.com
+    hostname {self.ipv4_ssh_hostname}
         """.strip()
 
     @property
@@ -291,7 +305,7 @@ class Pi:
         """
         return f"""Host {self.name}
     user root
-    hostname {self.ipv6_address}
+    hostname {self.ipv6_ssh_hostname}
         """.strip()
 
     @property
@@ -302,7 +316,7 @@ class Pi:
         .. note::
             Note that a web server must be installed on the Pi for the URL to be resolvable.
         """
-        return f"http://www.{self.name}.hostedpi.com"
+        return f"http://www.{self.hostname}"
 
     @property
     def url_ssl(self) -> str:
@@ -315,7 +329,7 @@ class Pi:
 
             See https://letsencrypt.org/
         """
-        return f"https://www.{self.name}.hostedpi.com"
+        return f"https://www.{self.hostname}"
 
     @property
     def ssh_keys(self) -> set[str]:

@@ -43,7 +43,7 @@ Output the IPv6 SSH command for a Pi:
 .. code-block:: console
 
     $ hostedpi ssh command mypi --ipv6
-    ssh root@[2a00:1098:8:5b::1]
+    ssh root@mypi.hostedpi.com
 
 .. note::
 
