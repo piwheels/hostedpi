@@ -11,7 +11,9 @@ ssh_app.add_typer(keys_app, name="keys", no_args_is_help=True, help="SSH key man
 
 
 @ssh_app.command("command")
-def do_command(name: arguments.server_name, ipv6: options.ipv6 = False):
+def do_command(
+    name: arguments.server_name, ipv6: options.ipv6 = False, numeric: options.numeric = False
+):
     """
     Get the SSH command to connect to a Raspberry Pi server
     """
@@ -21,7 +23,10 @@ def do_command(name: arguments.server_name, ipv6: options.ipv6 = False):
         raise Exit(1)
     try:
         if ipv6:
-            print(pi.ipv6_ssh_command)
+            if numeric:
+                print(pi.ipv6_ssh_command_numeric)
+            else:
+                print(pi.ipv6_ssh_command)
         else:
             print(pi.ipv4_ssh_command)
     except HostedPiException as exc:
@@ -34,6 +39,7 @@ def do_config(
     names: arguments.server_names = None,
     filter: options.filter_pattern_pi = None,
     ipv6: options.ipv6 = False,
+    numeric: options.numeric = False,
 ):
     """
     Get the SSH config to connect to one or more Raspberry Pi servers
@@ -42,7 +48,10 @@ def do_config(
     for pi in pis:
         try:
             if ipv6:
-                print(pi.ipv6_ssh_config)
+                if numeric:
+                    print(pi.ipv6_ssh_config_numeric)
+                else:
+                    print(pi.ipv6_ssh_config)
             else:
                 print(pi.ipv4_ssh_config)
         except HostedPiException as exc:

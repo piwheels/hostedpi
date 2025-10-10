@@ -89,6 +89,7 @@ def full_pis_table(pis: list[Pi]):
         "Status",
         "Initialised keys",
         "IPv4 SSH port",
+        "IPv6 Address",
     ]
     table = Table(*headers)
 
@@ -104,6 +105,7 @@ def full_pis_table(pis: list[Pi]):
                 pi.status,
                 format.boolean(pi.initialised_keys),
                 str(pi.ipv4_ssh_port),
+                pi.ipv6_address.compressed,
             )
 
 
