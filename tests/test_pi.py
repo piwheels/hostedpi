@@ -707,3 +707,56 @@ def test_get_pi_info_error_500(pi_name, pi_info_basic, auth, error_500):
     with pytest.raises(HostedPiServerError):
         pi.info
     assert auth._api_session.get.call_count == 1
+
+
+def test_pi_get_ipv4_ssh_command(pi_name, pi_info_basic, auth, pi_info_response):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
+    assert pi.get_ipv4_ssh_command() == "ssh -p 5100 root@ssh.test-pi.hostedpi.com"
+    assert pi.get_ipv4_ssh_command(user="pi") == "ssh -p 5100 pi@ssh.test-pi.hostedpi.com"
+
+
+def test_pi_get_ipv6_ssh_command(pi_name, pi_info_basic, auth, pi_info_response):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
+    assert pi.get_ipv6_ssh_command() == "ssh root@test-pi.hostedpi.com"
+    assert pi.get_ipv6_ssh_command(user="pi") == "ssh pi@test-pi.hostedpi.com"
+    assert pi.get_ipv6_ssh_command(numeric=True) == "ssh root@[2a00:1098:8:64::1]"
+    assert pi.get_ipv6_ssh_command(user="pi", numeric=True) == "ssh pi@[2a00:1098:8:64::1]"
+
+
+def test_pi_get_ipv4_ssh_config(pi_name, pi_info_basic, auth, pi_info_response):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
+
+    config = pi.get_ipv4_ssh_config()
+    assert "Host test-pi" in config
+    assert "user root" in config
+    assert "port 5100" in config
+    assert "hostname ssh.test-pi.hostedpi.com" in config
+
+    config = pi.get_ipv4_ssh_config(user="pi")
+    assert "Host test-pi" in config
+    assert "user pi" in config
+    assert "port 5100" in config
+    assert "hostname ssh.test-pi.hostedpi.com" in config
+
+
+def test_pi_get_ipv6_ssh_config(pi_name, pi_info_basic, auth, pi_info_response):
+    pi = Pi(name=pi_name, info=pi_info_basic, auth=auth)
+    auth._api_session.get.return_value = pi_info_response
+
+    config = pi.get_ipv6_ssh_config()
+    assert "Host test-pi" in config
+    assert "user root" in config
+    assert "hostname test-pi.hostedpi.com" in config
+
+    config = pi.get_ipv6_ssh_config(user="pi")
+    assert "Host test-pi" in config
+    assert "user pi" in config
+    assert "hostname test-pi.hostedpi.com" in config
+
+    config = pi.get_ipv6_ssh_config(numeric=True)
+    assert "Host test-pi" in config
+    assert "user root" in config
+    assert "hostname 2a00:1098:8:64::1" in config

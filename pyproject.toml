@@ -1,6 +1,6 @@
 [project]
 name = "hostedpi"
-version = "0.4.3"
+version = "0.4.4"
 description = "Python interface to the Mythic Beasts Hosted Pi API"
 authors = [
     {name = "Ben Nuttall", email = "ben@bennuttall.com"}
@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Intended Audience :: Developers",
     "Topic :: Utilities",
 ]

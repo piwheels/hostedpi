@@ -267,46 +267,39 @@ class Pi:
     @property
     def ipv6_ssh_hostname(self) -> str:
         """
-        The hostname to use when connecting to the Pi over SSH using IPv6
+        The hostname to use when connecting to the Pi using SSH over IPv6
         """
         return self.hostname
 
     @property
     def ipv4_ssh_command(self) -> str:
         """
-        The SSH command required to connect to the Pi over SSH using IPv4
+        The default SSH command required to connect to the Pi using SSH over IPv4
         """
-        return f"ssh -p {self.ipv4_ssh_port} root@{self.ipv4_ssh_hostname}"
+        return self.get_ipv4_ssh_command()
 
     @property
     def ipv6_ssh_command(self) -> str:
         """
-        The SSH command required to connect to the Pi over SSH using IPv6
+        The default SSH command required to connect to the Pi using SSH over IPv6
         """
-        return f"ssh root@{self.ipv6_ssh_hostname}"
+        return self.get_ipv6_ssh_command()
 
     @property
     def ipv4_ssh_config(self) -> str:
         """
-        A string containing the IPv4 SSH config for the Pi. The contents could be added to an SSH
-        config file for easy access to the Pi.
+        A string containing the default IPv4 SSH config for the Pi. The contents could be added to
+        an SSH config file for easy access to the Pi.
         """
-        return f"""Host {self.name}
-    user root
-    port {self.ipv4_ssh_port}
-    hostname {self.ipv4_ssh_hostname}
-        """.strip()
+        return self.get_ipv4_ssh_config()
 
     @property
     def ipv6_ssh_config(self) -> str:
         """
-        A string containing the IPv6 SSH config for the Pi. The contents could be added to an SSH
-        config file for easy access to the Pi.
+        A string containing the default IPv6 SSH config for the Pi. The contents could be added to
+        an SSH config file for easy access to the Pi.
         """
-        return f"""Host {self.name}
-    user root
-    hostname {self.ipv6_ssh_hostname}
-        """.strip()
+        return self.get_ipv6_ssh_config()
 
     @property
     def url(self) -> str:
@@ -503,6 +496,48 @@ class Pi:
             raise HostedPiServerError(error) from exc
 
         self._cancelled = True
+
+    def get_ipv4_ssh_command(self, user: str = "root") -> str:
+        """
+        Construct an SSH command required to connect to the Pi using SSH over IPv4
+        """
+        return f"ssh -p {self.ipv4_ssh_port} {user}@{self.ipv4_ssh_hostname}"
+
+    def get_ipv6_ssh_command(self, *, user: str = "root", numeric: bool = False) -> str:
+        """
+        Construct an SSH command required to connect to the Pi using SSH over IPv6
+        """
+        if numeric:
+            return f"ssh {user}@[{self.ipv6_address.compressed}]"
+        else:
+            return f"ssh {user}@{self.ipv6_ssh_hostname}"
+
+    def get_ipv4_ssh_config(self, user: str = "root") -> str:
+        """
+        Construct a string containing the IPv4 SSH config for the Pi. The contents could be added to
+        an SSH config file for easy access to the Pi.
+        """
+        return f"""Host {self.name}
+    user {user}
+    port {self.ipv4_ssh_port}
+    hostname {self.ipv4_ssh_hostname}
+        """.strip()
+
+    def get_ipv6_ssh_config(
+        self,
+        *,
+        user: str = "root",
+        numeric: bool = False,
+    ) -> str:
+        """
+        Construct a string containing the SSH config for the Pi. The contents could be added to an
+        SSH config file for easy access to the Pi.
+        """
+        hostname = self.ipv6_address.compressed if numeric else self.ipv6_ssh_hostname
+        return f"""Host {self.name}
+    user {user}
+    hostname {hostname}
+        """.strip()
 
     def add_ssh_keys(self, ssh_keys: SSHKeySources) -> set[str]:
         """

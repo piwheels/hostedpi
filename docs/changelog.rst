@@ -8,6 +8,14 @@ Changelog
     Once the library reaches v1.0, it will be considered stable. Please consider giving feedback to
     help stabilise the API.
 
+Release 0.4.4 (2025-10-10)
+==========================
+
+- Added :meth:`~hostedpi.pi.Pi.get_ipv6_ssh_command()` and
+  :meth:`~hostedpi.pi.Pi.get_ipv6_ssh_config()` methods to :class:`~hostedpi.pi.Pi`
+- Added :meth:`~hostedpi.picloud.PiCloud.get_ipv6_ssh_config()` method to
+  :class:`~hostedpi.picloud.PiCloud`
+
 Release 0.4.3 (2025-07-25)
 ==========================
 
