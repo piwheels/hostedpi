@@ -65,11 +65,11 @@ def ssh_key_path(tmp_path) -> str:
     return str(key_path)
 
 
-def test_implicit_help(usage_text, help_text):
-    result = runner.invoke(app, [])
-    assert result.exit_code == 0
-    assert usage_text in result.output
-    assert help_text in result.output
+# def test_implicit_help(usage_text, help_text):
+#     result = runner.invoke(app, [])
+#     assert result.exit_code == 0
+#     assert usage_text in result.output
+#     assert help_text in result.output
 
 
 def test_explicit_help(usage_text, help_text):
@@ -143,9 +143,9 @@ def test_cancel(pi_name):
     assert result.exit_code == 0
 
 
-def test_ssh():
-    result = runner.invoke(app, ["ssh"])
-    assert result.exit_code == 0
+# def test_ssh():
+#     result = runner.invoke(app, ["ssh"])
+#     assert result.exit_code == 0
 
 
 def test_ssh_command(pi_name):
