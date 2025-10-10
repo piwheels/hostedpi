@@ -96,18 +96,34 @@ class PiCloud:
     @property
     def ipv4_ssh_config(self) -> str:
         """
-        A string containing the IPv4 SSH config for all Pis within the account. The contents could
-        be added to an SSH config file for easy access to the Pis in the account.
+        A string containing the default IPv4 SSH config for all Pis within the account. The contents
+        could be added to an SSH config file for easy access to the Pis in the account.
         """
-        return "\n".join(pi.ipv4_ssh_config for pi in self.pis.values())
+        return self.get_ipv4_ssh_config()
 
     @property
     def ipv6_ssh_config(self) -> str:
         """
-        A string containing the IPv6 SSH config for all Pis within the account. The contents could
-        be added to an SSH config file for easy access to the Pis in the account.
+        A string containing the default IPv6 SSH config for all Pis within the account. The contents
+        could be added to an SSH config file for easy access to the Pis in the account.
         """
-        return "\n".join(pi.ipv6_ssh_config for pi in self.pis.values())
+        return self.get_ipv6_ssh_config()
+
+    def get_ipv4_ssh_config(self, user: str = "root") -> str:
+        """
+        Construct a string containing the IPv4 SSH config for all Pis within the account. The
+        contents could be added to an SSH config file for easy access to the Pis in the account.
+        """
+        return "\n".join(pi.get_ipv4_ssh_config(user=user) for pi in self.pis.values())
+
+    def get_ipv6_ssh_config(self, user: str = "root", numeric: bool = False) -> str:
+        """
+        Construct a string containing the IPv6 SSH config for all Pis within the account. The
+        contents could be added to an SSH config file for easy access to the Pis in the account.
+        """
+        return "\n".join(
+            pi.get_ipv6_ssh_config(user=user, numeric=numeric) for pi in self.pis.values()
+        )
 
     def create_pi(
         self,
