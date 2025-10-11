@@ -1,6 +1,6 @@
 [project]
 name = "hostedpi"
-version = "0.4.4"
+version = "0.4.5"
 description = "Python interface to the Mythic Beasts Hosted Pi API"
 authors = [
     {name = "Ben Nuttall", email = "ben@bennuttall.com"}
@@ -31,9 +31,10 @@ dependencies = [
 ]
 
 [project.urls]
-repository = "https://github.com/piwheels/hostedpi/issues"
-documentation = "https://hostedpi.readthedocs.io"
-"Bug Tracker" = "https://github.com/piwheels/hostedpi/issues"
+Repository = "https://github.com/piwheels/hostedpi"
+Documentation = "https://hostedpi.readthedocs.io"
+Issues = "https://github.com/piwheels/hostedpi/issues"
+Changelog = "https://hostedpi.readthedocs.io/en/stable/changelog.html"
 
 [project.scripts]
 hostedpi = 'hostedpi.cli:app'
