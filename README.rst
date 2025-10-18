@@ -34,7 +34,7 @@ View the information about Pis in your account from the command line:
 
 .. code-block:: console
 
-    $ hostedpi list          
+    $ hostedpi ls
     pi123
     pi234
     pi345
@@ -56,23 +56,22 @@ View the information about Pis in your account from the command line:
     └───────┴───────┴────────┴───────────┘
 
     $ hostedpi table pi345 --full
-    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
-    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃ NIC Speed ┃ Disk size ┃ Status     ┃ Initialised keys ┃ IPv4 SSH port ┃
-    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
-    │ pi345 │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 50 GB     │ Powered on │ Yes              │ 5387          │
-    └───────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴──────────────────┴───────────────┘
+    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃ NIC Speed ┃ Disk size ┃ Status     ┃ Initialised keys ┃ IPv4 SSH port ┃ IPv6 Address       ┃
+    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
+    │ pi345 │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 50 GB     │ Powered on │ Yes              │ 5381          │ 2a00:1098:8:17d::1 │
+    └───────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴──────────────────┴───────────────┴────────────────────┘
 
 Provision a new Pi with your public key and SSH into it:
 
 .. code-block:: console
 
     $ hostedpi create mypi --model 3 --ssh-key-path ~/.ssh/id_rsa.pub --wait
-    Server provisioned
-    ┏━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
-    ┃ Name ┃ Model ┃ Memory ┃ CPU Speed ┃
-    ┡━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ mypi | 3     │ 1 GB   │ 1.2 GHz   │
-    └──────┴───────┴────────┴───────────┘
+    ┏━━━━━━┳━━━━━━━━━━━━━┓
+    ┃ Name ┃ Status      ┃
+    ┡━━━━━━╇━━━━━━━━━━━━━┩
+    │ mypi │ Provisioned │
+    └──────┴─────────────┘
     $ hostedpi ssh command mypi
     ssh -p 5063 root@ssh.mypi.hostedpi.com
     $ ssh -p 5063 root@ssh.mypi.hostedpi.com
