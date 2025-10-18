@@ -523,8 +523,8 @@ def test_get_ipv4_ssh_config(auth, pis_response, pi_info_response, pi_info_respo
     assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
     assert auth._api_session.get.call_args_list[1][0][0] == cloud._api_url + "servers/pi1"
     assert auth._api_session.get.call_args_list[2][0][0] == cloud._api_url + "servers/pi2"
-    assert ipv4_config.count("\n") == 7
     lines = ipv4_config.splitlines()
+    assert len(lines) == 8
     assert lines[0] == "Host pi1"
     assert lines[1] == "    user root"
     assert lines[2] == "    port 5100"
@@ -533,6 +533,52 @@ def test_get_ipv4_ssh_config(auth, pis_response, pi_info_response, pi_info_respo
     assert lines[5] == "    user root"
     assert lines[6] == "    port 5123"
     assert lines[7] == "    hostname ssh.pi2.hostedpi.com"
+
+
+def test_get_ipv4_ssh_config_pi_user(auth, pis_response, pi_info_response, pi_info_response_2):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.side_effect = [
+        pis_response,
+        pi_info_response,
+        pi_info_response_2,
+    ]
+    ipv4_config = cloud.get_ipv4_ssh_config(user="pi")
+    assert auth._api_session.get.call_count == 3
+    assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
+    assert auth._api_session.get.call_args_list[1][0][0] == cloud._api_url + "servers/pi1"
+    assert auth._api_session.get.call_args_list[2][0][0] == cloud._api_url + "servers/pi2"
+    lines = ipv4_config.splitlines()
+    assert len(lines) == 8
+    assert lines[0] == "Host pi1"
+    assert lines[1] == "    user pi"
+    assert lines[2] == "    port 5100"
+    assert lines[3] == "    hostname ssh.pi1.hostedpi.com"
+    assert lines[4] == "Host pi2"
+    assert lines[5] == "    user pi"
+    assert lines[6] == "    port 5123"
+    assert lines[7] == "    hostname ssh.pi2.hostedpi.com"
+
+
+def test_get_ipv4_ssh_config_no_user(auth, pis_response, pi_info_response, pi_info_response_2):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.side_effect = [
+        pis_response,
+        pi_info_response,
+        pi_info_response_2,
+    ]
+    ipv4_config = cloud.get_ipv4_ssh_config(user=None)
+    assert auth._api_session.get.call_count == 3
+    assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
+    assert auth._api_session.get.call_args_list[1][0][0] == cloud._api_url + "servers/pi1"
+    assert auth._api_session.get.call_args_list[2][0][0] == cloud._api_url + "servers/pi2"
+    lines = ipv4_config.splitlines()
+    assert len(lines) == 6
+    assert lines[0] == "Host pi1"
+    assert lines[1] == "    port 5100"
+    assert lines[2] == "    hostname ssh.pi1.hostedpi.com"
+    assert lines[3] == "Host pi2"
+    assert lines[4] == "    port 5123"
+    assert lines[5] == "    hostname ssh.pi2.hostedpi.com"
 
 
 def test_get_ipv6_ssh_config(auth, pis_response, pi_info_response, pi_info_response_2):
@@ -545,11 +591,49 @@ def test_get_ipv6_ssh_config(auth, pis_response, pi_info_response, pi_info_respo
     ipv6_config = cloud.ipv6_ssh_config
     assert auth._api_session.get.call_count == 1
     assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
-    assert ipv6_config.count("\n") == 5
     lines = ipv6_config.splitlines()
+    assert len(lines) == 6
     assert lines[0] == "Host pi1"
     assert lines[1] == "    user root"
     assert lines[2] == "    hostname pi1.hostedpi.com"
     assert lines[3] == "Host pi2"
     assert lines[4] == "    user root"
     assert lines[5] == "    hostname pi2.hostedpi.com"
+
+
+def test_get_ipv6_ssh_config_pi_user(auth, pis_response, pi_info_response, pi_info_response_2):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.side_effect = [
+        pis_response,
+        pi_info_response,
+        pi_info_response_2,
+    ]
+    ipv6_config = cloud.get_ipv6_ssh_config(user="pi")
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
+    lines = ipv6_config.splitlines()
+    assert len(lines) == 6
+    assert lines[0] == "Host pi1"
+    assert lines[1] == "    user pi"
+    assert lines[2] == "    hostname pi1.hostedpi.com"
+    assert lines[3] == "Host pi2"
+    assert lines[4] == "    user pi"
+    assert lines[5] == "    hostname pi2.hostedpi.com"
+
+
+def test_get_ipv6_ssh_config_no_user(auth, pis_response, pi_info_response, pi_info_response_2):
+    cloud = PiCloud(auth=auth)
+    auth._api_session.get.side_effect = [
+        pis_response,
+        pi_info_response,
+        pi_info_response_2,
+    ]
+    ipv6_config = cloud.get_ipv6_ssh_config(user=None)
+    assert auth._api_session.get.call_count == 1
+    assert auth._api_session.get.call_args_list[0][0][0] == cloud._api_url + "servers"
+    lines = ipv6_config.splitlines()
+    assert len(lines) == 4
+    assert lines[0] == "Host pi1"
+    assert lines[1] == "    hostname pi1.hostedpi.com"
+    assert lines[2] == "Host pi2"
+    assert lines[3] == "    hostname pi2.hostedpi.com"

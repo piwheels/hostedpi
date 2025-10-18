@@ -16,6 +16,7 @@ def do_command(
     ipv6: options.ipv6 = False,
     numeric: options.numeric = False,
     user: options.user = "root",
+    no_user: options.no_user = False,
 ):
     """
     Get the SSH command to connect to a Raspberry Pi server
@@ -23,6 +24,9 @@ def do_command(
     if numeric and not ipv6:
         print_error("--numeric is only supported with --ipv6")
         raise Exit(1)
+
+    if no_user:
+        user = None
 
     pi = get_pi(name)
     if pi is None:
@@ -45,6 +49,7 @@ def do_config(
     ipv6: options.ipv6 = False,
     numeric: options.numeric = False,
     user: options.user = "root",
+    no_user: options.no_user = False,
 ):
     """
     Get the SSH config to connect to one or more Raspberry Pi servers
@@ -52,6 +57,9 @@ def do_config(
     if numeric and not ipv6:
         print_error("--numeric is only supported with --ipv6")
         raise Exit(1)
+
+    if no_user:
+        user = None
 
     pis = get_pis(names, filter)
     for pi in pis:

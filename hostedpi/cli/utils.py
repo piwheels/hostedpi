@@ -120,9 +120,8 @@ def create_pi(
     ssh_key_path: Union[Path, None],
     github_usernames: Union[set[str], None],
     launchpad_usernames: Union[set[str], None],
-    full: bool,
     name: Union[str, None] = None,
-):
+) -> Pi:
     data = {
         "disk": disk,
         "memory_gb": memory_gb,
@@ -143,16 +142,7 @@ def create_pi(
         raise HostedPiValidationError(f"Invalid server spec: {exc}") from exc
 
     cloud = get_picloud()
-    pi = cloud.create_pi(name=name, spec=spec, ssh_keys=ssh_keys, wait=wait)
-
-    if full:
-        print_success("Server provisioned")
-        full_pis_table([pi])
-    elif wait:
-        print_success("Server provisioned")
-        short_pis_table([pi])
-    else:
-        print_success("Server provision request accepted")
+    return cloud.create_pi(name=name, spec=spec, ssh_keys=ssh_keys, wait=wait)
 
 
 def print_exc(exc: Exception):

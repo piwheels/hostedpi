@@ -8,12 +8,31 @@ Changelog
     Once the library reaches v1.0, it will be considered stable. Please consider giving feedback to
     help stabilise the API.
 
+Release 0.4.6 (2025-10-18)
+==========================
+
+- Allowed ``user`` to be ``None`` in :meth:`~hostedpi.pi.Pi.get_ipv4_ssh_command()`,
+  :meth:`~hostedpi.pi.Pi.get_ipv6_ssh_command()`, :meth:`~hostedpi.pi.Pi.get_ipv4_ssh_config()` and
+  :meth:`~hostedpi.pi.Pi.get_ipv6_ssh_config()` methods to :class:`~hostedpi.pi.Pi`
+- Allowed ``user`` to be ``None`` in :meth:`~hostedpi.picloud.PiCloud.get_ipv4_ssh_config()` and
+  :meth:`~hostedpi.picloud.PiCloud.get_ipv6_ssh_config()` method to
+  :class:`~hostedpi.picloud.PiCloud`
+- Removed ``--full`` option from :doc:`cli/create` command, and simplified the output to a single
+  table
+
+Release 0.4.5 (2025-10-11)
+==========================
+
+- Fixup release
+
 Release 0.4.4 (2025-10-10)
 ==========================
 
-- Added :meth:`~hostedpi.pi.Pi.get_ipv6_ssh_command()` and
+- Added :meth:`~hostedpi.pi.Pi.get_ipv4_ssh_command()`,
+  :meth:`~hostedpi.pi.Pi.get_ipv6_ssh_command()`, :meth:`~hostedpi.pi.Pi.get_ipv4_ssh_config()` and
   :meth:`~hostedpi.pi.Pi.get_ipv6_ssh_config()` methods to :class:`~hostedpi.pi.Pi`
-- Added :meth:`~hostedpi.picloud.PiCloud.get_ipv6_ssh_config()` method to
+- Added :meth:`~hostedpi.picloud.PiCloud.get_ipv4_ssh_config()` and
+  :meth:`~hostedpi.picloud.PiCloud.get_ipv6_ssh_config()` method to
   :class:`~hostedpi.picloud.PiCloud`
 
 Release 0.4.3 (2025-07-25)

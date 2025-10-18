@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
 import sphinx_rtd_theme
 
 
-hostedpi_version = "0.4.5"
+hostedpi_version = "0.4.6"
 
 
 # -- General configuration ------------------------------------------------

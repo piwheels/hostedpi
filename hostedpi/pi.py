@@ -497,36 +497,44 @@ class Pi:
 
         self._cancelled = True
 
-    def get_ipv4_ssh_command(self, user: str = "root") -> str:
+    def get_ipv4_ssh_command(self, user: Union[str, None] = "root") -> str:
         """
         Construct an SSH command required to connect to the Pi using SSH over IPv4
         """
+        if user is None:
+            return f"ssh -p {self.ipv4_ssh_port} {self.ipv4_ssh_hostname}"
         return f"ssh -p {self.ipv4_ssh_port} {user}@{self.ipv4_ssh_hostname}"
 
-    def get_ipv6_ssh_command(self, *, user: str = "root", numeric: bool = False) -> str:
+    def get_ipv6_ssh_command(
+        self, *, user: Union[str, None] = "root", numeric: bool = False
+    ) -> str:
         """
         Construct an SSH command required to connect to the Pi using SSH over IPv6
         """
         if numeric:
+            if user is None:
+                return f"ssh [{self.ipv6_address.compressed}]"
             return f"ssh {user}@[{self.ipv6_address.compressed}]"
         else:
+            if user is None:
+                return f"ssh {self.ipv6_ssh_hostname}"
             return f"ssh {user}@{self.ipv6_ssh_hostname}"
 
-    def get_ipv4_ssh_config(self, user: str = "root") -> str:
+    def get_ipv4_ssh_config(self, user: Union[str, None] = "root") -> str:
         """
         Construct a string containing the IPv4 SSH config for the Pi. The contents could be added to
         an SSH config file for easy access to the Pi.
         """
-        return f"""Host {self.name}
-    user {user}
-    port {self.ipv4_ssh_port}
-    hostname {self.ipv4_ssh_hostname}
-        """.strip()
+        host_line = f"Host {self.name}\n"
+        user_line = f"    user {user}\n" if user else ""
+        port_line = f"    port {self.ipv4_ssh_port}\n"
+        hostname_line = f"    hostname {self.ipv4_ssh_hostname}"
+        return host_line + user_line + port_line + hostname_line
 
     def get_ipv6_ssh_config(
         self,
         *,
-        user: str = "root",
+        user: Union[str, None] = "root",
         numeric: bool = False,
     ) -> str:
         """
@@ -534,10 +542,10 @@ class Pi:
         SSH config file for easy access to the Pi.
         """
         hostname = self.ipv6_address.compressed if numeric else self.ipv6_ssh_hostname
-        return f"""Host {self.name}
-    user {user}
-    hostname {hostname}
-        """.strip()
+        host_line = f"Host {self.name}\n"
+        user_line = f"    user {user}\n" if user else ""
+        hostname_line = f"    hostname {hostname}"
+        return host_line + user_line + hostname_line
 
     def add_ssh_keys(self, ssh_keys: SSHKeySources) -> set[str]:
         """

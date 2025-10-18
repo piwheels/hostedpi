@@ -36,6 +36,10 @@ Options
 
     The username to use when connecting
 
+.. option:: --no-user
+
+    Don't include a username in SSH command
+
 .. option:: --help
 
     Show this message and exit
@@ -71,6 +75,10 @@ Output the IPv6 SSH config for a Pi:
         user root
         hostname mypi.hostedpi.com
 
+.. warning::
+
+    You will need IPv6 connectivity to connect using the IPv6 address.
+
 Output the IPv6 SSH config for a Pi, using a custom username and numeric address:
 
 .. code-block:: console
@@ -78,6 +86,14 @@ Output the IPv6 SSH config for a Pi, using a custom username and numeric address
     $ hostedpi ssh config mypi --ipv6 --numeric --username pi
     Host mypi
         user pi
+        hostname 2a00:1098:8:14b::1
+
+Output the IPv6 SSH config for a Pi, using the numeric address and specifying no username:
+
+.. code-block:: console
+
+    $ hostedpi ssh config mypi --ipv6 --numeric --no-user
+    Host mypi
         hostname 2a00:1098:8:14b::1
 
 Output the IPv4 SSH config for multiple Pis:

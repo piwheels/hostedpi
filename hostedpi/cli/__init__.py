@@ -89,7 +89,6 @@ def do_create(
     ssh_key_path: options.ssh_key_path = None,
     ssh_import_github: options.ssh_import_github = None,
     ssh_import_launchpad: options.ssh_import_launchpad = None,
-    full: options.full_table = False,
 ):
     """
     Provision one or more new Raspberry Pi servers
@@ -99,9 +98,6 @@ def do_create(
         raise Exit(1)
     if not names and not number:
         number = 1
-    if full and not wait:
-        utils.print_error("You can't use --full without --wait")
-        raise Exit(1)
     if ssh_key_path is not None:
         if not ssh_key_path.exists():
             utils.print_error(f"SSH key file not found: {ssh_key_path}")
@@ -109,44 +105,46 @@ def do_create(
     ssh_import_gh_set = set(ssh_import_github) if ssh_import_github is not None else None
     ssh_import_lp_set = set(ssh_import_launchpad) if ssh_import_launchpad is not None else None
 
-    if names:
-        for name in names:
-            try:
-                utils.create_pi(
-                    name=name,
-                    model=model,
-                    disk=disk,
-                    memory_gb=memory,
-                    cpu_speed=cpu_speed,
-                    os_image=os_image,
-                    wait=wait,
-                    ssh_key_path=ssh_key_path,
-                    github_usernames=ssh_import_gh_set,
-                    launchpad_usernames=ssh_import_lp_set,
-                    full=full,
-                )
-            except HostedPiException as exc:
-                utils.print_exc(exc)
-                continue
+    table = utils.make_table("Name", "Status")
+    with Live(table, console=console, refresh_per_second=4):
+        if names:
+            for name in names:
+                try:
+                    utils.create_pi(
+                        name=name,
+                        model=model,
+                        disk=disk,
+                        memory_gb=memory,
+                        cpu_speed=cpu_speed,
+                        os_image=os_image,
+                        wait=wait,
+                        ssh_key_path=ssh_key_path,
+                        github_usernames=ssh_import_gh_set,
+                        launchpad_usernames=ssh_import_lp_set,
+                    )
+                    table.add_row(name, "Provisioned")
+                except HostedPiException as exc:
+                    table.add_row(name, f"Error: {exc}")
+                    continue
 
-    if number:
-        for n in range(number):
-            try:
-                utils.create_pi(
-                    model=model,
-                    disk=disk,
-                    memory_gb=memory,
-                    cpu_speed=cpu_speed,
-                    os_image=os_image,
-                    wait=wait,
-                    ssh_key_path=ssh_key_path,
-                    github_usernames=ssh_import_gh_set,
-                    launchpad_usernames=ssh_import_lp_set,
-                    full=full,
-                )
-            except HostedPiException as exc:
-                utils.print_exc(exc)
-                continue
+        if number:
+            for n in range(number):
+                try:
+                    pi = utils.create_pi(
+                        model=model,
+                        disk=disk,
+                        memory_gb=memory,
+                        cpu_speed=cpu_speed,
+                        os_image=os_image,
+                        wait=wait,
+                        ssh_key_path=ssh_key_path,
+                        github_usernames=ssh_import_gh_set,
+                        launchpad_usernames=ssh_import_lp_set,
+                    )
+                    table.add_row(pi.name, "Provisioned")
+                except HostedPiException as exc:
+                    table.add_row(str(n + 1), f"Error: {exc}")
+                    continue
 
 
 @app.command("status")
