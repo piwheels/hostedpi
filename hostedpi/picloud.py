@@ -109,14 +109,14 @@ class PiCloud:
         """
         return self.get_ipv6_ssh_config()
 
-    def get_ipv4_ssh_config(self, user: str = "root") -> str:
+    def get_ipv4_ssh_config(self, user: Union[str, None] = "root") -> str:
         """
         Construct a string containing the IPv4 SSH config for all Pis within the account. The
         contents could be added to an SSH config file for easy access to the Pis in the account.
         """
         return "\n".join(pi.get_ipv4_ssh_config(user=user) for pi in self.pis.values())
 
-    def get_ipv6_ssh_config(self, user: str = "root", numeric: bool = False) -> str:
+    def get_ipv6_ssh_config(self, user: Union[str, None] = "root", numeric: bool = False) -> str:
         """
         Construct a string containing the IPv6 SSH config for all Pis within the account. The
         contents could be added to an SSH config file for easy access to the Pis in the account.
