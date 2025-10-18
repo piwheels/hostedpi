@@ -48,6 +48,13 @@ def mock_get_pis_one(mock_pi):
         yield get_pis
 
 
+@pytest.fixture(autouse=True)
+def mock_create_pi(mock_pi):
+    with patch("hostedpi.cli.utils.create_pi") as create_pi:
+        create_pi.return_value = mock_pi
+        yield create_pi
+
+
 @pytest.fixture()
 def usage_text() -> str:
     return "Usage: hostedpi"
