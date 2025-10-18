@@ -17,8 +17,8 @@ Arguments
 
     Names of the Raspberry Pi servers to provision
 
-    If no names are provided, a generated name will be generated. Use in combination with
-    :option:`--number` to create multiple servers with generated names.
+    If no names are provided, a name will be generated. Use in combination with :option:`--number`
+    to create multiple servers with generated names.
 
 Options
 =======
@@ -58,9 +58,6 @@ Options
 
     Wait and poll for status to be available before returning
 
-    Supply with :option:`--full` to show the full table of Raspberry Pi server info when the server
-    is provisioned
-
 .. option:: --ssh-key-path [path]
 
     Path to the SSH key to install on the Raspberry Pi server
@@ -77,12 +74,6 @@ Options
 
     Can be provided multiple times
 
-.. option:: --full
-
-    Show full table of Raspberry Pi server info when the server is provisioned
-
-    Can only provided along with :option:`--wait`
-
 .. option:: --help
 
     Show this message and exit
@@ -95,30 +86,23 @@ Provision a new Pi 3 using the default Pi 3 spec, and wait for it to be provisio
 .. code-block:: console
 
     $ hostedpi create mypi --model 3 --wait
-    Server provisioned
-    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
-    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃
-    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ mypi  │ 3     │ 1 GB   │ 1.2 GHz   │
-    └───────┴───────┴────────┴───────────┘
+    ┏━━━━━━┳━━━━━━━━━━━━━┓
+    ┃ Name ┃ Status      ┃
+    ┡━━━━━━╇━━━━━━━━━━━━━┩
+    │ mypi │ Provisioned │
+    └──────┴─────────────┘
 
 Provision two new Pi 4 servers with generated names, using the default Pi 4 spec:
 
 .. code-block:: console
 
     $ hostedpi create --model 4 --number 2 --wait
-    Server provisioned
-    ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
-    ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃
-    ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ c8046pxjf │ 4     │ 4 GB   │ 1.5 GHz   │
-    └───────────┴───────┴────────┴───────────┘
-    Server provisioned
-    ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
-    ┃ Name      ┃ Model ┃ Memory ┃ CPU Speed ┃
-    ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ c8046pg5e │ 4     │ 4 GB   │ 1.5 GHz   │
-    └───────────┴───────┴────────┴───────────┘
+    ┏━━━━━━━━━━━┳━━━━━━━━━━━━━┓
+    ┃ Name      ┃ Status      ┃
+    ┡━━━━━━━━━━━╇━━━━━━━━━━━━━┩
+    │ c8046pxjf │ Provisioned │
+    │ c8046pg5e │ Provisioned │
+    └───────────┴─────────────┘
 
 .. warning::
     If no :option:`names` are provided, and :option:`--wait` is not provided, the command will return
@@ -129,12 +113,11 @@ Provision a new Pi 4 using custom settings:
 .. code-block:: console
 
     $ hostedpi create mypi4 --model 4 --memory 8192 --cpu-speed 2000 --disk 60 --os-image rpi-jammy-arm64 --ssh-key-path ~/.ssh/id_rsa.pub --wait
-    Server provisioned
-    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
-    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃
-    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
-    │ mypi4 │ 4     │ 8 GB   │ 2.0 GHz   │
-    └───────┴───────┴────────┴───────────┘
+    ┏━━━━━━━┳━━━━━━━━━━━━━┓
+    ┃ Name  ┃ Status      ┃
+    ┡━━━━━━━╇━━━━━━━━━━━━━┩
+    │ mypi4 │ Provisioned │
+    └───────┴─────────────┘
 
 .. note::
 
