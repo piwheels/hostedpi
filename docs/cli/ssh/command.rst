@@ -32,6 +32,10 @@ Options
 
     The username to use when connecting
 
+.. option:: --no-user
+
+    Don't include a username in SSH command
+
 .. option:: --help
 
     Show this message and exit
@@ -39,7 +43,7 @@ Options
 Usage
 =====
 
-Output the IPv4 SSH command for a Pi:
+Output the default IPv4 SSH command for a Pi:
 
 .. code-block:: console
 
@@ -53,12 +57,23 @@ Output the IPv4 SSH command for a Pi, with a custom username:
     $ hostedpi ssh command mypi --username pi
     ssh -p 5091 pi@ssh.mypi.hostedpi.com
 
+Output the IPv4 SSH command for a Pi, with no specified username:
+
+.. code-block:: console
+
+    $ hostedpi ssh command mypi --no-user
+    ssh -p 5091 ssh.mypi.hostedpi.com
+
 Output the IPv6 SSH command for a Pi:
 
 .. code-block:: console
 
     $ hostedpi ssh command mypi --ipv6
     ssh root@mypi.hostedpi.com
+
+.. warning::
+
+    You will need IPv6 connectivity to connect using the IPv6 address.
 
 Output the IPv6 SSH command for a Pi, with a custom username and numeric address:
 
