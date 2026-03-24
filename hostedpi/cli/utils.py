@@ -16,7 +16,6 @@ from ..pi import Pi
 from ..picloud import PiCloud
 from . import format
 
-
 logger = get_logger()
 console = Console()
 

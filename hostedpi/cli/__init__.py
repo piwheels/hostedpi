@@ -8,7 +8,6 @@ from . import arguments, options, utils
 from .info import info_app
 from .ssh import ssh_app
 
-
 app = Typer(name="hostedpi", no_args_is_help=True)
 app.add_typer(ssh_app, name="ssh", no_args_is_help=True, help="SSH access management commands")
 app.add_typer(

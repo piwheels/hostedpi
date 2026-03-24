@@ -8,7 +8,6 @@ from structlog import get_logger
 from .logger import log_request
 from .models.mythic.responses import ErrorResponse
 
-
 logger = get_logger()
 
 

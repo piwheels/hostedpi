@@ -3,7 +3,6 @@ from typer import Typer
 from . import arguments, format, options
 from .utils import get_pi_or_exit
 
-
 info_app = Typer()
 
 

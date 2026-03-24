@@ -5,7 +5,6 @@ from .pi import Pi
 from .picloud import PiCloud
 from .settings import Settings
 
-
 __all__ = [
     "MythicAuth",
     "Pi",

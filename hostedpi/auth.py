@@ -10,7 +10,6 @@ from .exc import MythicAuthenticationError
 from .models.mythic.responses import AuthResponse
 from .settings import Settings
 
-
 hostedpi_version = version("hostedpi")
 logger = get_logger()
 
