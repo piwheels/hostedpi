@@ -70,6 +70,17 @@ def do_table(
     names: arguments.server_names = None,
     filter: options.filter_pattern_pi = None,
     full: options.full_table = False,
+    model: options.table_model = False,
+    memory: options.table_memory = False,
+    cpu: options.table_cpu = False,
+    disk: options.table_disk = False,
+    nic: options.table_nic = False,
+    status: options.table_status = False,
+    boot_progress: options.table_boot_progress = False,
+    ipv4_ssh_port: options.table_ipv4_ssh_port = False,
+    ip_address: options.table_ip_address = False,
+    location: options.table_location = False,
+    power: options.table_power = False,
 ):
     """
     List Raspberry Pi server information in a table
@@ -77,7 +88,40 @@ def do_table(
     pis = utils.get_pis(names, filter)
 
     if full:
-        utils.full_pis_table(pis)
+        utils.custom_pis_table(pis, utils.ALL_COLUMNS)
+    elif any(
+        [
+            model,
+            memory,
+            cpu,
+            disk,
+            nic,
+            status,
+            boot_progress,
+            ipv4_ssh_port,
+            ip_address,
+            location,
+            power,
+        ]
+    ):
+        columns = [
+            col
+            for col, flag in [
+                ("model", model),
+                ("memory", memory),
+                ("cpu", cpu),
+                ("disk", disk),
+                ("nic", nic),
+                ("status", status),
+                ("boot_progress", boot_progress),
+                ("ipv4_ssh_port", ipv4_ssh_port),
+                ("ip_address", ip_address),
+                ("location", location),
+                ("power", power),
+            ]
+            if flag
+        ]
+        utils.custom_pis_table(pis, columns)
     else:
         utils.short_pis_table(pis)
 
