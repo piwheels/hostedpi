@@ -3,7 +3,7 @@ Getting started
 ===============
 
 This page contains a simple tutorial to help you get started by creating a Mythic Beasts account,
-create an API key, use the command line interface and the Python module.
+creating an API key, using the command line interface and the Python module.
 
 Create a Mythic Beasts account
 ==============================

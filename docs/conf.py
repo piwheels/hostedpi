@@ -2,12 +2,10 @@ import os
 import sys
 from datetime import datetime
 
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
 import sphinx_rtd_theme
 
-
-hostedpi_version = "0.4.6"
+hostedpi_version = "0.5.0"
 
 
 # -- General configuration ------------------------------------------------

@@ -2,7 +2,7 @@
 hostedpi reboot
 ===============
 
-.. program:: hostedpi-on
+.. program:: hostedpi-reboot
 
 Reboot one or more Raspberry Pi servers
 

@@ -43,14 +43,14 @@ Options
 Usage
 =====
 
-Remove imported keys from GitHub onto a Pi:
+Remove imported keys from GitHub from a Pi:
 
 .. code-block:: console
 
     $ hostedpi ssh keys unimport mypi --gh bennuttall
     Removed 4 keys from mypi
 
-Remove imported keys from GitHub onto multiple Pis:
+Remove imported keys from GitHub from multiple Pis:
 
 .. code-block:: console
 
@@ -58,14 +58,14 @@ Remove imported keys from GitHub onto multiple Pis:
     Removed 4 keys from mypi
     No keys matching import sources specified found on mypi2
 
-Remove imported keys from GitHub and Launchpad onto a Pi:
+Remove imported keys from GitHub and Launchpad from a Pi:
 
 .. code-block:: console
 
     $ hostedpi ssh keys unimport mypi --gh bennuttall --lp bennuttall
     Removed 4 keys from mypi
 
-Remove imported keys from GitHub onto multiple Pis:
+Remove imported keys from GitHub from multiple Pis:
 
 .. code-block:: console
 
@@ -73,7 +73,7 @@ Remove imported keys from GitHub onto multiple Pis:
     Removed 4 keys from mypi
     No keys matching import sources specified found on mypi2
 
-Remove imported keys from GitHub and Launchpad onto multiple Pis matching a filter:
+Remove imported keys from GitHub and Launchpad from multiple Pis matching a filter:
 
 .. code-block:: console
 
@@ -85,5 +85,5 @@ Remove imported keys from GitHub and Launchpad onto multiple Pis matching a filt
 
 .. note::
     
-    Keys are counted before and after addition, and de-duplicated, so if a key is already found on
-    the Pi, it will show as not having been added, as above.
+    Keys are counted before and after removal, and de-duplicated, so if a key is not found on
+    the Pi, it will show as not having been removed, as above.

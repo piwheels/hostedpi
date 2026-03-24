@@ -26,13 +26,64 @@ Options
 
 .. option:: --full
 
-    Show full table of Raspberry Pi server info
+    Show all available columns in the table
 
-    This includes more columns, and requires a separate API request per server
+    Equivalent to enabling all column options below
+
+.. option:: --model
+
+    Show model column in table
+
+.. option:: --memory
+
+    Show memory column in table
+
+.. option:: --cpu
+
+    Show CPU speed column in table
+
+.. option:: --disk
+
+    Show disk size column in table
+
+.. option:: --nic
+
+    Show NIC speed column in table
+
+.. option:: --status
+
+    Show status column in table
+
+.. option:: --boot-progress
+
+    Show boot progress column in table
+
+.. option:: --ssh-port
+
+    Show IPv4 SSH port column in table
+
+.. option:: --ip-address
+
+    Show IPv6 address column in table
+
+.. option:: --location
+
+    Show location column in table
+
+.. option:: --power
+
+    Show power state column in table
 
 .. option:: --help
 
     Show this message and exit
+
+Alias
+=====
+
+.. code-block:: text
+
+    hostedpi tab
 
 Usage
 =====
@@ -77,14 +128,33 @@ Filter by a search pattern:
     │ bob2  │ 4     │ 8 GB   │ 2.0 GHz   │
     └───────┴───────┴────────┴───────────┘
 
-Show the full table of information for each named Pi:
+Show specific columns:
+
+.. code-block:: console
+
+    $ hostedpi table --status --disk --location
+    ┏━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━┓
+    ┃ Name  ┃ Status     ┃ Disk size ┃ Location ┃
+    ┡━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━┩
+    │ mypi  │ Powered on │ 10 GB     │ CLL      │
+    │ mypi2 │ Powered on │ 20 GB     │ CLL      │
+    └───────┴────────────┴───────────┴──────────┘
+
+Show all available columns:
 
 .. code-block:: console
 
     $ hostedpi table mypi3 mypi4 --full
-    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
-    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃ NIC Speed ┃ Disk size ┃ Status     ┃ Initialised keys ┃ IPv4 SSH port ┃
-    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
-    │ mypi3 │ 3B    │ 1 GB   │ 1.2 GHz   │ 100 Mbps  │ 10 GB     │ Powered on │ No               │ 5142          │
-    │ mypi4 │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 60 GB     │ Powered on │ Yes              │ 5423          │
-    └───────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴──────────────────┴───────────────┘
+    ┏━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━┓
+    ┃ Name  ┃ Model ┃ Memory ┃ CPU Speed ┃ NIC Speed ┃ Disk size ┃ Status     ┃ Boot Progress ┃ IPv4 SSH port ┃ IPv6 Address      ┃ Location ┃ Power ┃
+    ┡━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━┩
+    │ mypi3 │ 4B    │ 1 GB   │ 1.2 GHz   │ 100 Mbps  │ 10 GB     │ Powered on │ booted        │ 5142          │ 2a00:1098:8:68::1 │ CLL      │ True  │
+    │ mypi4 │ 4B    │ 8 GB   │ 2.0 GHz   │ 1 Gbps    │ 60 GB     │ Powered on │ booted        │ 5423          │ 2a00:1098:8:68::2 │ CLL      │ True  │
+    └───────┴───────┴────────┴───────────┴───────────┴───────────┴────────────┴───────────────┴───────────────┴───────────────────┴──────────┴───────┘
+
+
+.. note::
+
+    The default view of the table is fast to load, as it does not require fetching all details for
+    each server. Requesting additional columns may result in a longer loading time, as more
+    information needs to be retrieved from the API for each server.

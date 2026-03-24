@@ -7,7 +7,6 @@ from typer.testing import CliRunner
 from hostedpi.cli import app
 from hostedpi.pi import Pi
 
-
 runner = CliRunner()
 
 

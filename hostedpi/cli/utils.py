@@ -16,7 +16,6 @@ from ..pi import Pi
 from ..picloud import PiCloud
 from . import format
 
-
 logger = get_logger()
 console = Console()
 
@@ -44,6 +43,14 @@ def get_pi(name: str) -> Union[Pi, None]:
     return cloud.pis.get(name)
 
 
+def get_pi_or_exit(name: str) -> Pi:
+    pi = get_pi(name)
+    if pi is None:
+        print_error("No server found with the given name.")
+        raise rich.prompt.Exit()
+    return pi
+
+
 def get_all_pis() -> list[Pi]:
     cloud = get_picloud()
     return list(cloud.pis.values())
@@ -65,6 +72,44 @@ def filter_pis(pis: list[Pi], filter: Union[str, None]) -> list[Pi]:
     return [pi for pi in pis if filter is None or filter.lower() in pi.name.lower()]
 
 
+ALL_COLUMNS = [
+    "model",
+    "memory",
+    "cpu",
+    "disk",
+    "nic",
+    "status",
+    "boot_progress",
+    "ipv4_ssh_port",
+    "ip_address",
+    "location",
+    "power",
+]
+
+COLUMN_DEFINITIONS = {
+    "model": ("Model", lambda pi: pi.model_full),
+    "memory": ("Memory", lambda pi: format.memory(pi.memory_gb)),
+    "cpu": ("CPU Speed", lambda pi: format.cpu_speed(pi.cpu_speed)),
+    "disk": ("Disk size", lambda pi: format.disk_size(pi.disk_size)),
+    "nic": ("NIC Speed", lambda pi: format.nic_speed(pi.nic_speed)),
+    "status": ("Status", lambda pi: pi.status),
+    "boot_progress": ("Boot Progress", lambda pi: str(pi.boot_progress)),
+    "ipv4_ssh_port": ("IPv4 SSH port", lambda pi: str(pi.ipv4_ssh_port)),
+    "ip_address": ("IPv6 Address", lambda pi: pi.ipv6_address.compressed),
+    "location": ("Location", lambda pi: pi.location),
+    "power": ("Power", lambda pi: str(pi.power)),
+}
+
+
+def custom_pis_table(pis: list[Pi], columns: list[str]):
+    headers = ["Name"] + [COLUMN_DEFINITIONS[col][0] for col in columns]
+    table = make_table(*headers)
+    with Live(table, console=console, refresh_per_second=4):
+        for pi in pis:
+            values = [pi.name] + [COLUMN_DEFINITIONS[col][1](pi) for col in columns]
+            table.add_row(*values)
+
+
 def short_pis_table(pis: list[Pi]):
     table = make_table("Name", "Model", "Memory", "CPU Speed")
 
@@ -79,34 +124,7 @@ def short_pis_table(pis: list[Pi]):
 
 
 def full_pis_table(pis: list[Pi]):
-    headers = [
-        "Name",
-        "Model",
-        "Memory",
-        "CPU Speed",
-        "NIC Speed",
-        "Disk size",
-        "Status",
-        "Initialised keys",
-        "IPv4 SSH port",
-        "IPv6 Address",
-    ]
-    table = Table(*headers)
-
-    with Live(table, console=console, refresh_per_second=4):
-        for pi in pis:
-            table.add_row(
-                pi.name,
-                pi.model_full,
-                format.memory(pi.memory_gb),
-                format.cpu_speed(pi.cpu_speed),
-                format.nic_speed(pi.nic_speed),
-                format.disk_size(pi.disk_size),
-                pi.status,
-                format.boolean(pi.initialised_keys),
-                str(pi.ipv4_ssh_port),
-                pi.ipv6_address.compressed,
-            )
+    custom_pis_table(pis, ALL_COLUMNS)
 
 
 def create_pi(

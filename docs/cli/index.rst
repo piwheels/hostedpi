@@ -37,6 +37,7 @@ Run ``hostedpi`` or ``hostedpi --help`` to see a list of available commands and 
     │ reboot   Reboot one or more Raspberry Pi servers                                         │
     │ cancel   Unprovision one or more Raspberry Pi servers                                    │
     │ ssh      SSH access management commands                                                  │
+    │ info     Commands to get information about servers                                       │
     ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
 Commands
@@ -57,3 +58,4 @@ Commands
     reboot
     cancel
     ssh/index
+    info/index

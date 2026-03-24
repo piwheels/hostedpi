@@ -3,7 +3,6 @@ from typing import Annotated, Union
 
 from typer import Option
 
-
 server_name = Annotated[Union[str, None], Option(help="Name of the new Raspberry Pi server")]
 model = Annotated[int, Option(help="Raspberry Pi Model", min=3, max=4)]
 disk_size = Annotated[int, Option(help="Disk size in GB", min=10)]
@@ -35,3 +34,18 @@ filter_pattern_pi = Annotated[
 filter_pattern_images = Annotated[
     Union[str, None], Option(help="Search pattern for filtering image names")
 ]
+model_full = Annotated[bool, Option(help="Show the full model name of the Raspberry Pi server")]
+ssl = Annotated[bool, Option(help="Show the URL with HTTPS instead of HTTP")]
+table_model = Annotated[bool, Option("--model", help="Show model column in table")]
+table_memory = Annotated[bool, Option("--memory", help="Show memory column in table")]
+table_cpu = Annotated[bool, Option("--cpu", help="Show CPU speed column in table")]
+table_disk = Annotated[bool, Option("--disk", help="Show disk size column in table")]
+table_nic = Annotated[bool, Option("--nic", help="Show NIC speed column in table")]
+table_status = Annotated[bool, Option("--status", help="Show status column in table")]
+table_boot_progress = Annotated[
+    bool, Option("--boot-progress", help="Show boot progress column in table")
+]
+table_ssh_port = Annotated[bool, Option("--ssh-port", help="Show IPv4 SSH port column in table")]
+table_ip_address = Annotated[bool, Option("--ip-address", help="Show IPv6 address column in table")]
+table_location = Annotated[bool, Option("--location", help="Show location column in table")]
+table_power = Annotated[bool, Option("--power", help="Show power state column in table")]

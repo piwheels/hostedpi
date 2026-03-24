@@ -5,7 +5,6 @@ import structlog
 from requests import Response
 from structlog import get_logger
 
-
 log_level = os.getenv("HOSTEDPI_LOG_LEVEL", "ERROR")
 structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(log_level))
 logger = get_logger()

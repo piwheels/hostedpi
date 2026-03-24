@@ -9,7 +9,6 @@ from ..models.sshkeys import SSHKeySources
 from ..utils import remove_imported_ssh_keys, remove_ssh_keys_by_label
 from . import arguments, options, utils
 
-
 keys_app = Typer()
 console = Console()
 

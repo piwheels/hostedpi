@@ -31,7 +31,6 @@ from .utils import (
     remove_ssh_keys_by_label,
 )
 
-
 logger = get_logger()
 
 
@@ -164,7 +163,7 @@ class Pi:
     @cached_property
     def nic_speed(self) -> Union[int, None]:
         """
-        The Pi's NIC speed in MHz
+        The Pi's NIC speed in Mbps
         """
         return self.info.nic_speed
 

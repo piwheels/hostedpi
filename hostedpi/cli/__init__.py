@@ -5,11 +5,17 @@ from typer import Exit, Typer
 
 from ..exc import HostedPiException
 from . import arguments, options, utils
+from .info import info_app
 from .ssh import ssh_app
-
 
 app = Typer(name="hostedpi", no_args_is_help=True)
 app.add_typer(ssh_app, name="ssh", no_args_is_help=True, help="SSH access management commands")
+app.add_typer(
+    info_app,
+    name="info",
+    no_args_is_help=True,
+    help="Commands to get information about a Raspberry Pi server",
+)
 console = Console()
 
 
@@ -64,6 +70,17 @@ def do_table(
     names: arguments.server_names = None,
     filter: options.filter_pattern_pi = None,
     full: options.full_table = False,
+    model: options.table_model = False,
+    memory: options.table_memory = False,
+    cpu: options.table_cpu = False,
+    disk: options.table_disk = False,
+    nic: options.table_nic = False,
+    status: options.table_status = False,
+    boot_progress: options.table_boot_progress = False,
+    ssh_port: options.table_ssh_port = False,
+    ip_address: options.table_ip_address = False,
+    location: options.table_location = False,
+    power: options.table_power = False,
 ):
     """
     List Raspberry Pi server information in a table
@@ -71,7 +88,40 @@ def do_table(
     pis = utils.get_pis(names, filter)
 
     if full:
-        utils.full_pis_table(pis)
+        utils.custom_pis_table(pis, utils.ALL_COLUMNS)
+    elif any(
+        [
+            model,
+            memory,
+            cpu,
+            disk,
+            nic,
+            status,
+            boot_progress,
+            ssh_port,
+            ip_address,
+            location,
+            power,
+        ]
+    ):
+        columns = [
+            col
+            for col, flag in [
+                ("model", model),
+                ("memory", memory),
+                ("cpu", cpu),
+                ("disk", disk),
+                ("nic", nic),
+                ("status", status),
+                ("boot_progress", boot_progress),
+                ("ssh_port", ssh_port),
+                ("ip_address", ip_address),
+                ("location", location),
+                ("power", power),
+            ]
+            if flag
+        ]
+        utils.custom_pis_table(pis, columns)
     else:
         utils.short_pis_table(pis)
 

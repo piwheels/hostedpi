@@ -24,7 +24,7 @@ https://www.raspberrypi.com/products/
 
     When provisioning a Raspberry Pi 3, it could be a 3B or 3B+. It is not possible to specify which
     specific model, but you can see which model you have provisioned by using
-    :command:`hostedpi show --full` or :attr:`~hostedpi.pi.Pi.model_full`.
+    :command:`hostedpi table --model` or accessing :attr:`~hostedpi.pi.Pi.model_full`.
 
 .. note::
 
