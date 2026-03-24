@@ -35,3 +35,5 @@ filter_pattern_pi = Annotated[
 filter_pattern_images = Annotated[
     Union[str, None], Option(help="Search pattern for filtering image names")
 ]
+model_full = Annotated[bool, Option(help="Show the full model name of the Raspberry Pi server")]
+ssl = Annotated[bool, Option(help="Show the URL with HTTPS instead of HTTP")]

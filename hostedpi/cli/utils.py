@@ -44,6 +44,14 @@ def get_pi(name: str) -> Union[Pi, None]:
     return cloud.pis.get(name)
 
 
+def get_pi_or_exit(name: str) -> Pi:
+    pi = get_pi(name)
+    if pi is None:
+        print_error("No server found with the given name.")
+        raise rich.prompt.Exit()
+    return pi
+
+
 def get_all_pis() -> list[Pi]:
     cloud = get_picloud()
     return list(cloud.pis.values())
