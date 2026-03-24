@@ -1,4 +1,3 @@
-from . import logger
 from .auth import MythicAuth
 from .models import Pi3ServerSpec, Pi4ServerSpec, PiInfo, SSHKeySources
 from .pi import Pi
