@@ -31,7 +31,7 @@ Subcommands
     nic
     status
     boot-progress
-    ipv4-ssh-port
+    ssh-port
     ip-address
     location
     power

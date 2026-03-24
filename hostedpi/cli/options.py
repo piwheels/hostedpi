@@ -42,8 +42,10 @@ table_cpu = Annotated[bool, Option("--cpu", help="Show CPU speed column in table
 table_disk = Annotated[bool, Option("--disk", help="Show disk size column in table")]
 table_nic = Annotated[bool, Option("--nic", help="Show NIC speed column in table")]
 table_status = Annotated[bool, Option("--status", help="Show status column in table")]
-table_boot_progress = Annotated[bool, Option("--boot-progress", help="Show boot progress column in table")]
-table_ipv4_ssh_port = Annotated[bool, Option("--ipv4-ssh-port", help="Show IPv4 SSH port column in table")]
+table_boot_progress = Annotated[
+    bool, Option("--boot-progress", help="Show boot progress column in table")
+]
+table_ssh_port = Annotated[bool, Option("--ssh-port", help="Show IPv4 SSH port column in table")]
 table_ip_address = Annotated[bool, Option("--ip-address", help="Show IPv6 address column in table")]
 table_location = Annotated[bool, Option("--location", help="Show location column in table")]
 table_power = Annotated[bool, Option("--power", help="Show power state column in table")]

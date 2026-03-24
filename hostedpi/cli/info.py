@@ -72,8 +72,8 @@ def do_boot_progress(name: arguments.server_name):
     print(pi.boot_progress)
 
 
-@info_app.command("ipv4-ssh-port")
-def do_ipv4_ssh_port(name: arguments.server_name):
+@info_app.command("ssh-port")
+def do_ssh_port(name: arguments.server_name):
     """
     Get the IPv4 SSH port of a Raspberry Pi server
     """

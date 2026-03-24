@@ -58,7 +58,7 @@ Options
 
     Show boot progress column in table
 
-.. option:: --ipv4-ssh-port
+.. option:: --ssh-port
 
     Show IPv4 SSH port column in table
 

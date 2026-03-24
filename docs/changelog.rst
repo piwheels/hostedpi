@@ -8,6 +8,17 @@ Changelog
     Once the library reaches v1.0, it will be considered stable. Please consider giving feedback to
     help stabilise the API.
 
+Release 0.5.0 (2026-03-24)
+==========================
+
+- Added :doc:`cli/info/index` subcommand to the CLI with subcommands for retrieving individual
+  properties of a Raspberry Pi server: ``model``, ``memory``, ``cpu``, ``disk``, ``nic``,
+  ``status``, ``boot-progress``, ``ssh-port``, ``ip-address``, ``location``, ``power``,
+  ``ssh-hostname``, and ``url``
+- Made the :doc:`cli/table` CLI command more customisable with individual column flags (``--model``,
+  ``--memory``, ``--cpu``, ``--disk``, ``--nic``, ``--status``, ``--boot-progress``,
+  ``--ssh-port``, ``--ip-address``, ``--location``, ``--power``)
+
 Release 0.4.6 (2025-10-18)
 ==========================
 

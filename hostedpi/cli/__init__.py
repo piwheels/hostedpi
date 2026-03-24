@@ -14,7 +14,7 @@ app.add_typer(
     info_app,
     name="info",
     no_args_is_help=True,
-    help="Commands to get information about Raspberry Pi servers",
+    help="Commands to get information about a Raspberry Pi server",
 )
 console = Console()
 
@@ -77,7 +77,7 @@ def do_table(
     nic: options.table_nic = False,
     status: options.table_status = False,
     boot_progress: options.table_boot_progress = False,
-    ipv4_ssh_port: options.table_ipv4_ssh_port = False,
+    ssh_port: options.table_ssh_port = False,
     ip_address: options.table_ip_address = False,
     location: options.table_location = False,
     power: options.table_power = False,
@@ -98,7 +98,7 @@ def do_table(
             nic,
             status,
             boot_progress,
-            ipv4_ssh_port,
+            ssh_port,
             ip_address,
             location,
             power,
@@ -114,7 +114,7 @@ def do_table(
                 ("nic", nic),
                 ("status", status),
                 ("boot_progress", boot_progress),
-                ("ipv4_ssh_port", ipv4_ssh_port),
+                ("ssh_port", ssh_port),
                 ("ip_address", ip_address),
                 ("location", location),
                 ("power", power),
