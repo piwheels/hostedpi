@@ -61,16 +61,6 @@ Purge all SSH keys from all Pis:
 
 .. code-block:: console
 
-    $ hostedpi ssh keys purge --filter mypi
-    Removed 2 keys from mypi
-    Removed 3 keys from mypi2
-    Removed 1 key from mypi3
-    Removed 2 keys from mypi4
-
-Purge all SSH keys from all Pis:
-
-.. code-block:: console
-
     $ hostedpi ssh keys purge
     Removed 2 keys from mypi
     Removed 3 keys from mypi2

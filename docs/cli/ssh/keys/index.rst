@@ -8,7 +8,7 @@ SSH key management commands
 
 .. code-block:: text
 
-    Usage: hostedpi ssh [OPTIONS] COMMAND [ARGS]...
+    Usage: hostedpi ssh keys [OPTIONS] COMMAND [ARGS]...
 
 Options
 =======

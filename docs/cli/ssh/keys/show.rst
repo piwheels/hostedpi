@@ -24,6 +24,13 @@ Options
 
     Show this message and exit
 
+Alias
+=====
+
+.. code-block:: text
+
+    hostedpi ssh keys cat
+
 Usage
 =====
 

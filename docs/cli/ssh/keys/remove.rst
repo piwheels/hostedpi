@@ -32,6 +32,13 @@ Options
 
     Show this message and exit
 
+Alias
+=====
+
+.. code-block:: text
+
+    hostedpi ssh keys rm
+
 Usage
 =====
 
@@ -40,7 +47,7 @@ Remove an SSH key from a Pi:
 .. code-block:: console
 
     $ hostedpi ssh keys remove ben@finn mypi
-    Removed 'ben@finn' key from mypi3
+    Removed 'ben@finn' key from mypi
 
 Remove an SSH key from multiple Pis:
 

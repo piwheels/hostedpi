@@ -28,6 +28,13 @@ Options
 
     Show this message and exit
 
+Alias
+=====
+
+.. code-block:: text
+
+    hostedpi ssh keys cp
+
 Usage
 =====
 
@@ -35,16 +42,16 @@ Copy the keys from one Pi to another:
 
 .. code-block:: console
 
-    $ hostedpi copy-keys mypi mypi2
+    $ hostedpi ssh keys copy mypi mypi2
     Copied 2 keys from mypi to mypi2
 
 Copy the keys from one Pi to several others:
 
 .. code-block:: console
 
-    $ hostedpi copy-keys mypi mypi2 mypi3 mypi4
+    $ hostedpi ssh keys copy mypi mypi2 mypi3 mypi4
     Copied 2 keys from mypi to mypi2
-    No new keys copied to mypi from mypi3
+    No new keys copied from mypi to mypi3
     Copied 1 key from mypi to mypi4
 
 .. note::
