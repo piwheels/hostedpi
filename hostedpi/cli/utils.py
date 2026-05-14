@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Literal, Union
 
 import rich
+from typer import Exit
 from pydantic import ValidationError
 from rich.console import Console
 from rich.live import Live
@@ -47,7 +48,7 @@ def get_pi_or_exit(name: str) -> Pi:
     pi = get_pi(name)
     if pi is None:
         print_error("No server found with the given name.")
-        raise rich.prompt.Exit()
+        raise Exit()
     return pi
 
 
