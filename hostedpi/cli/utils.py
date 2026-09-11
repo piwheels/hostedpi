@@ -3,12 +3,12 @@ from pathlib import Path
 from typing import Literal, Union
 
 import rich
-from typer import Exit
 from pydantic import ValidationError
 from rich.console import Console
 from rich.live import Live
 from rich.table import Table
 from structlog import get_logger
+from typer import Exit
 
 from ..exc import HostedPiValidationError
 from ..models.specs import Pi3ServerSpec, Pi4ServerSpec

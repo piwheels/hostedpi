@@ -21,10 +21,7 @@ install:
 
 develop:
 	pip install -U pip
-	pip install -U setuptools
-	pip install -U wheel
-	pip install -U "poetry>2"
-	poetry install --with dev --all-extras
+	pip install -e ".[cli,test]" --group dev
 	hostedpi --install-completion
 
 format:
@@ -38,7 +35,7 @@ clean:
 	rm -rf dist
 
 build: clean
-	poetry build
+	python -m build
 
 release: build
 	twine upload dist/*
